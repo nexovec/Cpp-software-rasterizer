@@ -141,7 +141,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     WNDCLASSEXA window_class_ex = {};
     window_class_ex.cbSize = sizeof(WNDCLASSEX);
-    window_class_ex.style = CS_OWNDC | CS_VREDRAW | CS_HREDRAW;
+    // window_class_ex.style = CS_OWNDC | CS_VREDRAW | CS_HREDRAW;
+    window_class_ex.style = CS_OWNDC;
     window_class_ex.lpfnWndProc = &window_proc;
     window_class_ex.hInstance = hInstance;
     window_class_ex.hbrBackground = 0;

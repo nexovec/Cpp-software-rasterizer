@@ -2,5 +2,6 @@
     "C_Cpp.errorSquiggles": "Disabled",
     "cSpell.words": [
         "WNDCLASSEXA"
-    ]
+    ],
+    "python.formatting.provider": "autopep8"
 }
