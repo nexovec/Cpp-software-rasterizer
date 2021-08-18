@@ -1,56 +1,24 @@
+#include "win32_platform.h"
 #include "common_defines.h"
+#include "main.h"
 #include <windows.h>
-#include <stdint.h>
-#include <stdio.h>
+#include <stdio.h> // FIXME: no stl, you lazy goddarn pig
 
 global BOOL running = true;
-global BITMAPINFO bitmap_info;
-global uint32_t *bitmap_memory = NULL;
-global RECT window_rect;
-global LONG scene_width = 800;
-global LONG scene_height = 600;
-global LONG last_width = 800;
-global LONG last_height = 800;
+HDC device_context;
 
-int sprintf(
-    char *buffer,
-    const char *format, ...);
 
-internal void temp_redraw_buffer()
+internal void win32_resize_dib_section(HWND window)
 {
-    for (int i = 0; i < scene_height; i++)
-    {
-        for (int ii = 0; ii < scene_width; ii++)
-        {
-            bitmap_memory[ii + i * scene_width] = 0xffaaff;
-        }
-    }
-}
-internal void win32_resize_dib_section(HDC dc, HWND window, RECT rect)
-{
-    LONG width = rect.right - rect.left;
-    LONG height = rect.bottom - rect.top;
-    bitmap_info = {};
-    BITMAPINFOHEADER *h = &bitmap_info.bmiHeader;
-    h->biSize = sizeof(BITMAPINFOHEADER);
-    h->biWidth = scene_width;
-    h->biHeight = scene_height;
-    h->biPlanes = 1;
-    h->biBitCount = 32;
-    h->biCompression = BI_RGB;
-
-    if (!bitmap_memory)
-    {
-        // VirtualFree(bitmap_memory, 0, MEM_RELEASE);
-        size_t DIB_size = sizeof(uint32_t) * scene_width * scene_height;
-        bitmap_memory = (uint32_t *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
-    }
+    // TODO: resize window, but retain aspect ratio
     RECT window_coords;
     GetWindowRect(window, &window_coords);
     SetWindowPos(window, HWND_TOPMOST, window_coords.left, window_coords.top, 800, 600, 0);
 }
-internal void win32_update_window(HDC device_context, RECT rect)
+internal void win32_update_window(HDC device_context, HWND window, BACK_BUFFER back_buffer, BITMAPINFO bitmap_info)
 {
+    RECT rect;
+    GetClientRect(window, &rect);
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
 
@@ -62,9 +30,9 @@ internal void win32_update_window(HDC device_context, RECT rect)
         height,
         0,
         0,
-        scene_width,
-        scene_height,
-        bitmap_memory,
+        back_buffer.width,
+        back_buffer.height,
+        back_buffer.bits,
         &bitmap_info,
         DIB_RGB_COLORS,
         SRCCOPY);
@@ -79,19 +47,12 @@ LRESULT CALLBACK window_proc(
 {
     LRESULT result = 0;
     // FIXME: make device context global
-    HDC device_context = GetDC(window);
     switch (uMsg)
     {
     case WM_SIZE:
     {
-        GetClientRect(window, &window_rect);
-        // TODO: resize window, but retain aspect ratio
-        // TODO: resize window, but retain middle of the window in the same position
-        // TODO: style
-        // FIXME: update is called twice
-        win32_resize_dib_section(device_context, window, window_rect);
-        // win32_update_window(device_context, window_rect);
-        // OutputDebugStringA("WM_SIZE\n");
+        win32_resize_dib_section(window);
+        OutputDebugStringA("WM_SIZE\n");
     }
     break;
     case WM_CLOSE:
@@ -112,7 +73,7 @@ LRESULT CALLBACK window_proc(
     break;
     case WM_PAINT:
     {
-        win32_update_window(device_context, window_rect);
+        // win32_update_window(device_context, window_rect);
     }
     break;
     default:
@@ -121,7 +82,6 @@ LRESULT CALLBACK window_proc(
     }
     break;
     }
-    ReleaseDC(window, device_context);
     return result;
 }
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
@@ -162,10 +122,21 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         return -1;
         // TODO: logging
     }
-    HDC device_context = GetDC(window);
-    GetClientRect(window, &window_rect);
+    device_context = GetDC(window);
+    BACK_BUFFER back_buffer = {};
+    back_buffer.width = scene_width;
+    back_buffer.height = scene_height;
+    size_t DIB_size = sizeof(uint32_t) * scene_width * scene_height;
+    back_buffer.bits = (uint32_t *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
+    BITMAPINFO bitmap_info = {};
+    bitmap_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bitmap_info.bmiHeader.biWidth = scene_width;
+    bitmap_info.bmiHeader.biHeight = scene_height;
+    bitmap_info.bmiHeader.biPlanes = 1;
+    bitmap_info.bmiHeader.biBitCount = 32;
+    bitmap_info.bmiHeader.biCompression = BI_RGB;
 
-    win32_resize_dib_section(device_context, window, window_rect);
+    win32_resize_dib_section(window);
     while (running)
     {
         MSG message;
@@ -180,8 +151,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         TranslateMessage(&message);
         DispatchMessage(&message);
-        temp_redraw_buffer();
-        win32_update_window(device_context, window_rect);
+        game_update_and_render(back_buffer);
+        win32_update_window(device_context, window, back_buffer, bitmap_info);
     }
     return 0;
 }

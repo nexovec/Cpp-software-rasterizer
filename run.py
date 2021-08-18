@@ -5,23 +5,23 @@ config = {
         '-INCREMENTAL:YES',
         '-FC',
         '-Zi',
-        '-O2',
-        # '-Femain.exe'
+        '-O2'
     ],
     'links': [
         'user32.lib',
         'Gdi32.lib'
     ],
-    # 'run_debugger': True, # defaults to false
+    'run_debugger': True, # defaults to false
     'keep_build_file': False
 }
+config['compiler_flags'].append('-Fe'+'.'.join(config['main'].split('.')[:-1]))
 import os
 from subprocess import Popen, PIPE
 # import io, typing
 import sys
 
 thisdir = os.path.abspath(os.path.dirname(__file__))
-main_exe_path = '.\\'+'.'.join(config['main'].split('.')[:-1])+'.exe'
+main_exe_path = thisdir+'\\build\\'+'.'.join(config['main'].split('.')[:-1])+'.exe'
 code_files = []
 for root, dirs, files in os.walk(thisdir+'\\src'):
     for file in files:
