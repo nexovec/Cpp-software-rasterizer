@@ -1,11 +1,7 @@
+#include "common_defines.h"
 #include <windows.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
-
-#define global static
-#define internal static
-#define persistent static
 
 global BOOL running = true;
 global BITMAPINFO bitmap_info;
@@ -56,9 +52,7 @@ internal void win32_resize_dib_section(HDC dc, HWND window, RECT rect)
 internal void win32_update_window(HDC device_context, RECT rect)
 {
     int width = rect.right - rect.left;
-    assert(width >= 0);
     int height = rect.bottom - rect.top;
-    assert(height >= 0);
 
     int res = StretchDIBits(
         device_context,
@@ -96,7 +90,7 @@ LRESULT CALLBACK window_proc(
         // TODO: style
         // FIXME: update is called twice
         win32_resize_dib_section(device_context, window, window_rect);
-        win32_update_window(device_context, window_rect);
+        // win32_update_window(device_context, window_rect);
         // OutputDebugStringA("WM_SIZE\n");
     }
     break;
