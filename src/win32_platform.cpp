@@ -13,15 +13,15 @@ internal void win32_resize_dib_section(HWND window)
     // TODO: resize window, but retain aspect ratio
     RECT window_coords;
     GetWindowRect(window, &window_coords);
-    SetWindowPos(window, HWND_TOPMOST, window_coords.left, window_coords.top, 800, 600, 0);
+    SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, 800, 600, 0);
 }
 internal void win32_update_window(HDC device_context, HWND window, BACK_BUFFER back_buffer, BITMAPINFO bitmap_info)
 {
+    // TODO: benchmark against https://gamedev.net/forums/topic/385918-fast-drawing-to-screen-win32gdi/3552067/
     RECT rect;
     GetClientRect(window, &rect);
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
-
     int res = StretchDIBits(
         device_context,
         0,
@@ -36,7 +36,6 @@ internal void win32_update_window(HDC device_context, HWND window, BACK_BUFFER b
         &bitmap_info,
         DIB_RGB_COLORS,
         SRCCOPY);
-    // ReleaseDC(window, device_context);
 }
 
 LRESULT CALLBACK window_proc(
@@ -73,7 +72,8 @@ LRESULT CALLBACK window_proc(
     break;
     case WM_PAINT:
     {
-        // win32_update_window(device_context, window_rect);
+        OutputDebugStringA("WM_PAINT\n");
+        win32_update_window(device_context, window_rect);
     }
     break;
     default:
@@ -95,7 +95,6 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     WNDCLASSEXA window_class_ex = {};
     window_class_ex.cbSize = sizeof(WNDCLASSEX);
-    // window_class_ex.style = CS_OWNDC | CS_VREDRAW | CS_HREDRAW;
     window_class_ex.style = CS_OWNDC;
     window_class_ex.lpfnWndProc = &window_proc;
     window_class_ex.hInstance = hInstance;
@@ -122,6 +121,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         return -1;
         // TODO: logging
     }
+    SetWindowPos(window, HWND_TOP, 400, 280, 800, 600, 0);
     device_context = GetDC(window);
     BACK_BUFFER back_buffer = {};
     back_buffer.width = scene_width;
