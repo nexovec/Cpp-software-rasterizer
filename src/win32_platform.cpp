@@ -2,10 +2,12 @@
 #include "common_defines.h"
 #include "main.h"
 #include <windows.h>
+#include <xinput.h>
 #include <stdio.h> // FIXME: no stl, you lazy goddarn pig
 
 global BOOL running = true;
 HDC device_context;
+KEYBOARD_STATE keyboard_state;
 
 
 internal void win32_resize_dib_section(HWND window)
@@ -37,6 +39,46 @@ internal void win32_update_window(HDC device_context, HWND window, BACK_BUFFER b
         DIB_RGB_COLORS,
         SRCCOPY);
 }
+int handle_keypress(WPARAM wParam, LPARAM lParam,bool is_down){
+    if(is_down && lParam&(1<<30))return 0;
+    if (is_down) {
+        OutputDebugStringA("Key has been pressed\n");
+    }
+    else {
+        OutputDebugStringA("Key has been released\n");
+    }
+    switch (wParam)
+        {
+        case VK_SPACE:
+        {
+            keyboard_state.KEY_SPACE = is_down;
+        }
+        break;
+        case 'W':
+        {
+            keyboard_state.KEY_W = is_down;
+        }
+        break;
+        case 'A':
+        {
+            keyboard_state.KEY_A = is_down;
+        }
+        break;
+        case 'S':
+        {
+            keyboard_state.KEY_S = is_down;
+        }
+        break;
+        case 'D':
+        {
+            keyboard_state.KEY_D = is_down;
+        }
+        break;
+        default:
+            break;
+        }
+        return 0;
+}
 
 LRESULT CALLBACK window_proc(
     HWND window,
@@ -63,6 +105,7 @@ LRESULT CALLBACK window_proc(
     case WM_DESTROY:
     {
         OutputDebugStringA("WM_DESTROY\n");
+        exit(0);
     }
     break;
     case WM_ACTIVATEAPP:
@@ -70,10 +113,21 @@ LRESULT CALLBACK window_proc(
         OutputDebugStringA("WM_ACTIVATEAPP\n");
     }
     break;
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
+    {
+        return handle_keypress(wParam, lParam, 1);
+    }
+    break;
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+    {
+        return handle_keypress(wParam, lParam, 0);
+    }
+    break;
     case WM_PAINT:
     {
-        OutputDebugStringA("WM_PAINT\n");
-        win32_update_window(device_context, window_rect);
+        // OutputDebugStringA("WM_PAINT\n");
     }
     break;
     default:
@@ -136,6 +190,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     bitmap_info.bmiHeader.biBitCount = 32;
     bitmap_info.bmiHeader.biCompression = BI_RGB;
 
+    keyboard_state = {};
     win32_resize_dib_section(window);
     while (running)
     {
@@ -151,6 +206,13 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         TranslateMessage(&message);
         DispatchMessage(&message);
+        XINPUT_STATE pState;
+        XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
+        XInputGetState(0,&pState);
+        XINPUT_VIBRATION controller_vibration = {(WORD)65535, (WORD)65535};
+        // XInputSetState(0, &controller_vibration);
+        if(keyboard_state.KEY_W)
+            XInputSetState(0, &controller_vibration);
         game_update_and_render(back_buffer);
         win32_update_window(device_context, window, back_buffer, bitmap_info);
     }

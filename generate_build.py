@@ -12,7 +12,8 @@ config = {
     ],
     'links': [
         'user32.lib',
-        'Gdi32.lib'
+        'Gdi32.lib',
+        'Xinput.lib'
     ],
     # 'run_debugger': True, # defaults to false
     'pause_after_build': True  # defaults to false
@@ -36,7 +37,7 @@ commands_win32 = [
     'set "startTime=%time: =0%"',
     'pushd %~dp0',
     'call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat" x64',
-    'mkdir \Q build',
+    'mkdir build',
     'pushd %~dp0\\build',
     'rm '+main_exe_path if os.path.exists(main_exe_path) else '',
     'cl '+cl_args,
