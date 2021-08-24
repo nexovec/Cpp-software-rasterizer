@@ -6,9 +6,8 @@
 #include <stdio.h> // FIXME: no stl, you lazy goddarn pig
 
 global BOOL running = true;
-HDC device_context;
-KEYBOARD_STATE keyboard_state;
-
+global HDC device_context;
+global KEYBOARD_STATE keyboard_state;
 
 internal void win32_resize_dib_section(HWND window)
 {
@@ -39,45 +38,53 @@ internal void win32_update_window(HDC device_context, HWND window, BACK_BUFFER b
         DIB_RGB_COLORS,
         SRCCOPY);
 }
-int handle_keypress(WPARAM wParam, LPARAM lParam,bool is_down){
-    if(is_down && lParam&(1<<30))return 0;
-    if (is_down) {
+int handle_keypress(WPARAM wParam, LPARAM lParam, bool is_down)
+{
+    if (is_down && lParam & (1 << 30))
+        return 0;
+    if (is_down)
+    {
         OutputDebugStringA("Key has been pressed\n");
     }
-    else {
+    else
+    {
         OutputDebugStringA("Key has been released\n");
     }
     switch (wParam)
-        {
-        case VK_SPACE:
-        {
-            keyboard_state.KEY_SPACE = is_down;
-        }
+    {
+    case VK_SPACE:
+    {
+        keyboard_state.KEY_SPACE = is_down;
+    }
+    break;
+    case 'W':
+    {
+        keyboard_state.KEY_W = is_down;
+    }
+    break;
+    case 'A':
+    {
+        keyboard_state.KEY_A = is_down;
+    }
+    break;
+    case 'S':
+    {
+        keyboard_state.KEY_S = is_down;
+    }
+    break;
+    case 'D':
+    {
+        keyboard_state.KEY_D = is_down;
+    }
+    break;
+    default:
         break;
-        case 'W':
-        {
-            keyboard_state.KEY_W = is_down;
-        }
-        break;
-        case 'A':
-        {
-            keyboard_state.KEY_A = is_down;
-        }
-        break;
-        case 'S':
-        {
-            keyboard_state.KEY_S = is_down;
-        }
-        break;
-        case 'D':
-        {
-            keyboard_state.KEY_D = is_down;
-        }
-        break;
-        default:
-            break;
-        }
-        return 0;
+    }
+    if (lParam & (1 << 29) && wParam == VK_F4)
+    {
+        running = false;
+    }
+    return 0;
 }
 
 LRESULT CALLBACK window_proc(
@@ -99,13 +106,13 @@ LRESULT CALLBACK window_proc(
     case WM_CLOSE:
     {
         OutputDebugStringA("WM_CLOSE\n");
-        exit(0);
+        running = false;
     }
     break;
     case WM_DESTROY:
     {
         OutputDebugStringA("WM_DESTROY\n");
-        exit(0);
+        running = false;
     }
     break;
     case WM_ACTIVATEAPP:
@@ -175,6 +182,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         return -1;
         // TODO: logging
     }
+    SetFocus(window);
     SetWindowPos(window, HWND_TOP, 400, 280, 800, 600, 0);
     device_context = GetDC(window);
     BACK_BUFFER back_buffer = {};
@@ -206,13 +214,15 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         TranslateMessage(&message);
         DispatchMessage(&message);
-        XINPUT_STATE pState;
-        XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
-        XInputGetState(0,&pState);
-        XINPUT_VIBRATION controller_vibration = {(WORD)65535, (WORD)65535};
-        // XInputSetState(0, &controller_vibration);
-        if(keyboard_state.KEY_W)
-            XInputSetState(0, &controller_vibration);
+
+        for (int i = 0; i <= 3; i++)
+        {
+            XINPUT_STATE pState;
+            XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
+            XINPUT_VIBRATION controller_vibration = {GAMEPAD_RUMBLE_LEVEL::OFF, GAMEPAD_RUMBLE_LEVEL::OFF};
+            XInputGetState(i, &pState);
+            XInputSetState(i, &controller_vibration);
+        }
         game_update_and_render(back_buffer);
         win32_update_window(device_context, window, back_buffer, bitmap_info);
     }

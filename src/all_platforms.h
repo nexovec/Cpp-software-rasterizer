@@ -25,8 +25,9 @@ struct KEYBOARD_STATE{
 enum GAMEPAD_RUMBLE_LEVEL
 {
     OFF,
-    LEVEL_1 = 100,
-    LEVEL_2 = 10000,
+    LEVEL_0 = 7000,
+    LEVEL_1 = 16000,
+    LEVEL_2 = 30000,
     LEVEL_3 = 65535
 };
 
