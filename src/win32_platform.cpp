@@ -6,9 +6,10 @@
 #include <stdio.h> // FIXME: no stl, you lazy goddarn pig
 
 global BOOL running = true;
-global HDC device_context;
 global KEYBOARD_STATE keyboard_state;
-global LARGE_INTEGER lpFrequency;
+global double aspect_ratio = 4. / 3.;
+global BACK_BUFFER back_buffer;
+global RECT prev_size;
 
 internal bool load_directsound()
 {
@@ -18,16 +19,25 @@ internal bool load_directsound()
 }
 internal void win32_resize_dib_section(HWND window)
 {
-    // TODO: resize window, but retain aspect ratio
     RECT window_coords;
     GetWindowRect(window, &window_coords);
-    SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, 800, 600, 0);
+    // uint32_t height = prev_size.bottom - prev_size.top;
+    uint32_t width = prev_size.right - prev_size.left;
+    SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((double)width / aspect_ratio), 0);
+    prev_size = window_coords;
 }
-internal void win32_update_window(HDC device_context, HWND window, BACK_BUFFER back_buffer, BITMAPINFO bitmap_info)
+internal void win32_update_window(HDC device_context, HWND window, BACK_BUFFER back_buffer)
 {
     // TODO: benchmark against https://gamedev.net/forums/topic/385918-fast-drawing-to-screen-win32gdi/3552067/
     RECT rect;
     GetClientRect(window, &rect);
+    BITMAPINFO bitmap_info = {};
+    bitmap_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bitmap_info.bmiHeader.biWidth = scene_width;
+    bitmap_info.bmiHeader.biHeight = scene_height;
+    bitmap_info.bmiHeader.biPlanes = 1;
+    bitmap_info.bmiHeader.biBitCount = 32;
+    bitmap_info.bmiHeader.biCompression = BI_RGB;
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
     int res = StretchDIBits(
@@ -45,7 +55,7 @@ internal void win32_update_window(HDC device_context, HWND window, BACK_BUFFER b
         DIB_RGB_COLORS,
         SRCCOPY);
 }
-int handle_keypress(WPARAM wParam, LPARAM lParam, bool is_down)
+internal int handle_keypress(WPARAM wParam, LPARAM lParam, bool is_down)
 {
     if (is_down && lParam & (1 << 30))
         return 0;
@@ -93,7 +103,7 @@ int handle_keypress(WPARAM wParam, LPARAM lParam, bool is_down)
     }
     return 0;
 }
-double get_time_millis()
+internal double get_time_millis()
 {
     LARGE_INTEGER lpPerformanceCount;
     if (!QueryPerformanceCounter(&lpPerformanceCount))
@@ -101,7 +111,7 @@ double get_time_millis()
         // TODO: error handle
         ExitProcess(-1);
     }
-    LARGE_INTEGER lpFrequency;
+    persistent LARGE_INTEGER lpFrequency;
     if (!QueryPerformanceFrequency(&lpFrequency))
     {
         // TODO: error handle
@@ -111,7 +121,7 @@ double get_time_millis()
     return time_in_seconds * 1000;
 }
 
-LRESULT CALLBACK window_proc(
+internal LRESULT CALLBACK window_proc(
     HWND window,
     UINT uMsg,
     WPARAM wParam,
@@ -124,7 +134,21 @@ LRESULT CALLBACK window_proc(
     case WM_SIZE:
     {
         win32_resize_dib_section(window);
+        RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
         OutputDebugStringA("WM_SIZE\n");
+    }
+    break;
+    case WM_PAINT:
+    {
+        // OutputDebugStringA("WM_PAINT\n");
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(window, &ps);
+        // FIXME: this is slow
+        persistent HBITMAP bmp = CreateBitmap(scene_width, scene_height, 1, 32, back_buffer.bits);
+        persistent HBRUSH back_buffer_brush = CreatePatternBrush(bmp);
+        FillRect(hdc, &ps.rcPaint, back_buffer_brush);
+        DeleteObject(bmp);
+        EndPaint(window, &ps);
     }
     break;
     case WM_CLOSE:
@@ -154,11 +178,6 @@ LRESULT CALLBACK window_proc(
     case WM_SYSKEYUP:
     {
         return handle_keypress(wParam, lParam, 0);
-    }
-    break;
-    case WM_PAINT:
-    {
-        // OutputDebugStringA("WM_PAINT\n");
     }
     break;
     default:
@@ -208,19 +227,12 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
     SetFocus(window);
     SetWindowPos(window, HWND_TOP, 400, 280, 800, 600, 0);
-    device_context = GetDC(window);
-    BACK_BUFFER back_buffer = {};
+    HDC device_context = GetDC(window);
+    back_buffer = {};
     back_buffer.width = scene_width;
     back_buffer.height = scene_height;
     size_t DIB_size = sizeof(uint32_t) * scene_width * scene_height;
     back_buffer.bits = (uint32_t *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
-    BITMAPINFO bitmap_info = {};
-    bitmap_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bitmap_info.bmiHeader.biWidth = scene_width;
-    bitmap_info.bmiHeader.biHeight = scene_height;
-    bitmap_info.bmiHeader.biPlanes = 1;
-    bitmap_info.bmiHeader.biBitCount = 32;
-    bitmap_info.bmiHeader.biCompression = BI_RGB;
 
     keyboard_state = {};
     load_directsound();
@@ -245,8 +257,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         double time = get_time_millis();
         if (time - last_tick < ms_per_tick)
         {
-            // TODO: better sleep
-            Sleep(1);
+            time - last_tick > 1 ? Sleep((long)((time - last_tick) / 1) - 1) : Sleep(0);
             continue;
         }
         // OutputDebugStringA("tick!\n");
@@ -255,8 +266,9 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         {
             XINPUT_STATE pState;
             XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
-            XINPUT_VIBRATION controller_vibration = {GAMEPAD_RUMBLE_LEVEL::OFF, GAMEPAD_RUMBLE_LEVEL::OFF};
             XInputGetState(i, &pState);
+            // DEBUG:
+            XINPUT_VIBRATION controller_vibration = {GAMEPAD_RUMBLE_LEVEL::OFF, GAMEPAD_RUMBLE_LEVEL::OFF};
             if (controller_state->bRightTrigger)
             {
                 controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_3;
@@ -266,9 +278,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         // TODO: disable inputs on out of focus
         // TODO: don't poll disconnected controllers
-        // TODO: game loop
         game_update_and_render(back_buffer);
-        win32_update_window(device_context, window, back_buffer, bitmap_info);
+        win32_update_window(device_context, window, back_buffer);
     }
     return 0;
 }

@@ -16,7 +16,7 @@ config = {
         'Xinput.lib'
     ],
     # 'launch_debugger': True, # defaults to False
-    # 'run_executable': True, # defaults to False
+    'run_executable': True,  # defaults to False
     'pause_after_build': True  # defaults to False
 }
 config['compiler_flags'].append('-Fe'+'.'.join(config['main'].split('.')[:-1]))
