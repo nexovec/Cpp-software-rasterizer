@@ -15,8 +15,9 @@ config = {
         'Gdi32.lib',
         'Xinput.lib'
     ],
-    # 'run_debugger': True, # defaults to false
-    'pause_after_build': True  # defaults to false
+    # 'launch_debugger': True, # defaults to False
+    # 'run_executable': True, # defaults to False
+    'pause_after_build': True  # defaults to False
 }
 config['compiler_flags'].append('-Fe'+'.'.join(config['main'].split('.')[:-1]))
 
@@ -41,9 +42,9 @@ commands_win32 = [
     'pushd %~dp0\\build',
     'rm '+main_exe_path if os.path.exists(main_exe_path) else '',
     'cl '+cl_args,
-    'START devenv ' + \
-    main_exe_path if config.get(
-        'run_debugger') == True else 'START '+main_exe_path,
+    'START devenv ' +
+    main_exe_path if config.get('launch_debugger') == True else '',
+    'START '+main_exe_path if config.get("run_executable") else '',
     'set "endTime=%time: =0%"',
     'rem Get elapsed time:',
     'set "end=!endTime:%time:~8,1%=%%100)*100+1!"  &  set "start=!startTime:%time:~8,1%=%%100)*100+1!"',

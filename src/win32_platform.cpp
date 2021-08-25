@@ -8,7 +8,14 @@
 global BOOL running = true;
 global HDC device_context;
 global KEYBOARD_STATE keyboard_state;
+global LARGE_INTEGER lpFrequency;
 
+internal bool load_directsound()
+{
+    // ! TODO:
+    // LoadLibrary("./dlls/Dsound3d.dll");
+    return false;
+}
 internal void win32_resize_dib_section(HWND window)
 {
     // TODO: resize window, but retain aspect ratio
@@ -85,6 +92,23 @@ int handle_keypress(WPARAM wParam, LPARAM lParam, bool is_down)
         running = false;
     }
     return 0;
+}
+double get_time_millis()
+{
+    LARGE_INTEGER lpPerformanceCount;
+    if (!QueryPerformanceCounter(&lpPerformanceCount))
+    {
+        // TODO: error handle
+        ExitProcess(-1);
+    }
+    LARGE_INTEGER lpFrequency;
+    if (!QueryPerformanceFrequency(&lpFrequency))
+    {
+        // TODO: error handle
+        ExitProcess(-1);
+    }
+    double time_in_seconds = (double)lpPerformanceCount.QuadPart / (double)lpFrequency.QuadPart;
+    return time_in_seconds * 1000;
 }
 
 LRESULT CALLBACK window_proc(
@@ -163,7 +187,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     window_class_ex.lpszClassName = "SuperWindowClass";
     ATOM window_class_atom = RegisterClassEx(&window_class_ex);
     if (!window_class_atom)
-        return -1;
+        ExitProcess(-1);
     HWND window = CreateWindowEx(
         WS_EX_OVERLAPPEDWINDOW,
         window_class_ex.lpszClassName,
@@ -179,8 +203,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         NULL);
     if (!window)
     {
-        return -1;
-        // TODO: logging
+        // TODO: error handle
+        ExitProcess(-1);
     }
     SetFocus(window);
     SetWindowPos(window, HWND_TOP, 400, 280, 800, 600, 0);
@@ -199,7 +223,11 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     bitmap_info.bmiHeader.biCompression = BI_RGB;
 
     keyboard_state = {};
+    load_directsound();
     win32_resize_dib_section(window);
+    double target_fps = 60;
+    double ms_per_tick = 1000.0 / target_fps;
+    double last_tick = 0;
     while (running)
     {
         MSG message;
@@ -210,19 +238,35 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             0);
         if (bRet == -1)
         {
-            return -1;
+            ExitProcess(-1);
         }
         TranslateMessage(&message);
         DispatchMessage(&message);
-
-        for (int i = 0; i <= 3; i++)
+        double time = get_time_millis();
+        if (time - last_tick < ms_per_tick)
+        {
+            // TODO: better sleep
+            Sleep(1);
+            continue;
+        }
+        // OutputDebugStringA("tick!\n");
+        last_tick = time;
+        for (int i = 0; i < 4; i++)
         {
             XINPUT_STATE pState;
             XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
             XINPUT_VIBRATION controller_vibration = {GAMEPAD_RUMBLE_LEVEL::OFF, GAMEPAD_RUMBLE_LEVEL::OFF};
             XInputGetState(i, &pState);
+            if (controller_state->bRightTrigger)
+            {
+                controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_3;
+                controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_3;
+            }
             XInputSetState(i, &controller_vibration);
         }
+        // TODO: disable inputs on out of focus
+        // TODO: don't poll disconnected controllers
+        // TODO: game loop
         game_update_and_render(back_buffer);
         win32_update_window(device_context, window, back_buffer, bitmap_info);
     }

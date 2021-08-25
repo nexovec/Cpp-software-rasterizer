@@ -1,3 +1,4 @@
+
 #include "common_defines.h"
 #include "main.h"
 void game_update_and_render(BACK_BUFFER back_buffer)

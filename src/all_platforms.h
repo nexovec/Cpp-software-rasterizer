@@ -1,5 +1,6 @@
 #pragma once
-struct GAMEPAD_INPUTS{
+struct GAMEPAD_INPUTS
+{
     bool BUTTON_A;
     bool BUTTON_B;
     bool BUTTON_X;
@@ -15,7 +16,8 @@ struct GAMEPAD_INPUTS{
     bool START;
     bool BACK;
 };
-struct KEYBOARD_STATE{
+struct KEYBOARD_STATE
+{
     bool KEY_A;
     bool KEY_S;
     bool KEY_D;
