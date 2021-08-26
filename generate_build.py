@@ -8,7 +8,8 @@ config = {
         '-INCREMENTAL:YES',
         '-FC',
         '-Zi',
-        '-O2'
+        '-O2',
+        "-std:c++20"
     ],
     'links': [
         'user32.lib',

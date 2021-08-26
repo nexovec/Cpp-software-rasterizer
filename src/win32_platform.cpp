@@ -191,11 +191,13 @@ internal LRESULT CALLBACK window_proc(
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                    PSTR lpCmdLine, INT nCmdShow)
 {
+    // ! DEBUG:
     SYSTEM_INFO si;
     GetSystemInfo(&si);
     char print[512];
     sprintf((char *const)&print, "The page size for this system is %u bytes.\n", si.dwPageSize);
     OutputDebugStringA(print);
+    // !
 
     WNDCLASSEXA window_class_ex = {};
     window_class_ex.cbSize = sizeof(WNDCLASSEX);
@@ -267,7 +269,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             XINPUT_STATE pState;
             XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
             XInputGetState(i, &pState);
-            // DEBUG:
+            // ! DEBUG:
             XINPUT_VIBRATION controller_vibration = {GAMEPAD_RUMBLE_LEVEL::OFF, GAMEPAD_RUMBLE_LEVEL::OFF};
             if (controller_state->bRightTrigger)
             {
@@ -275,6 +277,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                 controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_3;
             }
             XInputSetState(i, &controller_vibration);
+            // !
         }
         // TODO: disable inputs on out of focus
         // TODO: don't poll disconnected controllers

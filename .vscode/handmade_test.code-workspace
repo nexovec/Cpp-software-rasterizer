@@ -6,7 +6,9 @@
 	],
 	"settings": {
 		"files.associations": {
-			"*.rh": "cpp"
+			"*.rh": "cpp",
+			"numbers": "cpp",
+			"utility": "cpp"
 		}
 	}
 }
