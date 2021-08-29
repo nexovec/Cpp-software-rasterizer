@@ -6,18 +6,18 @@
 #include <stdio.h> // FIXME: no stl, you lazy goddarn pig
 
 global BOOL running = true;
-global KEYBOARD_STATE keyboard_state;
+global Keyboard_state keyboard_state;
 global double aspect_ratio = 4. / 3.;
-global BACK_BUFFER back_buffer;
+global Back_buffer back_buffer;
 global RECT prev_size;
 
-internal bool load_directsound()
+internal bool LoadDirectsound()
 {
     // ! TODO:
     // LoadLibrary("./dlls/Dsound3d.dll");
     return false;
 }
-internal void win32_resize_dib_section(HWND window)
+internal void Win32ResizeDibSection(HWND window)
 {
     RECT window_coords;
     GetWindowRect(window, &window_coords);
@@ -26,7 +26,7 @@ internal void win32_resize_dib_section(HWND window)
     SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((double)width / aspect_ratio), 0);
     prev_size = window_coords;
 }
-internal void win32_update_window(HDC device_context, HWND window, BACK_BUFFER back_buffer)
+internal void Win32UpdateWindow(HDC device_context, HWND window, Back_buffer back_buffer)
 {
     // TODO: benchmark against https://gamedev.net/forums/topic/385918-fast-drawing-to-screen-win32gdi/3552067/
     RECT rect;
@@ -55,7 +55,7 @@ internal void win32_update_window(HDC device_context, HWND window, BACK_BUFFER b
         DIB_RGB_COLORS,
         SRCCOPY);
 }
-internal int handle_keypress(WPARAM wParam, LPARAM lParam, bool is_down)
+internal int HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
 {
     if (is_down && lParam & (1 << 30))
         return 0;
@@ -103,7 +103,7 @@ internal int handle_keypress(WPARAM wParam, LPARAM lParam, bool is_down)
     }
     return 0;
 }
-internal double get_time_millis()
+internal double GetTimeMillis()
 {
     LARGE_INTEGER lpPerformanceCount;
     if (!QueryPerformanceCounter(&lpPerformanceCount))
@@ -121,7 +121,7 @@ internal double get_time_millis()
     return time_in_seconds * 1000;
 }
 
-internal LRESULT CALLBACK window_proc(
+internal LRESULT CALLBACK WindowProc(
     HWND window,
     UINT uMsg,
     WPARAM wParam,
@@ -133,7 +133,7 @@ internal LRESULT CALLBACK window_proc(
     {
     case WM_SIZE:
     {
-        win32_resize_dib_section(window);
+        Win32ResizeDibSection(window);
         RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
         OutputDebugStringA("WM_SIZE\n");
     }
@@ -171,13 +171,13 @@ internal LRESULT CALLBACK window_proc(
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
     {
-        return handle_keypress(wParam, lParam, 1);
+        return HandleKeypress(wParam, lParam, 1);
     }
     break;
     case WM_KEYUP:
     case WM_SYSKEYUP:
     {
-        return handle_keypress(wParam, lParam, 0);
+        return HandleKeypress(wParam, lParam, 0);
     }
     break;
     default:
@@ -202,7 +202,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     WNDCLASSEXA window_class_ex = {};
     window_class_ex.cbSize = sizeof(WNDCLASSEX);
     window_class_ex.style = CS_OWNDC;
-    window_class_ex.lpfnWndProc = &window_proc;
+    window_class_ex.lpfnWndProc = &WindowProc;
     window_class_ex.hInstance = hInstance;
     window_class_ex.hbrBackground = 0;
     window_class_ex.lpszClassName = "SuperWindowClass";
@@ -228,7 +228,9 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         ExitProcess(-1);
     }
     SetFocus(window);
-    SetWindowPos(window, HWND_TOP, 400, 280, 800, 600, 0);
+    // FIXME: this gets multiplied by windows global scale multiplier for some reason:
+    // TODO: center window on screen
+    SetWindowPos(window, HWND_TOP, 300, 180, 800, 600, 0);
     HDC device_context = GetDC(window);
     back_buffer = {};
     back_buffer.width = scene_width;
@@ -237,8 +239,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     back_buffer.bits = (uint32_t *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
 
     keyboard_state = {};
-    load_directsound();
-    win32_resize_dib_section(window);
+    LoadDirectsound();
+    Win32ResizeDibSection(window);
     double target_fps = 60;
     double ms_per_tick = 1000.0 / target_fps;
     double last_tick = 0;
@@ -256,7 +258,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         TranslateMessage(&message);
         DispatchMessage(&message);
-        double time = get_time_millis();
+        double time = GetTimeMillis();
         if (time - last_tick < ms_per_tick)
         {
             time - last_tick > 1 ? Sleep((long)((time - last_tick) / 1) - 1) : Sleep(0);
@@ -281,8 +283,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         // TODO: disable inputs on out of focus
         // TODO: don't poll disconnected controllers
-        game_update_and_render(back_buffer);
-        win32_update_window(device_context, window, back_buffer);
+        GameUpdateAndRender(back_buffer);
+        Win32UpdateWindow(device_context, window, back_buffer);
     }
     return 0;
 }

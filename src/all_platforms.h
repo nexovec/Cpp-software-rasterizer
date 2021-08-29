@@ -1,5 +1,5 @@
 #pragma once
-struct GAMEPAD_INPUTS
+struct Gamepad_inputs
 {
     bool BUTTON_A;
     bool BUTTON_B;
@@ -16,7 +16,7 @@ struct GAMEPAD_INPUTS
     bool START;
     bool BACK;
 };
-struct KEYBOARD_STATE
+struct Keyboard_state
 {
     bool KEY_A;
     bool KEY_S;
@@ -33,9 +33,9 @@ enum GAMEPAD_RUMBLE_LEVEL
     LEVEL_3 = 65535
 };
 
-struct BACK_BUFFER
+struct Back_buffer
 {
     uint32_t *bits;
-    uint16_t width;
-    uint16_t height;
+    uint32_t width;
+    uint32_t height;
 };

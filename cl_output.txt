@@ -1,0 +1,120 @@
+main.cpp
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(34): warning C4018: '<': signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(36): warning C4018: '<': signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(50): warning C4244: 'initializing': conversion from 'T' to 'int', possible loss of data
+        with
+        [
+            T=float
+        ]
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(54): warning C4456: declaration of 'x' hides previous local declaration
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(42): note: see declaration of 'x'
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(54): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(54): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(54): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(55): warning C4456: declaration of 'y' hides previous local declaration
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(43): note: see declaration of 'y'
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(55): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(55): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(55): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(59): warning C4244: 'initializing': conversion from 'T' to 'int', possible loss of data
+        with
+        [
+            T=float
+        ]
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(63): warning C4456: declaration of 'x' hides previous local declaration
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(42): note: see declaration of 'x'
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(63): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(63): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(63): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(64): warning C4456: declaration of 'y' hides previous local declaration
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(43): note: see declaration of 'y'
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(64): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(64): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(64): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(68): warning C4244: 'initializing': conversion from 'T' to 'int', possible loss of data
+        with
+        [
+            T=float
+        ]
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(72): warning C4456: declaration of 'x' hides previous local declaration
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(42): note: see declaration of 'x'
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(72): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(72): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(72): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(73): warning C4456: declaration of 'y' hides previous local declaration
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(43): note: see declaration of 'y'
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(73): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(73): warning C5219: implicit conversion from 'int' to 'float', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(73): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(20): warning C4100: 'zero': unreferenced formal parameter
+C:\Users\nexovec\Documents\dev\handmade_test\src\main.cpp(51): note: see reference to function template instantiation 'T Sgn<int>(T,T)' being compiled
+        with
+        [
+            T=int
+        ]
+win32_platform.cpp
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10326): warning C4668: '_WIN32_WINNT_WIN10_TH2' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10332): warning C4668: '_WIN32_WINNT_WIN10_RS1' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10337): warning C4668: '_WIN32_WINNT_WIN10_TH2' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10341): warning C4668: '_WIN32_WINNT_WIN10_TH2' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10348): warning C4668: '_WIN32_WINNT_WIN10_RS2' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10358): warning C4668: '_WIN32_WINNT_WIN10_RS2' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10362): warning C4668: '_WIN32_WINNT_WIN10_TH2' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10367): warning C4668: '_WIN32_WINNT_WIN10_RS3' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10374): warning C4668: '_WIN32_WINNT_WIN10_RS4' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10377): warning C4668: '_WIN32_WINNT_WIN10_RS1' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10380): warning C4668: '_WIN32_WINNT_WIN10_RS4' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10385): warning C4668: '_WIN32_WINNT_WIN10_RS1' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10388): warning C4668: '_WIN32_WINNT_WIN10_RS5' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10588): warning C4668: '_WIN32_WINNT_WIN10_RS2' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(10612): warning C4668: '_WIN32_WINNT_WIN10_RS5' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(14093): warning C4668: '_WIN32_WINNT_WIN10_RS5' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(14296): warning C4668: '_WIN32_WINNT_WIN10_RS5' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(14399): warning C4668: '_WIN32_WINNT_WIN10_RS5' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(14495): warning C4668: '_WIN32_WINNT_WIN10_RS5' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(14599): warning C4668: '_WIN32_WINNT_WIN10_RS5' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(15350): warning C4668: '_WIN32_WINNT_WIN10_RS2' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(15406): warning C4668: '_WIN32_WINNT_WIN10_RS2' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(15525): warning C4668: '_WIN32_WINNT_WIN10_RS3' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(15675): warning C4668: '_WIN32_WINNT_WIN10_RS4' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(15688): warning C4668: '_WIN32_WINNT_WIN10_RS4' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um\winioctl.h(15916): warning C4668: '_WIN32_WINNT_WIN10_RS1' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(25): warning C4365: 'initializing': conversion from 'LONG' to 'uint32_t', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(26): warning C4365: 'argument': conversion from 'uint32_t' to 'int', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(29): warning C4459: declaration of 'back_buffer' hides global declaration
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(11): note: see declaration of 'back_buffer'
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(56): warning C4365: 'argument': conversion from 'uint32_t' to 'int', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(43): warning C4189: 'res': local variable is initialized but not referenced
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(112): warning C4245: 'argument': conversion from 'int' to 'UINT', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(118): warning C4245: 'argument': conversion from 'int' to 'UINT', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(198): warning C4777: 'sprintf' : format string '%u' requires an argument of type 'unsigned int', but variadic argument 1 has type 'DWORD'
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(198): note: consider using '%lu' in the format string
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(211): warning C4245: 'argument': conversion from 'int' to 'UINT', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(228): warning C4245: 'argument': conversion from 'int' to 'UINT', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(257): warning C4245: 'argument': conversion from 'int' to 'UINT', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(264): warning C4365: 'argument': conversion from 'long' to 'DWORD', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(273): warning C4365: 'argument': conversion from 'int' to 'DWORD', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(281): warning C4365: 'argument': conversion from 'int' to 'DWORD', signed/unsigned mismatch
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(198): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(192): warning C4100: 'nCmdShow': unreferenced formal parameter
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(192): warning C4100: 'lpCmdLine': unreferenced formal parameter
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(191): warning C4100: 'hPrevInstance': unreferenced formal parameter
+Generating Code...
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(198) : warning C4710: 'sprintf': function not inlined
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(242) : warning C4711: function 'bool __cdecl LoadDirectsound(void)' selected for automatic inline expansion
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(261) : warning C4711: function 'double __cdecl GetTimeMillis(void)' selected for automatic inline expansion
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(287) : warning C4711: function 'void __cdecl Win32UpdateWindow(struct HDC__ * __ptr64,struct HWND__ * __ptr64,struct Back_buffer)' selected for automatic inline expansion
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(264) : warning C5045: Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(264) : note: index '' range checked by comparison on this line
+C:\Users\nexovec\Documents\dev\handmade_test\src\win32_platform.cpp(264) : note: feeds call on this line
+Microsoft (R) Incremental Linker Version 14.29.30133.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+/debug 
+/out:win32_platform.exe 
+main.obj 
+win32_platform.obj 
+user32.lib 
+Gdi32.lib 
+Xinput.lib 
+LINK : win32_platform.exe not found or not built by the last incremental link; performing full link
