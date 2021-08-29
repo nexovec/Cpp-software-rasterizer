@@ -1,18 +1,16 @@
 
 #include "common_defines.h"
 #include "main.h"
-template <typename T>
-struct Vec_2
+struct Vec_2f
 {
-    T x;
-    T y;
+    float x;
+    float y;
 };
-template <typename T> // FIXME: naaaah, bad idea
 struct Triangle_2D
 {
-    Vec_2<T> v1;
-    Vec_2<T> v2;
-    Vec_2<T> v3;
+    Vec_2f v1;
+    Vec_2f v2;
+    Vec_2f v3;
 };
 template <typename T>
 T Sgn(T, T = 0);
@@ -25,8 +23,6 @@ inline float Lerp(float a, float b, float ratio)
 {
     return a + ratio * (b - a);
 }
-// ! TODO: make a roadmap
-// ! TODO: triangle struct
 void GameUpdateAndRender(Back_buffer back_buffer)
 {
     // SECTION: clear
@@ -39,50 +35,83 @@ void GameUpdateAndRender(Back_buffer back_buffer)
         }
     }
     // SECTION: generate sample triangle
-    Vec_2<float> x = {200.0f, 400.0f};
-    Vec_2<float> y = {500.0f, 200.0f};
-    Vec_2<float> z = {350.0f, 350.0f};
-    Triangle_2D<float> triangle = {x, y, z};
+    Vec_2f x = {200.0f, 400.0f};
+    Vec_2f y = {500.0f, 200.0f};
+    Vec_2f z = {350.0f, 350.0f};
+    Triangle_2D triangle = {x, y, z};
     // Triangle_2D<float> triangle = {{200.0f,200.0f},{500.0f,200.0f},{200.0f,500.0f}};
     // TODO: rasterize one triangle
     {
+#define buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
         // TODO: render wireframe
-        int v12_y_diff = triangle.v1.y - triangle.v2.y;
-        int sgn = Sgn(v12_y_diff);
-        for (int y_diff = 0; y_diff < v12_y_diff; y_diff += sgn) // FIXME: comparison
+        // NOTE: limits resolution to 4096 max along any dimension
+        int scanline_limits[8192]; // should probably be common for all triangles, should use byte[]
+        Vec_2f *vertices = (Vec_2f *)&triangle;
+        Vec_2f lowest_vertex = vertices[0];
+        Vec_2f highest_vertex = vertices[0];
+        for (int i1 = 0; i1 < 3; i1++)
         {
-            int x = Lerp(triangle.v1.x, triangle.v2.x, ((float)1 / v12_y_diff) * y_diff);
-            int y = Lerp(triangle.v1.y, triangle.v2.y, ((float)1 / v12_y_diff) * y_diff);
-
-            back_buffer.bits[back_buffer.width * y + x] = 0xff000000;
+            int i2 = (i1 + 1) % 3;
+            Vec_2f v1 = vertices[i1];
+            Vec_2f v2 = vertices[i2];
+            Vec_2f lower_vertex = v1;
+            Vec_2f higher_vertex = v2;
+            if (v1.y > v2.y)
+            {
+                lower_vertex = v2;
+                higher_vertex = v1;
+            }
+            if (lower_vertex.y < lowest_vertex.y)
+            {
+                lowest_vertex = lower_vertex;
+            }
+            if (highest_vertex.y < higher_vertex.y)
+            {
+                highest_vertex = higher_vertex;
+            }
+            // TODO: make buffer for scanline boundaries
+            for (int y = lower_vertex.y; y < higher_vertex.y; y++)
+            {
+                float lerp_unit = (float)1 / (higher_vertex.y - lower_vertex.y);
+                int x = Lerp(lower_vertex.x, higher_vertex.x, lerp_unit * (y - lower_vertex.y));
+                buffer(x, y) = 0;
+                // cache where scanlines begin and end
+                if (scanline_limits[y * 2])
+                {
+                    // NOTE: set next element to -1 to say scanline_limits has been written to at that position
+                    if (scanline_limits[y * 2 + 1] == -1)
+                    {
+                        // this row has been written to
+                        // ? TODO: do rendering here directly?
+                        if (scanline_limits[y * 2] > x)
+                        {
+                            scanline_limits[y * 2 + 1] = scanline_limits[y * 2];
+                            scanline_limits[y * 2] = x;
+                        }
+                        else
+                        {
+                            scanline_limits[y * 2 + 1] = x;
+                        }
+                    }
+                    else
+                    {
+                        // this row has not been written to yet
+                        scanline_limits[y * 2 + 1] = -1;
+                        scanline_limits[y * 2] = x;
+                    }
+                }
+            }
+            // TODO: fill triangle with solid color
         }
-        int v23_y_diff = triangle.v2.y - triangle.v3.y;
-        sgn = Sgn(v23_y_diff);
-        for (int y_diff = 0; y_diff > v23_y_diff; y_diff += sgn) // FIXME: comparison
+        for (int y = lowest_vertex.y; y < highest_vertex.y; y++)
         {
-            int x = Lerp(triangle.v2.x, triangle.v3.x, ((float)1 / v23_y_diff) * y_diff);
-            int y = Lerp(triangle.v2.y, triangle.v3.y, ((float)1 / v23_y_diff) * y_diff);
-
-            back_buffer.bits[back_buffer.width * y + x] = 0xff000000;
+            int min_x = scanline_limits[y * 2];
+            int max_x = scanline_limits[y * 2 + 1];
+            for (int x = min_x; x < max_x; x++)
+            {
+                buffer(x, y) = 0xff00ff00;
+            }
         }
-        int v13_y_diff = triangle.v1.y - triangle.v3.y;
-        sgn = Sgn(v13_y_diff);
-        for (int y_diff = 0; y_diff < v13_y_diff; y_diff += sgn) // FIXME: comparison
-        {
-            int x = Lerp(triangle.v1.x, triangle.v3.x, ((float)1 / v13_y_diff) * y_diff);
-            int y = Lerp(triangle.v1.y, triangle.v3.y, ((float)1 / v13_y_diff) * y_diff);
-
-            back_buffer.bits[back_buffer.width * y + x] = 0xff000000;
-        }
-        // for (int y = triangle.v1.y; y < triangle.v1.y + v12_y_diff; y++)
-        // {
-        //     back_buffer.bits[scene_width * y + triangle.v1.x] = 0x00000000;
-        //     back_buffer.bits[scene_width * y + triangle.v1.x + 1] = 0x00000000;
-        //     back_buffer.bits[scene_width * y + triangle.v1.x + 2] = 0x00000000;
-        //     back_buffer.bits[scene_width * y + triangle.v1.x + 3] = 0x00000000;
-        //     back_buffer.bits[scene_width * y + triangle.v1.x + 4] = 0x00000000;
-        //     back_buffer.bits[scene_width * y + triangle.v1.x + 5] = 0x00000000;
-        // }
     }
     // TODO: generate triangles that fill screen
     // TODO: rasterize multiple triangles

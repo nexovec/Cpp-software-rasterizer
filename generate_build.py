@@ -9,7 +9,7 @@ config = {
         '-FC',
         '-Zi',
         '-O2',
-        '-Wall',
+        # '-Wall',
         "-std:c++20"
     ],
     'links': [
@@ -43,7 +43,7 @@ commands_win32 = [
     'mkdir build',
     'pushd %~dp0\\build',
     'rm '+main_exe_path if os.path.exists(main_exe_path) else '',
-    'cl '+cl_args+'>'+thisdir+'\\cl_output.txt',
+    'cl '+cl_args, # + '>' + thisdir+'\\cl_output.txt',
     'START devenv ' +
     main_exe_path if config.get('launch_debugger') == True else '',
     'START '+main_exe_path if config.get("run_executable") else '',
