@@ -11,7 +11,11 @@ struct Triangle_2D
     Vec_2f v1;
     Vec_2f v2;
     Vec_2f v3;
+    unsigned int color1;
+    unsigned int color2;
+    unsigned int color3;
 };
+// ? TODO: make vertex struct
 template <typename T>
 T Sgn(T, T = 0);
 template <typename T>
@@ -23,8 +27,38 @@ inline float Lerp(float a, float b, float ratio)
 {
     return a + ratio * (b - a);
 }
-unsigned int pixel_program(){
-    return 0xff00ff00;
+inline float InvLerp(float a, float b, float val)
+{
+    return (val - a) / (b - a);
+}
+unsigned int pixel_program(Triangle_2D triangle, int x, int y)
+{
+    // use solid color
+    // return 0xff00ff00;
+
+    // TODO: use color gradient
+    unsigned int a1 = (triangle.color1 >> 24) & 0xff;
+    unsigned int r1 = (triangle.color1 >> 16) & 0xff;
+    unsigned int g1 = (triangle.color1 >> 8) & 0xff;
+    unsigned int b1 = (triangle.color1 >> 0) & 0xff;
+
+    unsigned int a2 = (triangle.color2 >> 24) & 0xff;
+    unsigned int r2 = (triangle.color2 >> 16) & 0xff;
+    unsigned int g2 = (triangle.color2 >> 8) & 0xff;
+    unsigned int b2 = (triangle.color2 >> 0) & 0xff;
+
+    unsigned int a3 = (triangle.color3 >> 24) & 0xff;
+    unsigned int r3 = (triangle.color3 >> 16) & 0xff;
+    unsigned int g3 = (triangle.color3 >> 8) & 0xff;
+    unsigned int b3 = (triangle.color3 >> 0) & 0xff;
+
+    unsigned int final_a = (unsigned int)Lerp(a1, a2, InvLerp(triangle.v1.y, triangle.v2.y, y));
+    unsigned int final_r = (unsigned int)Lerp(r1, r2, InvLerp(triangle.v1.y, triangle.v2.y, y));
+    unsigned int final_g = (unsigned int)Lerp(g1, g2, InvLerp(triangle.v1.y, triangle.v2.y, y));
+    unsigned int final_b = (unsigned int)Lerp(b1, b2, InvLerp(triangle.v1.y, triangle.v2.y, y));
+
+    // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff;
+    return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
 void GameUpdateAndRender(Back_buffer back_buffer)
 {
@@ -35,7 +69,7 @@ void GameUpdateAndRender(Back_buffer back_buffer)
     {
         for (int ii = 0; ii < back_buffer.width; ii++)
         {
-            buffer(ii,i) = 0xffaaff;
+            buffer(ii, i) = 0xffaaff;
         }
     }
     // SECTION: generate sample triangle
@@ -43,6 +77,9 @@ void GameUpdateAndRender(Back_buffer back_buffer)
     Vec_2f y = {500.0f, 200.0f};
     Vec_2f z = {350.0f, 350.0f};
     Triangle_2D triangle = {x, y, z};
+    triangle.color1 = 0xffff00ff;
+    triangle.color2 = 0xffffff00;
+    triangle.color3 = 0xffffffff;
     // Triangle_2D<float> triangle = {{200.0f,200.0f},{500.0f,200.0f},{200.0f,500.0f}};
     // TODO: rasterize one triangle
     {
@@ -120,7 +157,7 @@ void GameUpdateAndRender(Back_buffer back_buffer)
             int max_x = scanline_limits[y * 2 + 1];
             for (int x = min_x; x < max_x; x++)
             {
-                buffer(x, y) = pixel_program();
+                buffer(x, y) = pixel_program(triangle, x, y);
             }
             // TODO: reset scanline limits
         }
