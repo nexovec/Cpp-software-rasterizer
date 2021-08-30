@@ -11,7 +11,39 @@ global double aspect_ratio = 4. / 3.;
 global Back_buffer back_buffer;
 global RECT prev_size;
 
-internal bool LoadDirectsound()
+#define XINPUT_GET_STATE_SIG(name) DWORD name(DWORD dwUserIndex, XINPUT_STATE *pState)
+typedef XINPUT_GET_STATE_SIG(x_input_get_state);
+XINPUT_GET_STATE_SIG(XInputGetStateStub)
+{
+    return 0;
+}
+global x_input_get_state *XInputGetState_ = XInputGetStateStub;
+#define XInputGetState XInputGetState_
+
+#define XINPUT_SET_STATE_SIG(name) DWORD name(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration)
+typedef XINPUT_SET_STATE_SIG(x_input_set_state);
+XINPUT_SET_STATE_SIG(XInputSetStateStub)
+{
+    return 0;
+}
+global x_input_set_state *XInputSetState_ = XInputSetStateStub;
+#define XInputSetState XInputSetState_
+
+internal void Win32InitXInput()
+{
+    HMODULE lib = LoadLibrary("xinput1_4.dll");
+    if (!lib)
+    {
+        lib = LoadLibrary("xinput1_3.dll");
+    }
+    if (!lib)
+    {
+        ExitProcess(-1);
+    }
+    XInputSetState_ = (x_input_set_state *)GetProcAddress(lib, "XInputSetState");
+    XInputGetState_ = (x_input_get_state *)GetProcAddress(lib, "XInputGetState");
+}
+internal bool Win32InitDirectsound()
 {
     // ! TODO:
     // LoadLibrary("./dlls/Dsound3d.dll");
@@ -199,6 +231,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     OutputDebugStringA(print);
     // !
 
+    Win32InitXInput();
+    Win32InitDirectsound();
     WNDCLASSEXA window_class_ex = {};
     window_class_ex.cbSize = sizeof(WNDCLASSEX);
     window_class_ex.style = CS_OWNDC;
@@ -239,7 +273,6 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     back_buffer.bits = (uint32_t *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
 
     keyboard_state = {};
-    LoadDirectsound();
     Win32ResizeDibSection(window);
     double target_fps = 60;
     double ms_per_tick = 1000.0 / target_fps;
@@ -262,11 +295,14 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         if (time - last_tick < ms_per_tick)
         {
             time - last_tick > 1 ? Sleep((long)((time - last_tick) / 1) - 1) : Sleep(0);
+            // Sleep(1);
             continue;
         }
         // OutputDebugStringA("tick!\n");
         last_tick = time;
-        for (int i = 0; i < 4; i++)
+        unsigned char registered_controllers = 1;
+        // TODO: move this outside of tick to poll more frequently
+        for (int i = 0; i < registered_controllers; i++)
         {
             XINPUT_STATE pState;
             XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
@@ -275,8 +311,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             XINPUT_VIBRATION controller_vibration = {GAMEPAD_RUMBLE_LEVEL::OFF, GAMEPAD_RUMBLE_LEVEL::OFF};
             if (controller_state->bRightTrigger)
             {
-                controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_3;
-                controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_3;
+                controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_2;
+                controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_2;
             }
             XInputSetState(i, &controller_vibration);
             // !

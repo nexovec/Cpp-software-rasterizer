@@ -15,7 +15,7 @@ config = {
     'links': [
         'user32.lib',
         'Gdi32.lib',
-        'Xinput.lib'
+        # 'Xinput.lib'
     ],
     # 'launch_debugger': True, # defaults to False
     'run_executable': True,  # defaults to False

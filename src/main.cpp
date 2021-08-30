@@ -37,17 +37,17 @@ unsigned int pixel_program(Triangle_2D triangle, int x, int y)
     // return 0xff00ff00;
 
     // TODO: use color gradient
-    unsigned int a1 = (triangle.color1 >> 24) & 0xff;
+    unsigned int a1 = (triangle.color1 >> 24);
     unsigned int r1 = (triangle.color1 >> 16) & 0xff;
-    unsigned int g1 = (triangle.color1 >> 8) & 0xff;
-    unsigned int b1 = (triangle.color1 >> 0) & 0xff;
+    unsigned int g1 = (triangle.color1 >> 8)  & 0xff;
+    unsigned int b1 = (triangle.color1 >> 0)  & 0xff;
 
-    unsigned int a2 = (triangle.color2 >> 24) & 0xff;
+    unsigned int a2 = (triangle.color2 >> 24);
     unsigned int r2 = (triangle.color2 >> 16) & 0xff;
     unsigned int g2 = (triangle.color2 >> 8) & 0xff;
     unsigned int b2 = (triangle.color2 >> 0) & 0xff;
 
-    unsigned int a3 = (triangle.color3 >> 24) & 0xff;
+    unsigned int a3 = (triangle.color3 >> 24);
     unsigned int r3 = (triangle.color3 >> 16) & 0xff;
     unsigned int g3 = (triangle.color3 >> 8) & 0xff;
     unsigned int b3 = (triangle.color3 >> 0) & 0xff;
