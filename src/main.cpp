@@ -39,8 +39,8 @@ unsigned int pixel_program(Triangle_2D triangle, int x, int y)
     // TODO: use color gradient
     unsigned int a1 = (triangle.color1 >> 24);
     unsigned int r1 = (triangle.color1 >> 16) & 0xff;
-    unsigned int g1 = (triangle.color1 >> 8)  & 0xff;
-    unsigned int b1 = (triangle.color1 >> 0)  & 0xff;
+    unsigned int g1 = (triangle.color1 >> 8) & 0xff;
+    unsigned int b1 = (triangle.color1 >> 0) & 0xff;
 
     unsigned int a2 = (triangle.color2 >> 24);
     unsigned int r2 = (triangle.color2 >> 16) & 0xff;
@@ -63,6 +63,7 @@ unsigned int pixel_program(Triangle_2D triangle, int x, int y)
 void GameUpdateAndRender(Back_buffer back_buffer)
 {
 #define buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
+
     // SECTION: clear
     // NOTE: format is ARGB
     for (int i = 0; i < back_buffer.height; i++)
@@ -72,6 +73,7 @@ void GameUpdateAndRender(Back_buffer back_buffer)
             buffer(ii, i) = 0xffaaff;
         }
     }
+
     // SECTION: generate sample triangle
     Vec_2f x = {200.0f, 400.0f};
     Vec_2f y = {500.0f, 200.0f};
@@ -81,6 +83,8 @@ void GameUpdateAndRender(Back_buffer back_buffer)
     triangle.color2 = 0xffffff00;
     triangle.color3 = 0xffffffff;
     // Triangle_2D<float> triangle = {{200.0f,200.0f},{500.0f,200.0f},{200.0f,500.0f}};
+
+    // SECTION: rasterize triangle
     // TODO: rasterize one triangle
     {
         // TODO: render wireframe
@@ -102,7 +106,7 @@ void GameUpdateAndRender(Back_buffer back_buffer)
                 lower_vertex = v2;
                 higher_vertex = v1;
             }
-            if (lower_vertex.y < lowest_vertex.y)
+            if (lower_vertex.y < lowest_vertex.y) // TODO: remove?
             {
                 lowest_vertex = lower_vertex;
             }
@@ -110,15 +114,20 @@ void GameUpdateAndRender(Back_buffer back_buffer)
             {
                 highest_vertex = higher_vertex;
             }
-            // TODO: make buffer for scanline boundaries
+            Vec_2f left_vertex = v1;
+            Vec_2f right_vertex = v2;
+            if (v1.x > right_vertex.x)
+            {
+                right_vertex = v2;
+                left_vertex = v1;
+            }
+            // ? TODO: benchmark copying of data vs. pointers vs. vertex layouts etc.
+            // TODO: optimize by getting rid of casts and changing types
             for (int y = (int)lower_vertex.y; y < (int)higher_vertex.y; y++)
             {
                 int relative_y_diff = y - (int)lower_vertex.y;
                 float lerp_unit = (float)1 / (higher_vertex.y - lower_vertex.y);
                 int x = (int)Lerp(lower_vertex.x, higher_vertex.x, lerp_unit * (float)relative_y_diff);
-                // buffer(x, y) = 0; // this renders the wireframe
-                // cache where scanlines begin and end, if both ends of a scanline are present, commence rendering
-                // NOTE: set next element to -1 to say scanline_x_start has been written to at that position
                 // ! TODO: ignore scanlines outside of screenspace
                 if (scanline_x_start[y])
                 {
@@ -136,14 +145,16 @@ void GameUpdateAndRender(Back_buffer back_buffer)
                         higher_x_bound = x;
                         lower_x_bound = scanline_x_start[y];
                     }
-                    // ? TODO: do rendering here directly (you have to test performance)?
-                    // ! DEBUG
                     for (int x = lower_x_bound; x < higher_x_bound; x++)
                     {
                         buffer(x, y) = 0xff00ff00;
+                        // TODO: pass invlerp into pixel_program
+                        float invlerp_along_scanline = InvLerp(lower_x_bound, higher_x_bound, x);
+                        float invlerp_left_edge = InvLerp(left_vertex.x, right_vertex.x, x);  // ! FIXME:
+                        float invlerp_right_edge = InvLerp(left_vertex.x, right_vertex.x, x); // ! FIXME:
+                        buffer(x, y) = pixel_program(triangle, x, y);
                     }
                     scanline_x_start[y] = 0;
-                    // !
                 }
                 else
                 {
@@ -151,18 +162,7 @@ void GameUpdateAndRender(Back_buffer back_buffer)
                     scanline_x_start[y] = x;
                 }
             }
-            // TODO: fill triangle with solid color
         }
-        // for (int y = lowest_vertex.y; y < highest_vertex.y; y++)
-        // {
-        //     int min_x = scanline_x_start[y * 2];
-        //     int max_x = scanline_x_start[y * 2 + 1];
-        //     for (int x = min_x; x < max_x; x++)
-        //     {
-        //         buffer(x, y) = pixel_program(triangle, x, y);
-        //     }
-        //     // TODO: reset scanline limits
-        // }
     }
     // TODO: generate triangles that fill screen
     // TODO: rasterize multiple triangles
