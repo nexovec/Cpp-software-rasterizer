@@ -86,7 +86,7 @@ void GameUpdateAndRender(Back_buffer back_buffer)
         // TODO: render wireframe
         // NOTE: limits resolution to 4096 max along any dimension
         // TODO: use a smaller array(use an offset from lowest y instead of y)
-        int scanline_limits[8192]; // should probably be common for all triangles, should use byte[]
+        int scanline_x_start[scene_width] = {}; // should probably be common for all triangles, should use byte[]
         Vec_2f *vertices = (Vec_2f *)&triangle;
         Vec_2f lowest_vertex = vertices[0];
         Vec_2f highest_vertex = vertices[0];
@@ -111,56 +111,58 @@ void GameUpdateAndRender(Back_buffer back_buffer)
                 highest_vertex = higher_vertex;
             }
             // TODO: make buffer for scanline boundaries
-            for (int y = lower_vertex.y; y < higher_vertex.y; y++)
+            for (int y = (int)lower_vertex.y; y < (int)higher_vertex.y; y++)
             {
+                int relative_y_diff = y - (int)lower_vertex.y;
                 float lerp_unit = (float)1 / (higher_vertex.y - lower_vertex.y);
-                int x = Lerp(lower_vertex.x, higher_vertex.x, lerp_unit * (y - lower_vertex.y));
+                int x = (int)Lerp(lower_vertex.x, higher_vertex.x, lerp_unit * (float)relative_y_diff);
                 // buffer(x, y) = 0; // this renders the wireframe
                 // cache where scanlines begin and end, if both ends of a scanline are present, commence rendering
-                // NOTE: set next element to -1 to say scanline_limits has been written to at that position
+                // NOTE: set next element to -1 to say scanline_x_start has been written to at that position
                 // ! TODO: ignore scanlines outside of screenspace
-                if (scanline_limits[y * 2 + 1] == -1)
+                if (scanline_x_start[y])
                 {
                     // this row has been written to
-                    // TODO: macro for scanline_limits access
-                    if (scanline_limits[y * 2] > x)
+                    // TODO: macro for scanline_x_start access
+                    int lower_x_bound;
+                    int higher_x_bound;
+                    if (scanline_x_start[y] > x)
                     {
-                        scanline_limits[y * 2 + 1] = scanline_limits[y * 2];
-                        scanline_limits[y * 2] = x;
+                        lower_x_bound = x;
+                        higher_x_bound = scanline_x_start[y];
                     }
                     else
                     {
-                        scanline_limits[y * 2 + 1] = x;
+                        higher_x_bound = x;
+                        lower_x_bound = scanline_x_start[y];
                     }
                     // ? TODO: do rendering here directly (you have to test performance)?
                     // ! DEBUG
-                    // int min_x = scanline_limits[y * 2];
-                    // int max_x = scanline_limits[y * 2 + 1];
-                    // for (int x = min_x; x < max_x; x++)
-                    // {
-                    //     buffer(x, y) = 0xff00ff00;
-                    // }
+                    for (int x = lower_x_bound; x < higher_x_bound; x++)
+                    {
+                        buffer(x, y) = 0xff00ff00;
+                    }
+                    scanline_x_start[y] = 0;
                     // !
                 }
                 else
                 {
                     // this row has not been written to yet
-                    scanline_limits[y * 2 + 1] = -1;
-                    scanline_limits[y * 2] = x;
+                    scanline_x_start[y] = x;
                 }
             }
             // TODO: fill triangle with solid color
         }
-        for (int y = lowest_vertex.y; y < highest_vertex.y; y++)
-        {
-            int min_x = scanline_limits[y * 2];
-            int max_x = scanline_limits[y * 2 + 1];
-            for (int x = min_x; x < max_x; x++)
-            {
-                buffer(x, y) = pixel_program(triangle, x, y);
-            }
-            // TODO: reset scanline limits
-        }
+        // for (int y = lowest_vertex.y; y < highest_vertex.y; y++)
+        // {
+        //     int min_x = scanline_x_start[y * 2];
+        //     int max_x = scanline_x_start[y * 2 + 1];
+        //     for (int x = min_x; x < max_x; x++)
+        //     {
+        //         buffer(x, y) = pixel_program(triangle, x, y);
+        //     }
+        //     // TODO: reset scanline limits
+        // }
     }
     // TODO: generate triangles that fill screen
     // TODO: rasterize multiple triangles
