@@ -8,7 +8,6 @@
 global BOOL running = true;
 global Keyboard_state keyboard_state;
 global double aspect_ratio = 4. / 3.;
-global Back_buffer back_buffer;
 global RECT prev_size;
 
 #define XINPUT_GET_STATE_SIG(name) DWORD name(DWORD dwUserIndex, XINPUT_STATE *pState)
@@ -173,14 +172,15 @@ internal LRESULT CALLBACK WindowProc(
     case WM_PAINT:
     {
         // OutputDebugStringA("WM_PAINT\n");
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(window, &ps);
-        // FIXME: this is slow
-        persistent HBITMAP bmp = CreateBitmap(scene_width, scene_height, 1, 32, back_buffer.bits);
-        persistent HBRUSH back_buffer_brush = CreatePatternBrush(bmp);
-        FillRect(hdc, &ps.rcPaint, back_buffer_brush);
-        DeleteObject(bmp);
-        EndPaint(window, &ps);
+        // TODO: remove, make window non-resizable
+        // PAINTSTRUCT ps;
+        // HDC hdc = BeginPaint(window, &ps);
+        // // FIXME: this is slow
+        // persistent HBITMAP bmp = CreateBitmap(scene_width, scene_height, 1, 32, back_buffer.bits);
+        // persistent HBRUSH back_buffer_brush = CreatePatternBrush(bmp);
+        // FillRect(hdc, &ps.rcPaint, back_buffer_brush);
+        // DeleteObject(bmp);
+        // EndPaint(window, &ps);
     }
     break;
     case WM_CLOSE:
@@ -220,8 +220,8 @@ internal LRESULT CALLBACK WindowProc(
     }
     return result;
 }
-INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                   PSTR lpCmdLine, INT nCmdShow)
+INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
+                   _In_ PSTR lpCmdLine, _In_ INT nCmdShow)
 {
     // ! DEBUG:
     SYSTEM_INFO si;
@@ -266,7 +266,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     // TODO: center window on screen
     SetWindowPos(window, HWND_TOP, 300, 180, 800, 600, 0);
     HDC device_context = GetDC(window);
-    back_buffer = {};
+    Back_buffer back_buffer = {};
     back_buffer.width = scene_width;
     back_buffer.height = scene_height;
     size_t DIB_size = sizeof(uint32_t) * scene_width * scene_height;

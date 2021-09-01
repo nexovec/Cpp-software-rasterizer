@@ -3,12 +3,15 @@ from subprocess import Popen, PIPE
 import os
 config = {
     'platform': 'windows',
-    'main': 'win32_platform.cpp',
+    'name': 'win32_platform',
     'compiler_flags': [
         '-INCREMENTAL:YES',
         '-FC',
         '-Zi',
         '-O2',
+        '-Isrc',
+        '-analyze',
+        '-C'
         # '-Wall',
         "-std:c++20"
     ],
@@ -17,22 +20,54 @@ config = {
         'Gdi32.lib',
         # 'Xinput.lib'
     ],
+    "examples": [
+        {
+            'name': "triangle",  # TODO: change main to name
+            'needed': [
+                'win32_platform.cpp',
+                'triangle.cpp'
+            ]
+        }
+    ],
     # 'launch_debugger': True, # defaults to False
     'run_executable': True,  # defaults to False
-    'pause_after_build': True  # defaults to False
+    'pause_after_build': True,  # defaults to False
+    # 'build_examples': True  # defaults to False
 }
-config['compiler_flags'].append('-Fe'+'.'.join(config['main'].split('.')[:-1]))
+# TODO: ensure good defaults
 
 thisdir = os.path.abspath(os.path.dirname(__file__))
-main_exe_path = thisdir+'\\build\\' + \
-    '.'.join(config['main'].split('.')[:-1])+'.exe'
+main_exe_path = thisdir+'\\build\\' + config.get('name')+'.exe'
 code_files = []
-for root, dirs, files in os.walk(thisdir+'\\src'):
-    for file in files:
-        if file.endswith(".c") or file.endswith(".cpp"):
-            code_files.append(os.path.join(root, file))
-cl_args = ' '.join([' '.join(config['compiler_flags']),
+
+
+def recursive_file_search(root_folder_name, cbk):
+    for root, dirs, files in os.walk(thisdir+'\\'+root_folder_name):
+        for file in files:
+            cbk(file, root)
+
+
+def main_cbk(file, root): return code_files.append(os.path.join(root, file)) if (
+    file.endswith(".c") or file.endswith(".cpp")) else ''
+
+
+recursive_file_search("src", main_cbk)
+cl_args = ' '.join([' '.join(config['compiler_flags']), '-Fe'+config.get('name')+'.exe',
                    ' '.join(code_files), ' '.join(config['links'])])
+
+cl_args_examples = []
+for example in config.get("examples"):
+    code_files_example = []
+
+    def example_cbk(file, root):
+        if os.path.basename(file) in example.get("needed"):
+            print(file)
+            code_files_example.append(os.path.join(root, file))
+    recursive_file_search("src", example_cbk)
+    recursive_file_search("examples", example_cbk)
+    cl_args_example = ' '.join([' '.join(config['compiler_flags']), '-Feexamples\\'+example.get('name')+'.exe',
+                                ' '.join(code_files_example), ' '.join(config['links'])])
+    cl_args_examples.append(cl_args_example)
 commands_win32 = [
     '@echo off',
     'echo Compiling '+str(len(code_files))+' files',
@@ -43,7 +78,8 @@ commands_win32 = [
     'mkdir build',
     'pushd %~dp0\\build',
     'rm '+main_exe_path if os.path.exists(main_exe_path) else '',
-    'cl '+cl_args, # + '>' + thisdir+'\\cl_output.txt',
+    'cl '+cl_args,  # + '>' + thisdir+'\\cl_output.txt',
+    ''.join(''.join(map(lambda str: 'cl '+str+'\n', cl_args_examples)).split("\n")[:-1]) if config.get('build_examples')else '',
     'START devenv ' +
     main_exe_path if config.get('launch_debugger') == True else '',
     'START '+main_exe_path if config.get("run_executable") else '',

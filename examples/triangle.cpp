@@ -1,6 +1,5 @@
-
-#include "common_defines.h"
-#include "main.h"
+#include "./../src/common_defines.h"
+#include "./../src/main.h"
 struct Vec_2f
 {
     float x;
@@ -27,9 +26,9 @@ inline float InvLerp(float a, float b, float val)
 {
     return (val - a) / (b - a);
 }
+#define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
 void clear_screen(Back_buffer back_buffer)
 {
-#define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
     for (int i = 0; i < back_buffer.height; i++)
     {
         for (int ii = 0; ii < back_buffer.width; ii++)
@@ -74,17 +73,14 @@ unsigned int interpolated_color(Triangle_2D triangle, float x, float y, unsigned
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
-void RasterizeTriangle(Back_buffer back_buffer)
+void GameUpdateAndRender(Back_buffer back_buffer)
 {
-    // SECTION: generate sample triangle
-    Vec_2f x_vert = {200.0f, 250.0f};
-    Vec_2f y_vert = {500.0f, 200.0f};
-    Vec_2f z_vert = {350.0f, 350.0f};
-    Triangle_2D triangle = {x_vert, y_vert, z_vert};
-
-    // TODO: render wireframe
+    // NOTE: backbuffer format is ARGB
+    // NOTE: backbuffer.width is scene_width; backbuffer_height is scene_height
+    clear_screen(back_buffer);
+    Triangle_2D triangle = {{200.0f, 200.0f}, {500.0f, 200.0f}, {200.0f, 500.0f}};
     // SECTION: rasterize triangle
-    int scanline_x_start[scene_width] = {}; // should probably be common for all triangles, should use unsigned short[]
+    int scanline_x_start[scene_width] = {};
     Vec_2f *vertices = (Vec_2f *)&triangle;
     for (int i1 = 0; i1 < 3; i1++)
     {
@@ -98,14 +94,11 @@ void RasterizeTriangle(Back_buffer back_buffer)
             lower_vertex = v2;
             higher_vertex = v1;
         }
-        // ? TODO: benchmark copying of data vs. pointers vs. vertex layouts etc.
-        // TODO: optimize by better type choices
         for (int y = (int)lower_vertex.y; y < (int)higher_vertex.y; y++)
         {
             float relative_y_diff = y - lower_vertex.y;
             float lerp_unit = 1.0f / (higher_vertex.y - lower_vertex.y);
             float x_bound = Lerp(lower_vertex.x, higher_vertex.x, lerp_unit * relative_y_diff);
-            // ! TODO: ignore scanlines outside of screenspace
             if (scanline_x_start[y])
             {
                 // this row has scanline boundary cached for this triangle
@@ -134,40 +127,5 @@ void RasterizeTriangle(Back_buffer back_buffer)
             }
         }
     }
-}
-void GameUpdateAndRender(Back_buffer back_buffer)
-{
-    // NOTE: backbuffer format is ARGB
-    // NOTE: backbuffer.width is scene_width; backbuffer_height is scene_height
-    clear_screen(back_buffer);
-    RasterizeTriangle(back_buffer);
-
-    // TODO: generate triangles that fill screen
-    {
-
-        // TODO: make these randomly distributed
-    }
-    // TODO: rasterize multiple triangles
-    // TODO: make a vertex buffer
-    // TODO: use solid triangle colors
-    // TODO: use color gradients for triangles
-    // TODO: load textures
-    // TODO: use textures
-    // TODO: 2D AABB(+rects) physics
-    // TODO: 2D GJK
-    // TODO: sample scene
-    // TODO: framebuffers
-    // TODO: generate 3D models
-    // TODO: orthographic projection
-    // TODO: perspective projection
-    // TODO: generate normals
-    // TODO: point lights
-    // TODO: ambient lights
-    // TODO: generate mipmaps
-    // TODO: use mipmaps
-    // TODO: load obj models
-    // TODO: sample scene
-    // ? TODO: 3D AABB physics
-
     return;
 }
