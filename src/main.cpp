@@ -1,33 +1,33 @@
 
 #include "common_defines.h"
 #include "main.h"
-struct Vec_2f
+struct Vec2f
 {
     float x;
     float y;
 };
-struct Triangle_2D
+struct Triangle2D
 {
-    Vec_2f v1;
-    Vec_2f v2;
-    Vec_2f v3;
+    Vec2f v1;
+    Vec2f v2;
+    Vec2f v3;
 };
 template <typename T>
-T Sgn(T, T = 0);
+T sgn(T, T = 0);
 template <typename T>
-inline T Sgn(T n, T zero)
+internal inline T sgn(T n, T zero)
 {
     return (n > 0) - (n < 0);
 }
-inline float Lerp(float a, float b, float ratio)
+internal inline float lerp(float a, float b, float ratio)
 {
     return a + ratio * (b - a);
 }
-inline float InvLerp(float a, float b, float val)
+internal inline float invLerp(float a, float b, float val)
 {
     return (val - a) / (b - a);
 }
-void clear_screen(Back_buffer back_buffer)
+internal void clearScreen(BackBuffer back_buffer)
 {
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
     for (int i = 0; i < back_buffer.height; i++)
@@ -38,13 +38,13 @@ void clear_screen(Back_buffer back_buffer)
         }
     }
 }
-unsigned int interpolated_color(Triangle_2D triangle, float x, float y, unsigned int color1, unsigned int color2, unsigned int color3)
+internal unsigned int interpolatedColor(Triangle2D triangle, float x, float y, unsigned int color1, unsigned int color2, unsigned int color3)
 {
     // use solid color
     // return 0xff00ff00;
-    Vec_2f v1 = triangle.v1;
-    Vec_2f v2 = triangle.v2;
-    Vec_2f v3 = triangle.v3;
+    Vec2f v1 = triangle.v1;
+    Vec2f v2 = triangle.v2;
+    Vec2f v3 = triangle.v3;
     // get barycentric coordinates
     float det_t = (v2.y - v3.y) * (v1.x - v3.x) + (v3.x - v2.x) * (v1.y - v3.y);
     float lam_1 = ((v2.y - v3.y) * (x - v3.x) + (v3.x - v2.x) * (y - v3.y)) / det_t;
@@ -74,25 +74,28 @@ unsigned int interpolated_color(Triangle_2D triangle, float x, float y, unsigned
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
-void RasterizeTriangle(Back_buffer back_buffer)
+internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D *triangle_ptr = 0)
 {
     // SECTION: generate sample triangle
-    Vec_2f x_vert = {200.0f, 250.0f};
-    Vec_2f y_vert = {500.0f, 200.0f};
-    Vec_2f z_vert = {350.0f, 350.0f};
-    Triangle_2D triangle = {x_vert, y_vert, z_vert};
+    Triangle2D triangle;
+    Vec2f x_vert = {200.0f, 250.0f};
+    Vec2f y_vert = {500.0f, 200.0f};
+    Vec2f z_vert = {350.0f, 350.0f};
+    triangle = {x_vert, y_vert, z_vert};
+    if (triangle_ptr)
+        triangle = *triangle_ptr;
 
     // TODO: render wireframe
     // SECTION: rasterize triangle
     int scanline_x_start[scene_width] = {}; // should probably be common for all triangles, should use unsigned short[]
-    Vec_2f *vertices = (Vec_2f *)&triangle;
+    Vec2f *vertices = (Vec2f *)&triangle;
     for (int i1 = 0; i1 < 3; i1++)
     {
         int i2 = (i1 + 1) % 3;
-        Vec_2f v1 = vertices[i1];
-        Vec_2f v2 = vertices[i2];
-        Vec_2f lower_vertex = v1;
-        Vec_2f higher_vertex = v2;
+        Vec2f v1 = vertices[i1];
+        Vec2f v2 = vertices[i2];
+        Vec2f lower_vertex = v1;
+        Vec2f higher_vertex = v2;
         if (v1.y > v2.y)
         {
             lower_vertex = v2;
@@ -104,7 +107,7 @@ void RasterizeTriangle(Back_buffer back_buffer)
         {
             float relative_y_diff = y - lower_vertex.y;
             float lerp_unit = 1.0f / (higher_vertex.y - lower_vertex.y);
-            float x_bound = Lerp(lower_vertex.x, higher_vertex.x, lerp_unit * relative_y_diff);
+            float x_bound = lerp(lower_vertex.x, higher_vertex.x, lerp_unit * relative_y_diff);
             // ! TODO: ignore scanlines outside of screenspace
             if (scanline_x_start[y])
             {
@@ -123,7 +126,7 @@ void RasterizeTriangle(Back_buffer back_buffer)
                 }
                 for (int x = lower_x_bound; x < higher_x_bound; x++)
                 {
-                    back_buffer(x, y) = interpolated_color(triangle, x, y, 0xffff00ff, 0xffffff00, 0xffffffff);
+                    back_buffer(x, y) = interpolatedColor(triangle, x, y, 0xffff00ff, 0xffffff00, 0xffffffff);
                 }
                 scanline_x_start[y] = 0;
             }
@@ -135,16 +138,17 @@ void RasterizeTriangle(Back_buffer back_buffer)
         }
     }
 }
-void GameUpdateAndRender(Back_buffer back_buffer)
+void gameUpdateAndRender(BackBuffer back_buffer)
 {
     // NOTE: backbuffer format is ARGB
     // NOTE: backbuffer.width is scene_width; backbuffer_height is scene_height
-    clear_screen(back_buffer);
-    RasterizeTriangle(back_buffer);
+    clearScreen(back_buffer);
+    rasterizeTriangle(back_buffer);
 
     // TODO: generate triangles that fill screen
     {
-
+        Triangle2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
+        rasterizeTriangle(back_buffer, &triangle);
         // TODO: make these randomly distributed
     }
     // TODO: rasterize multiple triangles

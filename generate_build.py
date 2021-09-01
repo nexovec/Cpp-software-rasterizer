@@ -11,7 +11,6 @@ config = {
         '-O2',
         '-Isrc',
         '-analyze',
-        '-C'
         # '-Wall',
         "-std:c++20"
     ],

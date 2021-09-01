@@ -6,7 +6,7 @@
 #include <stdio.h> // FIXME: no stl, you lazy goddarn pig
 
 global BOOL running = true;
-global Keyboard_state keyboard_state;
+global KeyboardState keyboard_state;
 global double aspect_ratio = 4. / 3.;
 global RECT prev_size;
 
@@ -21,14 +21,14 @@ global x_input_get_state *XInputGetState_ = XInputGetStateStub;
 
 #define XINPUT_SET_STATE_SIG(name) DWORD name(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration)
 typedef XINPUT_SET_STATE_SIG(x_input_set_state);
-XINPUT_SET_STATE_SIG(XInputSetStateStub)
+internal XINPUT_SET_STATE_SIG(XInputSetStateStub)
 {
     return 0;
 }
 global x_input_set_state *XInputSetState_ = XInputSetStateStub;
 #define XInputSetState XInputSetState_
 
-internal void Win32InitXInput()
+internal void win32InitXInput()
 {
     HMODULE lib = LoadLibrary("xinput1_4.dll");
     if (!lib)
@@ -42,7 +42,7 @@ internal void Win32InitXInput()
     XInputSetState_ = (x_input_set_state *)GetProcAddress(lib, "XInputSetState");
     XInputGetState_ = (x_input_get_state *)GetProcAddress(lib, "XInputGetState");
 }
-internal bool Win32InitDirectsound()
+internal bool win32InitDirectsound()
 {
     // ! TODO:
     // LoadLibrary("./dlls/Dsound3d.dll");
@@ -57,7 +57,7 @@ internal void Win32ResizeDibSection(HWND window)
     SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((double)width / aspect_ratio), 0);
     prev_size = window_coords;
 }
-internal void Win32UpdateWindow(HDC device_context, HWND window, Back_buffer back_buffer)
+internal void Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back_buffer)
 {
     // TODO: benchmark against https://gamedev.net/forums/topic/385918-fast-drawing-to-screen-win32gdi/3552067/
     RECT rect;
@@ -231,8 +231,8 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     OutputDebugStringA(print);
     // !
 
-    Win32InitXInput();
-    Win32InitDirectsound();
+    win32InitXInput();
+    win32InitDirectsound();
     WNDCLASSEXA window_class_ex = {};
     window_class_ex.cbSize = sizeof(WNDCLASSEX);
     window_class_ex.style = CS_OWNDC;
@@ -266,7 +266,7 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     // TODO: center window on screen
     SetWindowPos(window, HWND_TOP, 300, 180, 800, 600, 0);
     HDC device_context = GetDC(window);
-    Back_buffer back_buffer = {};
+    BackBuffer back_buffer = {};
     back_buffer.width = scene_width;
     back_buffer.height = scene_height;
     size_t DIB_size = sizeof(uint32_t) * scene_width * scene_height;
@@ -319,7 +319,7 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         }
         // TODO: disable inputs on out of focus
         // TODO: don't poll disconnected controllers
-        GameUpdateAndRender(back_buffer);
+        gameUpdateAndRender(back_buffer);
         Win32UpdateWindow(device_context, window, back_buffer);
     }
     return 0;
