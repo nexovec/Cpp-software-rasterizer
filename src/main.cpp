@@ -1,10 +1,19 @@
 #include "common_defines.h"
 #include "main.h"
 #include <cmath>
+// FIXME: abstract math into a separate file
 struct Vec2f
 {
     float x;
     float y;
+    Vec2f operator+(const Vec2f &other)
+    {
+        return Vec2f{x + other.x, y + other.y};
+    };
+    Vec2f operator-(const Vec2f &other)
+    {
+        return Vec2f{x - other.x, y - other.y};
+    };
 };
 struct Triangle2D
 {
@@ -138,6 +147,23 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D *triangle_ptr
         }
     }
 }
+struct Mat2x2f
+{
+    float rows[4];
+    Vec2f &operator*(const Vec2f vec)
+    {
+        Vec2f back;
+        // TODO: investigate SIMD
+        back.x = rows[0] * vec.x + rows[1] * vec.y;
+        back.y = rows[2] * vec.x + rows[3] * vec.y;
+        return back;
+    }
+    static Mat2x2f RotationMatrix(float angle)
+    {
+        Mat2x2f matrix = {cos(angle), -sin(angle), sin(angle), cos(angle)};
+        return matrix;
+    }
+};
 void gameUpdateAndRender(BackBuffer back_buffer)
 {
     // NOTE: backbuffer format is ARGB
@@ -151,15 +177,16 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         // rasterizeTriangle(back_buffer, &triangle);
 
         srand(1234567);
-        static Vec2f midpoint = {200.f, 300.f};
-
+        constexpr Vec2f midpoint = {640.f, 360.f};
+        static Vec2f rotating_point = {480.f, 280.f};
+        rotating_point = Mat2x2f::RotationMatrix(0.1) * (rotating_point - midpoint) + midpoint;
         Vec2f other{0, 0};
         Vec2f newly_generated;
         // FIXME: some vertices are barely out of screenspace
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {(i + 1.0f) * (float)scene_width / 8 - 1, 0}; //+((rand() % scene_width)-scene_width/2)
-            Triangle2D triangle = {other, newly_generated, midpoint};
+            Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
@@ -168,7 +195,7 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {scene_width - 1, (i + 1.0f) * (float)scene_height / 8 - 1}; //+((rand() % scene_width)-scene_width/2)
-            Triangle2D triangle = {other, newly_generated, midpoint};
+            Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
@@ -177,17 +204,16 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {(i + 1.0f) * (float)scene_width / 8, scene_height - 1}; //+((rand() % scene_width)-scene_width/2)
-            Triangle2D triangle = {other, newly_generated, midpoint};
+            Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
-
-        other = {0, 0};
+        // FIXME: investigate why you can't use 0
+        other = {1, 0};
         for (int i = 0; i < 8; i++)
         {
-            // FIXME: changing x does weird stuff
-            newly_generated = {1, (i + 1.0f) * (float)scene_height / 8 - 1}; //+((rand() % scene_width)-scene_width/2);
-            Triangle2D triangle = {other, newly_generated, midpoint};
+            newly_generated = {1, (i + 1.0f) * scene_height / 8 - 1}; //+((rand() % scene_width)-scene_width/2);
+            Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }

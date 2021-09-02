@@ -10,7 +10,7 @@ config = {
         '-Zi',
         '-O2',
         '-Isrc',
-        '-analyze',
+        # '-analyze',
         # '-Wall',
         "-std:c++20"
     ],
@@ -78,7 +78,8 @@ commands_win32 = [
     'pushd %~dp0\\build',
     'rm '+main_exe_path if os.path.exists(main_exe_path) else '',
     'cl '+cl_args,  # + '>' + thisdir+'\\cl_output.txt',
-    ''.join(''.join(map(lambda str: 'cl '+str+'\n', cl_args_examples)).split("\n")[:-1]) if config.get('build_examples')else '',
+    ''.join(''.join(map(lambda str: 'cl '+str+'\n', cl_args_examples)
+                    ).split("\n")[:-1]) if config.get('build_examples')else '',
     'START devenv ' +
     main_exe_path if config.get('launch_debugger') == True else '',
     'START '+main_exe_path if config.get("run_executable") else '',

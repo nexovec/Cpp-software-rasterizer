@@ -8,7 +8,8 @@
 		"files.associations": {
 			"*.rh": "cpp",
 			"numbers": "cpp",
-			"utility": "cpp"
+			"utility": "cpp",
+			"cmath": "cpp"
 		}
 	}
 }
