@@ -1,6 +1,6 @@
-
 #include "common_defines.h"
 #include "main.h"
+#include <cmath>
 struct Vec2f
 {
     float x;
@@ -147,9 +147,50 @@ void gameUpdateAndRender(BackBuffer back_buffer)
 
     // TODO: generate triangles that fill screen
     {
-        Triangle2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
-        rasterizeTriangle(back_buffer, &triangle);
-        // TODO: make these randomly distributed
+        // Triangle2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
+        // rasterizeTriangle(back_buffer, &triangle);
+
+        srand(1234567);
+        static Vec2f midpoint = {200.f, 300.f};
+
+        Vec2f other{0, 0};
+        Vec2f newly_generated;
+        // FIXME: some vertices are barely out of screenspace
+        for (int i = 0; i < 8; i++)
+        {
+            newly_generated = {(i + 1.0f) * (float)scene_width / 8 - 1, 0}; //+((rand() % scene_width)-scene_width/2)
+            Triangle2D triangle = {other, newly_generated, midpoint};
+            rasterizeTriangle(back_buffer, &triangle);
+            other = newly_generated;
+        }
+
+        other = {scene_width - 1, 0};
+        for (int i = 0; i < 8; i++)
+        {
+            newly_generated = {scene_width - 1, (i + 1.0f) * (float)scene_height / 8 - 1}; //+((rand() % scene_width)-scene_width/2)
+            Triangle2D triangle = {other, newly_generated, midpoint};
+            rasterizeTriangle(back_buffer, &triangle);
+            other = newly_generated;
+        }
+
+        other = {0, scene_height - 1};
+        for (int i = 0; i < 8; i++)
+        {
+            newly_generated = {(i + 1.0f) * (float)scene_width / 8, scene_height - 1}; //+((rand() % scene_width)-scene_width/2)
+            Triangle2D triangle = {other, newly_generated, midpoint};
+            rasterizeTriangle(back_buffer, &triangle);
+            other = newly_generated;
+        }
+
+        other = {0, 0};
+        for (int i = 0; i < 8; i++)
+        {
+            // FIXME: changing x does weird stuff
+            newly_generated = {1, (i + 1.0f) * (float)scene_height / 8 - 1}; //+((rand() % scene_width)-scene_width/2);
+            Triangle2D triangle = {other, newly_generated, midpoint};
+            rasterizeTriangle(back_buffer, &triangle);
+            other = newly_generated;
+        }
     }
     // TODO: rasterize multiple triangles
     // TODO: make a vertex buffer
