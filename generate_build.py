@@ -94,6 +94,7 @@ commands_win32 = [
     'popd',
     'popd'
 ]
+commands_win32 = [elem for elem in commands_win32 if elem!='']
 build_batch_file_name = ".build.bat"
 with open(build_batch_file_name, 'w') as f:
     for command in commands_win32:

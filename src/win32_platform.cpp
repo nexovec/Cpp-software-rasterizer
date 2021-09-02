@@ -3,7 +3,9 @@
 #include "main.h"
 #include <windows.h>
 #include <xinput.h>
-#include <stdio.h> // FIXME: no stl, you lazy goddarn pig
+
+// FIXME: shame on you
+#include <stdio.h>
 
 global BOOL running = true;
 global KeyboardState keyboard_state;
@@ -171,16 +173,7 @@ internal LRESULT CALLBACK WindowProc(
     break;
     case WM_PAINT:
     {
-        // OutputDebugStringA("WM_PAINT\n");
-        // TODO: remove, make window non-resizable
-        // PAINTSTRUCT ps;
-        // HDC hdc = BeginPaint(window, &ps);
-        // // FIXME: this is slow
-        // persistent HBITMAP bmp = CreateBitmap(scene_width, scene_height, 1, 32, back_buffer.bits);
-        // persistent HBRUSH back_buffer_brush = CreatePatternBrush(bmp);
-        // FillRect(hdc, &ps.rcPaint, back_buffer_brush);
-        // DeleteObject(bmp);
-        // EndPaint(window, &ps);
+        break;
     }
     break;
     case WM_CLOSE:
@@ -224,11 +217,13 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
                    _In_ PSTR lpCmdLine, _In_ INT nCmdShow)
 {
     // ! DEBUG:
-    SYSTEM_INFO si;
-    GetSystemInfo(&si);
-    char print[512];
-    sprintf((char *const)&print, "The page size for this system is %u bytes.\n", si.dwPageSize);
-    OutputDebugStringA(print);
+    {
+        SYSTEM_INFO si;
+        GetSystemInfo(&si);
+        char print[512];
+        sprintf((char *const)&print, "The page size for this system is %u bytes.\n", si.dwPageSize);
+        OutputDebugStringA(print);
+    }
     // !
 
     win32InitXInput();
@@ -276,7 +271,10 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     Win32ResizeDibSection(window);
     double target_fps = 60;
     double ms_per_tick = 1000.0 / target_fps;
-    double last_tick = 0;
+    double last_tick = GetTimeMillis() - ms_per_tick;
+    unsigned long long ticks = 0;
+    int last_fps = 0;
+    double last_fps_log_time = GetTimeMillis();
     while (running)
     {
         MSG message;
@@ -292,14 +290,20 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         TranslateMessage(&message);
         DispatchMessage(&message);
         double time = GetTimeMillis();
+        // FIXME: only gets you 30 fps
         if (time - last_tick < ms_per_tick)
         {
             time - last_tick > 1 ? Sleep((long)((time - last_tick) / 1) - 1) : Sleep(0);
-            // Sleep(1);
+            // Sleep(0);
             continue;
         }
+        else
+        {
+            last_tick += ms_per_tick;
+            ticks++;
+        }
         // OutputDebugStringA("tick!\n");
-        last_tick = time;
+        // last_tick = time;
         unsigned char registered_controllers = 1;
         // TODO: move this outside of tick to poll more frequently
         for (int i = 0; i < registered_controllers; i++)
@@ -321,6 +325,15 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         // TODO: don't poll disconnected controllers
         gameUpdateAndRender(back_buffer);
         Win32UpdateWindow(device_context, window, back_buffer);
+        last_fps++;
+        if (GetTimeMillis() - last_fps_log_time > 1000)
+        {
+            char title[128];
+            sprintf((char *const)&title, "handmade_test | fps: %u", last_fps);
+            SetWindowText(window, title);
+            last_fps = 0;
+            last_fps_log_time = GetTimeMillis();
+        }
     }
     return 0;
 }

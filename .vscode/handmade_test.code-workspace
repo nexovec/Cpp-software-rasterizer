@@ -9,7 +9,22 @@
 			"*.rh": "cpp",
 			"numbers": "cpp",
 			"utility": "cpp",
-			"cmath": "cpp"
+			"cmath": "cpp",
+			"bit": "cpp",
+			"compare": "cpp",
+			"concepts": "cpp",
+			"cstddef": "cpp",
+			"cstdint": "cpp",
+			"cstdio": "cpp",
+			"cstdlib": "cpp",
+			"cstring": "cpp",
+			"cwchar": "cpp",
+			"initializer_list": "cpp",
+			"limits": "cpp",
+			"type_traits": "cpp",
+			"xstddef": "cpp",
+			"xtr1common": "cpp",
+			"xutility": "cpp"
 		}
 	}
 }
