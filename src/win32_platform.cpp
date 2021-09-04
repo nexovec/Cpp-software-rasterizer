@@ -97,8 +97,8 @@ internal void Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back
         device_context,
         0,
         0,
-        width,
-        height,
+        back_buffer.width,
+        back_buffer.height,
         0,
         0,
         back_buffer.width,
@@ -299,13 +299,13 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     constexpr double target_fps = 60;
     constexpr double ms_per_tick = 1000.0 / target_fps;
 
-    SetWindowPos(window, HWND_TOP, 300, 180, 800, 600, 0);
     HDC device_context = GetDC(window);
     BackBuffer back_buffer = {};
     back_buffer.width = default_scene_width;
     back_buffer.height = default_scene_height;
     size_t DIB_size = sizeof(uint32_t) * default_scene_width * default_scene_height;
     back_buffer.bits = (uint32_t *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
+    SetWindowPos(window, HWND_TOP, 300, 180, back_buffer.width, back_buffer.height, 0); // FIXME: weird black stripes
 
     keyboard_state = {};
     Win32ResizeDibSection(window);
