@@ -9,8 +9,6 @@
 
 global BOOL running = true;
 global KeyboardState keyboard_state;
-global double aspect_ratio = 4. / 3.;
-global RECT prev_size;
 
 #define XINPUT_GET_STATE_SIG(name) DWORD name(DWORD dwUserIndex, XINPUT_STATE *pState)
 typedef XINPUT_GET_STATE_SIG(x_input_get_state);
@@ -44,6 +42,25 @@ internal void win32InitXInput()
     XInputSetState_ = (x_input_set_state *)GetProcAddress(lib, "XInputSetState");
     XInputGetState_ = (x_input_get_state *)GetProcAddress(lib, "XInputGetState");
 }
+internal void pollXInputControllers(unsigned char registered_controllers)
+{
+    XINPUT_STATE states[4];
+    for (int i = 0; i < registered_controllers; i++)
+    {
+        XINPUT_STATE &pState = states[registered_controllers];
+        XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
+        XInputGetState(i, &pState);
+        // ! DEBUG:
+        XINPUT_VIBRATION controller_vibration = {GAMEPAD_RUMBLE_LEVEL::OFF, GAMEPAD_RUMBLE_LEVEL::OFF};
+        if (controller_state->bRightTrigger)
+        {
+            controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_2;
+            controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_2;
+        }
+        XInputSetState(i, &controller_vibration);
+        // !
+    }
+}
 internal bool win32InitDirectsound()
 {
     // ! TODO:
@@ -52,10 +69,12 @@ internal bool win32InitDirectsound()
 }
 internal void Win32ResizeDibSection(HWND window)
 {
+    static RECT prev_size;
     RECT window_coords;
     GetWindowRect(window, &window_coords);
     // uint32_t height = prev_size.bottom - prev_size.top;
     uint32_t width = prev_size.right - prev_size.left;
+    constexpr double aspect_ratio = 4. / 3.;
     SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((double)width / aspect_ratio), 0);
     prev_size = window_coords;
 }
@@ -66,13 +85,14 @@ internal void Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back
     GetClientRect(window, &rect);
     BITMAPINFO bitmap_info = {};
     bitmap_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bitmap_info.bmiHeader.biWidth = scene_width;
-    bitmap_info.bmiHeader.biHeight = scene_height;
+    bitmap_info.bmiHeader.biWidth = default_scene_width;
+    bitmap_info.bmiHeader.biHeight = default_scene_height;
     bitmap_info.bmiHeader.biPlanes = 1;
     bitmap_info.bmiHeader.biBitCount = 32;
     bitmap_info.bmiHeader.biCompression = BI_RGB;
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
+    // TODO: use StretchDIBits and fixed window size
     int res = StretchDIBits(
         device_context,
         0,
@@ -213,18 +233,35 @@ internal LRESULT CALLBACK WindowProc(
     }
     return result;
 }
+void dispatchSystemMessages()
+{
+    MSG message;
+    BOOL bRet = GetMessage(
+        &message,
+        0,
+        0,
+        0);
+    if (bRet == -1)
+    {
+        ExitProcess(-1);
+    }
+    TranslateMessage(&message);
+    DispatchMessage(&message);
+}
+void printSystemPageSize()
+{
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    char print[512];
+    sprintf((char *const)&print, "The page size for this system is %u bytes.\n", si.dwPageSize);
+    OutputDebugStringA(print);
+}
 INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
                    _In_ PSTR lpCmdLine, _In_ INT nCmdShow)
 {
-    // ! DEBUG:
-    {
-        SYSTEM_INFO si;
-        GetSystemInfo(&si);
-        char print[512];
-        sprintf((char *const)&print, "The page size for this system is %u bytes.\n", si.dwPageSize);
-        OutputDebugStringA(print);
-    }
-    // !
+#ifdef DEBUG
+    printSystemPageSize();
+#endif
 
     win32InitXInput();
     win32InitDirectsound();
@@ -259,38 +296,27 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     SetFocus(window);
     // FIXME: this gets multiplied by windows global scale multiplier for some reason:
     // TODO: center window on screen
+    constexpr double target_fps = 60;
+    constexpr double ms_per_tick = 1000.0 / target_fps;
+
     SetWindowPos(window, HWND_TOP, 300, 180, 800, 600, 0);
     HDC device_context = GetDC(window);
     BackBuffer back_buffer = {};
-    back_buffer.width = scene_width;
-    back_buffer.height = scene_height;
-    size_t DIB_size = sizeof(uint32_t) * scene_width * scene_height;
+    back_buffer.width = default_scene_width;
+    back_buffer.height = default_scene_height;
+    size_t DIB_size = sizeof(uint32_t) * default_scene_width * default_scene_height;
     back_buffer.bits = (uint32_t *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
 
     keyboard_state = {};
     Win32ResizeDibSection(window);
-    double target_fps = 60;
-    double ms_per_tick = 1000.0 / target_fps;
-    double last_tick = GetTimeMillis() - ms_per_tick;
-    unsigned long long ticks = 0;
-    int last_fps = 0;
+    unsigned long ticks = 0;
+    double last_tick = GetTimeMillis();
+    unsigned int last_fps = 0;
     double last_fps_log_time = GetTimeMillis();
     while (running)
     {
-        MSG message;
-        BOOL bRet = GetMessage(
-            &message,
-            0,
-            0,
-            0);
-        if (bRet == -1)
-        {
-            ExitProcess(-1);
-        }
-        TranslateMessage(&message);
-        DispatchMessage(&message);
+        dispatchSystemMessages();
         double time = GetTimeMillis();
-        // FIXME: only gets you 30 fps
         if (time - last_tick < ms_per_tick)
         {
             time - last_tick > 1 ? Sleep((long)((time - last_tick) / 1) - 1) : Sleep(0);
@@ -303,28 +329,14 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
             ticks++;
         }
         // OutputDebugStringA("tick!\n");
-        // last_tick = time;
-        unsigned char registered_controllers = 1;
         // TODO: move this outside of tick to poll more frequently
-        for (int i = 0; i < registered_controllers; i++)
-        {
-            XINPUT_STATE pState;
-            XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
-            XInputGetState(i, &pState);
-            // ! DEBUG:
-            XINPUT_VIBRATION controller_vibration = {GAMEPAD_RUMBLE_LEVEL::OFF, GAMEPAD_RUMBLE_LEVEL::OFF};
-            if (controller_state->bRightTrigger)
-            {
-                controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_2;
-                controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_2;
-            }
-            XInputSetState(i, &controller_vibration);
-            // !
-        }
         // TODO: disable inputs on out of focus
         // TODO: don't poll disconnected controllers
+        unsigned char registered_controllers = 1;
+        pollXInputControllers(registered_controllers);
         gameUpdateAndRender(back_buffer);
         Win32UpdateWindow(device_context, window, back_buffer);
+
         last_fps++;
         if (GetTimeMillis() - last_fps_log_time > 1000)
         {

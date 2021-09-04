@@ -2,14 +2,16 @@ import sys
 from subprocess import Popen, PIPE
 import os
 config = {
+    'path_to_varsall': 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat',
     'platform': 'windows',
     'name': 'win32_platform',
     'compiler_flags': [
         '-INCREMENTAL:YES',
         '-FC',
         '-Zi',
-        '-O2',
+        '-Od',
         '-Isrc',
+        '-DDEBUG',
         # '-analyze',
         # '-Wall',
         "-std:c++20"
@@ -19,9 +21,9 @@ config = {
         'Gdi32.lib',
         # 'Xinput.lib'
     ],
-    "examples": [
+    "examples": [  # TODO: output into build/examples subfolder
         {
-            'name': "triangle",  # TODO: change main to name
+            'name': "triangle",
             'needed': [
                 'win32_platform.cpp',
                 'triangle.cpp'
@@ -73,7 +75,7 @@ commands_win32 = [
     'setlocal EnableDelayedExpansion',
     'set "startTime=%time: =0%"',
     'pushd %~dp0',
-    'call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat" x64',
+    'call "'+config.get('path_to_varsall')+'" x64',
     'mkdir build',
     'pushd %~dp0\\build',
     'rm '+main_exe_path if os.path.exists(main_exe_path) else '',
@@ -94,7 +96,7 @@ commands_win32 = [
     'popd',
     'popd'
 ]
-commands_win32 = [elem for elem in commands_win32 if elem!='']
+commands_win32 = [elem for elem in commands_win32 if elem != '']
 build_batch_file_name = ".build.bat"
 with open(build_batch_file_name, 'w') as f:
     for command in commands_win32:

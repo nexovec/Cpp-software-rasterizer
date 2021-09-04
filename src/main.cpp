@@ -47,7 +47,7 @@ internal void clearScreen(BackBuffer back_buffer)
         }
     }
 }
-internal unsigned int interpolatedColor(Triangle2D triangle, float x, float y, unsigned int color1, unsigned int color2, unsigned int color3)
+internal inline unsigned int interpolatedColor(Triangle2D triangle, float x, float y, unsigned int color1, unsigned int color2, unsigned int color3)
 {
     // use solid color
     // return 0xff00ff00;
@@ -96,7 +96,7 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D *triangle_ptr
 
     // TODO: render wireframe
     // SECTION: rasterize triangle
-    int scanline_x_start[scene_width] = {}; // should probably be common for all triangles, should use unsigned short[]
+    int scanline_x_start[default_scene_width] = {}; // should probably be common for all triangles, should use unsigned short[]
     Vec2f *vertices = (Vec2f *)&triangle;
     for (int i1 = 0; i1 < 3; i1++)
     {
@@ -121,18 +121,9 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D *triangle_ptr
             if (scanline_x_start[y])
             {
                 // this row has scanline boundary cached for this triangle
-                int lower_x_bound;
-                int higher_x_bound;
-                if (scanline_x_start[y] > x_bound)
-                {
-                    lower_x_bound = x_bound;
-                    higher_x_bound = scanline_x_start[y];
-                }
-                else
-                {
-                    higher_x_bound = x_bound;
-                    lower_x_bound = scanline_x_start[y];
-                }
+                int condition = scanline_x_start[y] > x_bound;
+                int lower_x_bound = condition * x_bound + !condition * scanline_x_start[y];
+                int higher_x_bound = condition * scanline_x_start[y] + !condition * x_bound;
                 for (int x = lower_x_bound; x < higher_x_bound; x++)
                 {
                     back_buffer(x, y) = interpolatedColor(triangle, x, y, 0xffff00ff, 0xffffff00, 0xffffffff);
@@ -150,7 +141,7 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D *triangle_ptr
 struct Mat2x2f
 {
     float rows[4];
-    Vec2f &operator*(const Vec2f vec)
+    Vec2f operator*(const Vec2f vec)
     {
         Vec2f back;
         // TODO: investigate SIMD
@@ -167,16 +158,12 @@ struct Mat2x2f
 void gameUpdateAndRender(BackBuffer back_buffer)
 {
     // NOTE: backbuffer format is ARGB
-    // NOTE: backbuffer.width is scene_width; backbuffer_height is scene_height
-    clearScreen(back_buffer);
-    rasterizeTriangle(back_buffer);
-
-    // TODO: generate triangles that fill screen
+    // NOTE: backbuffer.width is default_scene_width; backbuffer_height is default_scene_height
+    // clearScreen(back_buffer);
+    // rasterizeTriangle(back_buffer);
     {
         // Triangle2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
         // rasterizeTriangle(back_buffer, &triangle);
-
-        srand(1234567);
         constexpr Vec2f midpoint = {640.f, 360.f};
         static Vec2f rotating_point = {480.f, 280.f};
         rotating_point = Mat2x2f::RotationMatrix(0.1) * (rotating_point - midpoint) + midpoint;
@@ -185,25 +172,25 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         // FIXME: some vertices are barely out of screenspace
         for (int i = 0; i < 8; i++)
         {
-            newly_generated = {(i + 1.0f) * (float)scene_width / 8 - 1, 0}; //+((rand() % scene_width)-scene_width/2)
+            newly_generated = {(i + 1.0f) * (float)default_scene_width / 8 - 1, 0}; //+((rand() % default_scene_width)-default_scene_width/2)
             Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
 
-        other = {scene_width - 1, 0};
+        other = {default_scene_width - 1, 0};
         for (int i = 0; i < 8; i++)
         {
-            newly_generated = {scene_width - 1, (i + 1.0f) * (float)scene_height / 8 - 1}; //+((rand() % scene_width)-scene_width/2)
+            newly_generated = {default_scene_width - 1, (i + 1.0f) * (float)default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
             Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
 
-        other = {0, scene_height - 1};
+        other = {0, default_scene_height - 1};
         for (int i = 0; i < 8; i++)
         {
-            newly_generated = {(i + 1.0f) * (float)scene_width / 8, scene_height - 1}; //+((rand() % scene_width)-scene_width/2)
+            newly_generated = {(i + 1.0f) * (float)default_scene_width / 8, default_scene_height - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
             Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
@@ -212,7 +199,7 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         other = {1, 0};
         for (int i = 0; i < 8; i++)
         {
-            newly_generated = {1, (i + 1.0f) * scene_height / 8 - 1}; //+((rand() % scene_width)-scene_width/2);
+            newly_generated = {1, (i + 1.0f) * default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2);
             Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;

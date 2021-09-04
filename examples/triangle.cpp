@@ -76,11 +76,11 @@ unsigned int interpolatedColor(Triangle2D triangle, float x, float y, unsigned i
 void gameUpdateAndRender(BackBuffer back_buffer)
 {
     // NOTE: backbuffer format is ARGB
-    // NOTE: backbuffer.width is scene_width; backbuffer_height is scene_height
+    // NOTE: backbuffer.width is default_scene_width; backbuffer_height is default_scene_height
     clearScreen(back_buffer);
     Triangle2D triangle = {{200.0f, 200.0f}, {500.0f, 200.0f}, {200.0f, 500.0f}};
     // SECTION: rasterize triangle
-    int scanline_x_start[scene_width] = {};
+    int scanline_x_start[default_scene_width] = {};
     Vec2f *vertices = (Vec2f *)&triangle;
     for (int i1 = 0; i1 < 3; i1++)
     {
