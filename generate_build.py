@@ -78,7 +78,7 @@ commands_win32 = [
     'call "'+config.get('path_to_varsall')+'" x64',
     'mkdir build',
     'pushd %~dp0\\build',
-    'rm '+main_exe_path if os.path.exists(main_exe_path) else '',
+    'rm '+main_exe_path,
     'cl '+cl_args,  # + '>' + thisdir+'\\cl_output.txt',
     ''.join(''.join(map(lambda str: 'cl '+str+'\n', cl_args_examples)
                     ).split("\n")[:-1]) if config.get('build_examples')else '',

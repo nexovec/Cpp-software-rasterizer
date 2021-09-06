@@ -74,7 +74,8 @@ internal void Win32ResizeDibSection(HWND window)
     GetWindowRect(window, &window_coords);
     // uint32_t height = prev_size.bottom - prev_size.top;
     uint32_t width = prev_size.right - prev_size.left;
-    constexpr double aspect_ratio = 4. / 3.;
+    constexpr double aspect_ratio = 16. / 9.;
+    // FIXME: set the client rect to this size instead of the whole window
     SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((double)width / aspect_ratio), 0);
     prev_size = window_coords;
 }

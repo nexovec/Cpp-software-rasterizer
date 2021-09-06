@@ -2,24 +2,41 @@
 #include "main.h"
 #include <cmath>
 // FIXME: abstract math into a separate file
-struct Vec2f
+template <typename T>
+struct Vec2
 {
-    float x;
-    float y;
-    Vec2f operator+(const Vec2f &other)
+    T x;
+    T y;
+    Vec2<T> operator+(const Vec2<T> &other)
     {
-        return Vec2f{x + other.x, y + other.y};
+        return Vec2<T>{x + other.x, y + other.y};
     };
-    Vec2f operator-(const Vec2f &other)
+    Vec2<T> operator-(const Vec2<T> &other)
     {
-        return Vec2f{x - other.x, y - other.y};
+        return Vec2<T>{x - other.x, y - other.y};
     };
 };
-struct Triangle2D
+template <typename T>
+struct Vec3
 {
-    Vec2f v1;
-    Vec2f v2;
-    Vec2f v3;
+    T x;
+    T y;
+    T z;
+};
+template <typename T>
+struct Vec4
+{
+    T x;
+    T y;
+    T z;
+    T w;
+};
+template <typename T>
+struct Triangle2D // FIXME: replace with Vec3
+{
+    Vec2<T> v1;
+    Vec2<T> v2;
+    Vec2<T> v3;
 };
 template <typename T>
 T sgn(T, T = 0);
@@ -47,13 +64,13 @@ internal void clearScreen(BackBuffer back_buffer)
         }
     }
 }
-internal inline unsigned int interpolatedColor(Triangle2D triangle, float x, float y, unsigned int color1, unsigned int color2, unsigned int color3)
+internal inline unsigned int interpolatedColor(Triangle2D<float> triangle, float x, float y, unsigned int color1, unsigned int color2, unsigned int color3)
 {
     // use solid color
     // return 0xff00ff00;
-    Vec2f v1 = triangle.v1;
-    Vec2f v2 = triangle.v2;
-    Vec2f v3 = triangle.v3;
+    Vec2<float> v1 = triangle.v1;
+    Vec2<float> v2 = triangle.v2;
+    Vec2<float> v3 = triangle.v3;
     // get barycentric coordinates
     float det_t = (v2.y - v3.y) * (v1.x - v3.x) + (v3.x - v2.x) * (v1.y - v3.y);
     float lam_1 = ((v2.y - v3.y) * (x - v3.x) + (v3.x - v2.x) * (y - v3.y)) / det_t;
@@ -83,13 +100,13 @@ internal inline unsigned int interpolatedColor(Triangle2D triangle, float x, flo
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
-internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D *triangle_ptr = 0)
+internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<float> *triangle_ptr = 0)
 {
     // SECTION: generate sample triangle
-    Triangle2D triangle;
-    Vec2f x_vert = {200.0f, 250.0f};
-    Vec2f y_vert = {500.0f, 200.0f};
-    Vec2f z_vert = {350.0f, 350.0f};
+    Triangle2D<float> triangle;
+    Vec2<float> x_vert = {200.0f, 250.0f};
+    Vec2<float> y_vert = {500.0f, 200.0f};
+    Vec2<float> z_vert = {350.0f, 350.0f};
     triangle = {x_vert, y_vert, z_vert};
     if (triangle_ptr)
         triangle = *triangle_ptr;
@@ -97,14 +114,14 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D *triangle_ptr
     // TODO: render wireframe
     // SECTION: rasterize triangle
     int scanline_x_start[default_scene_width] = {}; // should probably be common for all triangles, should use unsigned short[]
-    Vec2f *vertices = (Vec2f *)&triangle;
+    Vec2<float> *vertices = (Vec2<float> *)&triangle;
     for (int i1 = 0; i1 < 3; i1++)
     {
         int i2 = (i1 + 1) % 3;
-        Vec2f v1 = vertices[i1];
-        Vec2f v2 = vertices[i2];
-        Vec2f lower_vertex = v1;
-        Vec2f higher_vertex = v2;
+        Vec2<float> v1 = vertices[i1];
+        Vec2<float> v2 = vertices[i2];
+        Vec2<float> lower_vertex = v1;
+        Vec2<float> higher_vertex = v2;
         if (v1.y > v2.y)
         {
             lower_vertex = v2;
@@ -138,12 +155,17 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D *triangle_ptr
         }
     }
 }
+struct ColoredTrianglesVertexBuffer
+{
+    Triangle2D<float> positions;
+    Vec3<unsigned int> colors;
+};
 struct Mat2x2f
 {
     float rows[4];
-    Vec2f operator*(const Vec2f vec)
+    Vec2<float> operator*(const Vec2<float> vec)
     {
-        Vec2f back;
+        Vec2<float> back;
         // TODO: investigate SIMD
         back.x = rows[0] * vec.x + rows[1] * vec.y;
         back.y = rows[2] * vec.x + rows[3] * vec.y;
@@ -164,16 +186,16 @@ void gameUpdateAndRender(BackBuffer back_buffer)
     {
         // Triangle2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
         // rasterizeTriangle(back_buffer, &triangle);
-        constexpr Vec2f midpoint = {640.f, 360.f};
-        static Vec2f rotating_point = {480.f, 280.f};
+        constexpr Vec2<float> midpoint = {640.f, 360.f};
+        static Vec2<float> rotating_point = {480.f, 280.f};
         rotating_point = Mat2x2f::RotationMatrix(0.1) * (rotating_point - midpoint) + midpoint;
-        Vec2f other{0, 0};
-        Vec2f newly_generated;
+        Vec2<float> other{0, 0};
+        Vec2<float> newly_generated;
         // FIXME: some vertices are barely out of screenspace
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {(i + 1.0f) * (float)default_scene_width / 8 - 1, 0}; //+((rand() % default_scene_width)-default_scene_width/2)
-            Triangle2D triangle = {other, newly_generated, rotating_point};
+            Triangle2D<float> triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
@@ -182,7 +204,7 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {default_scene_width - 1, (i + 1.0f) * (float)default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
-            Triangle2D triangle = {other, newly_generated, rotating_point};
+            Triangle2D<float> triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
@@ -191,7 +213,7 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {(i + 1.0f) * (float)default_scene_width / 8, default_scene_height - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
-            Triangle2D triangle = {other, newly_generated, rotating_point};
+            Triangle2D<float> triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
@@ -200,7 +222,7 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {1, (i + 1.0f) * default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2);
-            Triangle2D triangle = {other, newly_generated, rotating_point};
+            Triangle2D<float> triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
