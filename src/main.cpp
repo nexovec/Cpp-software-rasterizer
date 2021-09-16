@@ -66,19 +66,10 @@ internal void clearScreen(BackBuffer back_buffer)
         }
     }
 }
-internal inline unsigned int interpolatedColor(Triangle2D<float> triangle, float x, float y, unsigned int color1, unsigned int color2, unsigned int color3)
+internal inline unsigned int interpolatedColor(float lam_1, float lam_2, float lam_3, unsigned int color1, unsigned int color2, unsigned int color3)
 {
     // use solid color
     // return 0xff00ff00;
-    Vec2<float> v1 = triangle.v1;
-    Vec2<float> v2 = triangle.v2;
-    Vec2<float> v3 = triangle.v3;
-    // get barycentric coordinates
-    // FIXME: use gradient of the barycentric coordinates
-    float det_t = (v2.y - v3.y) * (v1.x - v3.x) + (v3.x - v2.x) * (v1.y - v3.y);
-    float lam_1 = ((v2.y - v3.y) * (x - v3.x) + (v3.x - v2.x) * (y - v3.y)) / det_t;
-    float lam_2 = ((v3.y - v1.y) * (x - v3.x) + (v1.x - v3.x) * (y - v3.y)) / det_t;
-    float lam_3 = 1 - lam_2 - lam_1;
 
     const unsigned char a1 = (color1 >> 24);
     const unsigned char r1 = (color1 >> 16);
@@ -103,6 +94,17 @@ internal inline unsigned int interpolatedColor(Triangle2D<float> triangle, float
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
+
+struct DEBUGTexture
+{
+};
+internal inline unsigned int DEBUGtextureColor(float lam_1, float lam_2, float lam_3, DEBUGTexture *texture)
+{
+    // TODO: load bmp
+    // TODO: parse bmp
+    // TODO: return correct color
+    return 0;
+}
 internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<float> *triangle_ptr = 0)
 {
     // SECTION: generate sample triangle
@@ -115,7 +117,7 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<float> *trian
         triangle = *triangle_ptr;
 
     // TODO: render wireframe
-    // SECTION: rasterize triangle
+    // SECTION: rasterize triangles
     int scanline_x_start[default_scene_width] = {}; // should probably be common for all triangles, should use unsigned short[]
     Vec2<float> *vertices = (Vec2<float> *)&triangle;
     for (int i1 = 0; i1 < 3; i1++)
@@ -146,7 +148,19 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<float> *trian
                 int higher_x_bound = condition * scanline_x_start[y] + !condition * x_bound;
                 for (int x = lower_x_bound; x < higher_x_bound; x++)
                 {
-                    back_buffer(x, y) = interpolatedColor(triangle, x, y, 0xffff00ff, 0xffffff00, 0xffffffff);
+                    Vec2<float> v1 = triangle.v1;
+                    Vec2<float> v2 = triangle.v2;
+                    Vec2<float> v3 = triangle.v3;
+                    // get barycentric coordinates
+                    float det_t = (v2.y - v3.y) * (v1.x - v3.x) + (v3.x - v2.x) * (v1.y - v3.y);
+                    float lam_1 = ((v2.y - v3.y) * (x - v3.x) + (v3.x - v2.x) * (y - v3.y)) / det_t;
+                    float lam_2 = ((v3.y - v1.y) * (x - v3.x) + (v1.x - v3.x) * (y - v3.y)) / det_t;
+                    float lam_3 = 1 - lam_2 - lam_1;
+// TODO: use gradient of the barycentric coordinates
+#if defined(DEBUG)
+                    back_buffer(x, y) = DEBUGtextureColor(lam_1, lam_2, lam_3, 0);
+#endif
+                    back_buffer(x, y) = interpolatedColor(lam_1, lam_2, lam_3, 0xffff00ff, 0xffffff00, 0xffffffff);
                 }
                 scanline_x_start[y] = 0;
             }
