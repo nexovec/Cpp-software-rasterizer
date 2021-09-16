@@ -255,49 +255,62 @@ struct file_contents
     void *data;
     // TODO: manage data lifetime
 };
-file_contents readWholeFileAsBytes(char *path)
+file_contents DEBUGreadWholeFile(char *path)
 {
+#if defined(DEBUG)
     // TODO: test
     HANDLE file_handle = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
     if (file_handle == INVALID_HANDLE_VALUE)
     {
         // TODO: handle can't access file
+        OutputDebugStringA("can't access file\n");
+        return {};
     }
     file_contents file;
     if (!GetFileSizeEx(file_handle, (PLARGE_INTEGER)&file.size))
     {
         // TODO:  handle can't get file size
+        OutputDebugStringA("can't get file size\n");
+        return {};
     }
     file.data = VirtualAlloc(0, file.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (!file.data)
     {
         // TODO: handle couldn't allocate file buffer
+        OutputDebugStringA("can't allocate buffer for file data\n");
+        return {};
     }
-    if (!ReadFile(file_handle, file.data, 4000000000, 0, 0))
+    DWORD bytes_read;
+    if (!ReadFile(file_handle, file.data, (DWORD)file.size, &bytes_read, 0))
     {
         // TODO: couldn't read file
+        OutputDebugStringA("can't read from file\n");
+        return {};
     }
     return file;
+#else return {};
+#endif
 }
-#if defined(DEBUG)
 void DEBUGprintSystemPageSize()
 {
+#if defined(DEBUG)
     SYSTEM_INFO si;
     GetSystemInfo(&si);
     char print[512];
     sprintf((char *const)&print, "The page size for this system is %u bytes.\n", si.dwPageSize);
     OutputDebugStringA(print);
-}
 #endif
+}
 
 INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
                    _In_ PSTR lpCmdLine, _In_ INT nCmdShow)
 {
-#ifdef DEBUG
     DEBUGprintSystemPageSize();
-    // TODO: test readWholeFileAsBytes
-    readWholeFileAsBytes((char *)"Hello.tmp");
-#endif
+    file_contents test_file_contents = DEBUGreadWholeFile((char *)"test.txt"); // TODO: you need to create test.txt for this to print something
+    OutputDebugStringA((char *)test_file_contents.data);
+    OutputDebugStringA("^^^ test file was supposed to print here. Did it? ^^^\n");
+
+    // TODO: write to file
 
     win32InitXInput();
     win32InitDirectsound();
