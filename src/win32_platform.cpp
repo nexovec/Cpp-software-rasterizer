@@ -253,43 +253,52 @@ struct file_contents
 {
     long size;
     void *data;
-    // TODO: manage data lifetime
+    // TODO: destructor
 };
-file_contents DEBUGreadWholeFile(char *path)
+file_contents readWholeFile(char *path)
 {
-#if defined(DEBUG)
-    // TODO: test
+    bool errored = false;
     HANDLE file_handle = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    file_contents file = {};
     if (file_handle == INVALID_HANDLE_VALUE)
     {
-        // TODO: handle can't access file
         OutputDebugStringA("can't access file\n");
+        CloseHandle(file_handle);
         return {};
     }
-    file_contents file;
-    if (!GetFileSizeEx(file_handle, (PLARGE_INTEGER)&file.size))
+    else if (errored |= !GetFileSizeEx(file_handle, (PLARGE_INTEGER)&file.size))
     {
-        // TODO:  handle can't get file size
         OutputDebugStringA("can't get file size\n");
+        CloseHandle(file_handle);
         return {};
     }
     file.data = VirtualAlloc(0, file.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    if (!file.data)
-    {
-        // TODO: handle couldn't allocate file buffer
-        OutputDebugStringA("can't allocate buffer for file data\n");
-        return {};
-    }
+
     DWORD bytes_read;
-    if (!ReadFile(file_handle, file.data, (DWORD)file.size, &bytes_read, 0))
+    if (errored |= !file.data)
     {
-        // TODO: couldn't read file
+        OutputDebugStringA("can't allocate buffer for file data\n");
+    }
+    else if (errored |= !(file.size <= 0xffffffff))
+    {
+        OutputDebugStringA("file is too big");
+    }
+    else if (errored |= !ReadFile(file_handle, file.data, (DWORD)file.size, &bytes_read, 0))
+    {
         OutputDebugStringA("can't read from file\n");
-        return {};
+    }
+    else if (errored |= (bytes_read != file.size))
+    {
+        OutputDebugStringA("wrong size read from file");
+    }
+
+    CloseHandle(file_handle);
+    if (errored)
+    {
+        VirtualFree(file.data, 0, MEM_RELEASE);
+        file = {};
     }
     return file;
-#else return {};
-#endif
 }
 void DEBUGprintSystemPageSize()
 {
@@ -306,7 +315,7 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
                    _In_ PSTR lpCmdLine, _In_ INT nCmdShow)
 {
     DEBUGprintSystemPageSize();
-    file_contents test_file_contents = DEBUGreadWholeFile((char *)"test.txt"); // TODO: you need to create test.txt for this to print something
+    file_contents test_file_contents = readWholeFile((char *)"test.txt"); // TODO: you need to create test.txt for this to print something
     OutputDebugStringA((char *)test_file_contents.data);
     OutputDebugStringA("^^^ test file was supposed to print here. Did it? ^^^\n");
 
