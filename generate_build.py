@@ -9,7 +9,8 @@ config = {
         '-INCREMENTAL:YES',
         '-FC',
         '-Zi',
-        '-Od',
+        # '-Od',
+        '-O2',
         '-Isrc',
         '-DDEBUG',
         # '-analyze',
@@ -71,11 +72,11 @@ for example in config.get("examples"):
     cl_args_examples.append(cl_args_example)
 commands_win32 = [
     '@echo off',
+    'call "'+config.get('path_to_varsall')+'" x64',
     'echo Compiling '+str(len(code_files))+' files',
     'setlocal EnableDelayedExpansion',
     'set "startTime=%time: =0%"',
     'pushd %~dp0',
-    'call "'+config.get('path_to_varsall')+'" x64',
     'mkdir build',
     'pushd %~dp0\\build',
     'rm '+main_exe_path,

@@ -45,11 +45,13 @@ internal inline T sgn(T n, T zero)
 {
     return (n > 0) - (n < 0);
 }
-internal inline float lerp(float a, float b, float ratio)
+template <typename T>
+internal inline T lerp(T a, T b, float ratio)
 {
     return a + ratio * (b - a);
 }
-internal inline float invLerp(float a, float b, float val)
+template <typename T>
+internal inline float invLerp(T a, T b, float val)
 {
     return (val - a) / (b - a);
 }
@@ -72,30 +74,31 @@ internal inline unsigned int interpolatedColor(Triangle2D<float> triangle, float
     Vec2<float> v2 = triangle.v2;
     Vec2<float> v3 = triangle.v3;
     // get barycentric coordinates
+    // FIXME: use gradient of the barycentric coordinates
     float det_t = (v2.y - v3.y) * (v1.x - v3.x) + (v3.x - v2.x) * (v1.y - v3.y);
     float lam_1 = ((v2.y - v3.y) * (x - v3.x) + (v3.x - v2.x) * (y - v3.y)) / det_t;
     float lam_2 = ((v3.y - v1.y) * (x - v3.x) + (v1.x - v3.x) * (y - v3.y)) / det_t;
     float lam_3 = 1 - lam_2 - lam_1;
 
-    unsigned char a1 = (color1 >> 24);
-    unsigned char r1 = (color1 >> 16);
-    unsigned char g1 = (color1 >> 8);
-    unsigned char b1 = (color1 >> 0);
+    const unsigned char a1 = (color1 >> 24);
+    const unsigned char r1 = (color1 >> 16);
+    const unsigned char g1 = (color1 >> 8);
+    const unsigned char b1 = (color1 >> 0);
 
-    unsigned char a2 = (color2 >> 24);
-    unsigned char r2 = (color2 >> 16);
-    unsigned char g2 = (color2 >> 8);
-    unsigned char b2 = (color2 >> 0);
+    const unsigned char a2 = (color2 >> 24);
+    const unsigned char r2 = (color2 >> 16);
+    const unsigned char g2 = (color2 >> 8);
+    const unsigned char b2 = (color2 >> 0);
 
-    unsigned char a3 = (color3 >> 24);
-    unsigned char r3 = (color3 >> 16);
-    unsigned char g3 = (color3 >> 8);
-    unsigned char b3 = (color3 >> 0);
+    const unsigned char a3 = (color3 >> 24);
+    const unsigned char r3 = (color3 >> 16);
+    const unsigned char g3 = (color3 >> 8);
+    const unsigned char b3 = (color3 >> 0);
 
-    unsigned char final_a = a1 * lam_1 + a2 * lam_2 + a3 * lam_3;
-    unsigned char final_r = r1 * lam_1 + r2 * lam_2 + r3 * lam_3;
-    unsigned char final_g = g1 * lam_1 + g2 * lam_2 + g3 * lam_3;
-    unsigned char final_b = b1 * lam_1 + b2 * lam_2 + b3 * lam_3;
+    const unsigned char final_a = a1 * lam_1 + a2 * lam_2 + a3 * lam_3;
+    const unsigned char final_r = r1 * lam_1 + r2 * lam_2 + r3 * lam_3;
+    const unsigned char final_g = g1 * lam_1 + g2 * lam_2 + g3 * lam_3;
+    const unsigned char final_b = b1 * lam_1 + b2 * lam_2 + b3 * lam_3;
 
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
@@ -181,11 +184,15 @@ void gameUpdateAndRender(BackBuffer back_buffer)
 {
     // NOTE: backbuffer format is ARGB
     // NOTE: backbuffer.width is default_scene_width; backbuffer_height is default_scene_height
-    // clearScreen(back_buffer);
-    // rasterizeTriangle(back_buffer);
-    {
+    { // Render one triangle
+        clearScreen(back_buffer);
+        rasterizeTriangle(back_buffer);
+    }
+
+    { // Render multiple triangles
         // Triangle2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
         // rasterizeTriangle(back_buffer, &triangle);
+        // TODO: create example
         constexpr Vec2<float> midpoint = {640.f, 360.f};
         static Vec2<float> rotating_point = {480.f, 280.f};
         rotating_point = Mat2x2f::RotationMatrix(0.1) * (rotating_point - midpoint) + midpoint;
@@ -227,25 +234,22 @@ void gameUpdateAndRender(BackBuffer back_buffer)
             other = newly_generated;
         }
     }
-    // TODO: rasterize multiple triangles
-    // TODO: make a vertex buffer
-    // TODO: use solid triangle colors
-    // TODO: use color gradients for triangles
+    // TODO: generate quads
     // TODO: load textures
     // TODO: use textures
     // TODO: 2D AABB(+rects) physics
     // TODO: 2D GJK
     // TODO: sample scene
-    // TODO: framebuffers
+    // TODO: framebuffers as textures
     // TODO: generate 3D models
     // TODO: orthographic projection
     // TODO: perspective projection
     // TODO: generate normals
-    // TODO: point lights
     // TODO: ambient lights
+    // TODO: load obj models
+    // TODO: point lights
     // TODO: generate mipmaps
     // TODO: use mipmaps
-    // TODO: load obj models
     // TODO: sample scene
     // ? TODO: 3D AABB physics
 

@@ -297,8 +297,6 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     SetFocus(window);
     // FIXME: this gets multiplied by windows global scale multiplier for some reason:
     // TODO: center window on screen
-    constexpr double target_fps = 60;
-    constexpr double ms_per_tick = 1000.0 / target_fps;
 
     HDC device_context = GetDC(window);
     BackBuffer back_buffer = {};
@@ -310,22 +308,24 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     keyboard_state = {};
     Win32ResizeDibSection(window);
+    const double target_fps = 60;
+    const double ms_per_tick = 1000.0 / target_fps;
     unsigned long ticks = 0;
     double last_tick = GetTimeMillis();
     unsigned int last_fps = 0;
     double last_fps_log_time = GetTimeMillis();
     while (running)
     {
-        dispatchSystemMessages();
         double time = GetTimeMillis();
         if (time - last_tick < ms_per_tick)
         {
-            time - last_tick > 1 ? Sleep((long)((time - last_tick) / 1) - 1) : Sleep(0);
+            time - last_tick > 1 ? Sleep((long)time - last_tick - 1) : Sleep(0);
             // Sleep(0);
             continue;
         }
         else
         {
+            dispatchSystemMessages();
             last_tick += ms_per_tick;
             ticks++;
         }
@@ -336,6 +336,19 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         unsigned char registered_controllers = 1;
         pollXInputControllers(registered_controllers);
         gameUpdateAndRender(back_buffer);
+        if (!(GetTimeMillis() - last_tick < ms_per_tick))
+        {
+// this game update went overbudget
+// renders red screen
+#ifdef DEBUG
+            for (int i = 0; i < back_buffer.width * back_buffer.height; i++)
+                back_buffer.bits[i] &= 0xffff0000;
+// ? TODO: render "frozen" text in lower left corner instead (disconnect rendering from update??)
+// TODO: over a certain treshold, skip frame
+// TODO: skip based on average of last n ticks
+// TODO: measure skipped frames
+#endif
+        }
         Win32UpdateWindow(device_context, window, back_buffer);
 
         last_fps++;
