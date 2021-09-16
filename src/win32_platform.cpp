@@ -249,7 +249,38 @@ void dispatchSystemMessages()
     TranslateMessage(&message);
     DispatchMessage(&message);
 }
-void printSystemPageSize()
+struct file_contents
+{
+    long size;
+    void *data;
+    // TODO: manage data lifetime
+};
+file_contents readWholeFileAsBytes(char *path)
+{
+    // TODO: test
+    HANDLE file_handle = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    if (file_handle == INVALID_HANDLE_VALUE)
+    {
+        // TODO: handle can't access file
+    }
+    file_contents file;
+    if (!GetFileSizeEx(file_handle, (PLARGE_INTEGER)&file.size))
+    {
+        // TODO:  handle can't get file size
+    }
+    file.data = VirtualAlloc(0, file.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    if (!file.data)
+    {
+        // TODO: handle couldn't allocate file buffer
+    }
+    if (!ReadFile(file_handle, file.data, 4000000000, 0, 0))
+    {
+        // TODO: couldn't read file
+    }
+    return file;
+}
+#if defined(DEBUG)
+void DEBUGprintSystemPageSize()
 {
     SYSTEM_INFO si;
     GetSystemInfo(&si);
@@ -257,11 +288,15 @@ void printSystemPageSize()
     sprintf((char *const)&print, "The page size for this system is %u bytes.\n", si.dwPageSize);
     OutputDebugStringA(print);
 }
+#endif
+
 INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
                    _In_ PSTR lpCmdLine, _In_ INT nCmdShow)
 {
 #ifdef DEBUG
-    printSystemPageSize();
+    DEBUGprintSystemPageSize();
+    // TODO: test readWholeFileAsBytes
+    readWholeFileAsBytes((char *)"Hello.tmp");
 #endif
 
     win32InitXInput();
