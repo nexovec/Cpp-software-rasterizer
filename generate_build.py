@@ -1,3 +1,5 @@
+# FIXME: you hve to run python install psutil
+import psutil
 import sys
 from subprocess import Popen, PIPE
 import os
@@ -8,9 +10,9 @@ config = {
     'compiler_flags': [
         '-INCREMENTAL:YES',
         '-FC',
-        '-Zi',
-        # '-Od',
-        '-O2',
+        # '-ZI',
+        '-Od',
+        # '-O2',
         '-Isrc',
         '-DDEBUG',
         # '-analyze',
@@ -31,8 +33,8 @@ config = {
             ]
         }
     ],
-    # 'launch_debugger': True, # defaults to False
-    'run_executable': True,  # defaults to False
+    'launch_debugger': True, # defaults to False
+    # 'run_executable': True,  # defaults to False
     'pause_after_build': True,  # defaults to False
     # 'build_examples': True  # defaults to False
 }
@@ -70,6 +72,7 @@ for example in config.get("examples"):
     cl_args_example = ' '.join([' '.join(config['compiler_flags']), '-Feexamples\\'+example.get('name')+'.exe',
                                 ' '.join(code_files_example), ' '.join(config['links'])])
     cl_args_examples.append(cl_args_example)
+# print([p for p in sorted([p.name() for p in psutil.process_iter()]) if "devenv" in p])
 commands_win32 = [
     '@echo off',
     'call "'+config.get('path_to_varsall')+'" x64',
@@ -84,7 +87,7 @@ commands_win32 = [
     ''.join(''.join(map(lambda str: 'cl '+str+'\n', cl_args_examples)
                     ).split("\n")[:-1]) if config.get('build_examples')else '',
     'START devenv ' +
-    main_exe_path if config.get('launch_debugger') == True else '',
+    main_exe_path if config.get('launch_debugger') == True and "devenv.exe" not in (p.name() for p in psutil.process_iter()) else '',
     'START '+main_exe_path if config.get("run_executable") else '',
     'set "endTime=%time: =0%"',
     'rem Get elapsed time:',
@@ -102,5 +105,7 @@ build_batch_file_name = ".build.bat"
 with open(build_batch_file_name, 'w') as f:
     for command in commands_win32:
         f.write(command+'\n')
+
+os.system(thisdir+'/.build.bat')
 if config.get('keep_build_file') == False:
     os.remove(build_batch_file_name)

@@ -71,6 +71,7 @@ internal inline unsigned int interpolatedColor(float lam_1, float lam_2, float l
     // use solid color
     // return 0xff00ff00;
 
+    //  ? TODO: for performance reasons, you should decompose colors per-triangle, not per-pixel, but bitwise is fast and this isn't production code anywway
     const unsigned char a1 = (color1 >> 24);
     const unsigned char r1 = (color1 >> 16);
     const unsigned char g1 = (color1 >> 8);
