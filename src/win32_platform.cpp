@@ -45,7 +45,7 @@ internal void win32InitXInput()
 internal void pollXInputControllers(unsigned char registered_controllers)
 {
     XINPUT_STATE states[4];
-    for (int i = 0; i < registered_controllers; i++)
+    for (int32 i = 0; i < registered_controllers; i++)
     {
         XINPUT_STATE &pState = states[registered_controllers];
         XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
@@ -72,11 +72,11 @@ internal void Win32ResizeDibSection(HWND window)
     static RECT prev_size;
     RECT window_coords;
     GetWindowRect(window, &window_coords);
-    // uint32_t height = prev_size.bottom - prev_size.top;
-    uint32_t width = prev_size.right - prev_size.left;
-    constexpr double aspect_ratio = 16. / 9.;
+    // uint32 height = prev_size.bottom - prev_size.top;
+    uint32 width = prev_size.right - prev_size.left;
+    constexpr real64 aspect_ratio = 16. / 9.;
     // FIXME: set the client rect to this size instead of the whole window
-    SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((double)width / aspect_ratio), 0);
+    SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((real64)width / aspect_ratio), 0);
     prev_size = window_coords;
 }
 internal void Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back_buffer)
@@ -91,10 +91,10 @@ internal void Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back
     bitmap_info.bmiHeader.biPlanes = 1;
     bitmap_info.bmiHeader.biBitCount = 32;
     bitmap_info.bmiHeader.biCompression = BI_RGB;
-    int width = rect.right - rect.left;
-    int height = rect.bottom - rect.top;
+    int32 width = rect.right - rect.left;
+    int32 height = rect.bottom - rect.top;
     // TODO: use StretchDIBits and fixed window size
-    int res = StretchDIBits(
+    int32 res = StretchDIBits(
         device_context,
         0,
         0,
@@ -109,7 +109,7 @@ internal void Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back
         DIB_RGB_COLORS,
         SRCCOPY);
 }
-internal int HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
+internal int32 HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
 {
     if (is_down && lParam & (1 << 30))
         return 0;
@@ -157,7 +157,7 @@ internal int HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
     }
     return 0;
 }
-internal double GetTimeMillis()
+internal real64 GetTimeMillis()
 {
     LARGE_INTEGER lpPerformanceCount;
     if (!QueryPerformanceCounter(&lpPerformanceCount))
@@ -171,13 +171,13 @@ internal double GetTimeMillis()
         // TODO: error handle
         ExitProcess(-1);
     }
-    double time_in_seconds = (double)lpPerformanceCount.QuadPart / (double)lpFrequency.QuadPart;
+    real64 time_in_seconds = (real64)lpPerformanceCount.QuadPart / (real64)lpFrequency.QuadPart;
     return time_in_seconds * 1000;
 }
 
 internal LRESULT CALLBACK WindowProc(
     HWND window,
-    UINT uMsg,
+    uint32 uMsg,
     WPARAM wParam,
     LPARAM lParam)
 {
@@ -257,7 +257,10 @@ struct file_contents
 };
 file_contents readWholeFile(char *path)
 {
-    bool errored = false;
+#ifdef DEBUG
+    OutputDebugStringA(path);
+    OutputDebugStringA("\n");
+#endif
     HANDLE file_handle = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
     file_contents file = {};
     if (file_handle == INVALID_HANDLE_VALUE)
@@ -266,7 +269,7 @@ file_contents readWholeFile(char *path)
         CloseHandle(file_handle);
         return {};
     }
-    else if (errored |= !GetFileSizeEx(file_handle, (PLARGE_INTEGER)&file.size))
+    if (!GetFileSizeEx(file_handle, (PLARGE_INTEGER)&file.size))
     {
         OutputDebugStringA("can't get file size\n");
         CloseHandle(file_handle);
@@ -275,30 +278,31 @@ file_contents readWholeFile(char *path)
     file.data = VirtualAlloc(0, file.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
     DWORD bytes_read;
-    if (errored |= !file.data)
+    if (!file.data)
     {
         OutputDebugStringA("can't allocate buffer for file data\n");
     }
-    else if (errored |= !(file.size <= 0xffffffff))
+    else if (!(file.size <= 0xffffffff))
     {
         OutputDebugStringA("file is too big");
     }
-    else if (errored |= !ReadFile(file_handle, file.data, (DWORD)file.size, &bytes_read, 0))
+    else if (!ReadFile(file_handle, file.data, (DWORD)file.size, &bytes_read, 0))
     {
         OutputDebugStringA("can't read from file\n");
     }
-    else if (errored |= (bytes_read != file.size))
+    else if ((bytes_read != file.size))
     {
         OutputDebugStringA("wrong size read from file");
     }
+    else
+    {
+        CloseHandle(file_handle);
+        return file;
+    }
 
     CloseHandle(file_handle);
-    if (errored)
-    {
-        VirtualFree(file.data, 0, MEM_RELEASE);
-        file = {};
-    }
-    return file;
+    VirtualFree(file.data, 0, MEM_RELEASE);
+    return {};
 }
 void DEBUGprintSystemPageSize()
 {
@@ -310,14 +314,136 @@ void DEBUGprintSystemPageSize()
     OutputDebugStringA(print);
 #endif
 }
+#pragma pack(push, 1)
+// TODO: find the right header
+struct BitmapHeader1
+{
+	WORD Type;          /* File type identifier (always 0) */
+	WORD Width;         /* Width of the bitmap in pixels */
+	WORD Height;        /* Height of the bitmap in scan lines */
+	WORD ByteWidth;     /* Width of bitmap in bytes */
+	BYTE Planes;        /* Number of color planes */
+	BYTE BitsPerPixel;  /* Number of bits per pixel */
+};
+struct BitmapHeader2
+{
+    WORD   FileType;     /* File type, always 4D42h ("BM") */
+	DWORD  FileSize;     /* Size of the file in bytes */
+	WORD   Reserved1;    /* Always 0 */
+	WORD   Reserved2;    /* Always 0 */
+	DWORD  BitmapOffset; /* Starting position of image data in bytes */
+    DWORD Size;            /* Size of this header in bytes */
+    LONG Width;            /* Image width in pixels */
+    LONG Height;           /* Image height in pixels */
+    WORD Planes;           /* Number of color planes */
+    WORD BitsPerPixel;     /* Number of bits per pixel */
+    DWORD Compression;     /* Compression methods used */
+    DWORD SizeOfBitmap;    /* Size of bitmap in bytes */
+    LONG HorzResolution;   /* Horizontal resolution in pixels per meter */
+    LONG VertResolution;   /* Vertical resolution in pixels per meter */
+    DWORD ColorsUsed;      /* Number of colors in the image */
+    DWORD ColorsImportant; /* Minimum number of important colors */
+};
+struct BitmapHeader3
+{
+	DWORD Size;            /* Size of this header in bytes */
+	LONG  Width;           /* Image width in pixels */
+	LONG  Height;          /* Image height in pixels */
+	WORD  Planes;          /* Number of color planes */
+	WORD  BitsPerPixel;    /* Number of bits per pixel */
+	/* Fields added for Windows 3.x follow this line */
+	DWORD Compression;     /* Compression methods used */
+	DWORD SizeOfBitmap;    /* Size of bitmap in bytes */
+	LONG  HorzResolution;  /* Horizontal resolution in pixels per meter */
+	LONG  VertResolution;  /* Vertical resolution in pixels per meter */
+	DWORD ColorsUsed;      /* Number of colors in the image */
+	DWORD ColorsImportant; /* Minimum number of important colors */
+};
+struct BitmapHeader4
+{
+	DWORD Size;            /* Size of this header in bytes */
+	LONG  Width;           /* Image width in pixels */
+	LONG  Height;          /* Image height in pixels */
+	WORD  Planes;          /* Number of color planes */
+	WORD  BitsPerPixel;    /* Number of bits per pixel */
+	DWORD Compression;     /* Compression methods used */
+	DWORD SizeOfBitmap;    /* Size of bitmap in bytes */
+	LONG  HorzResolution;  /* Horizontal resolution in pixels per meter */
+	LONG  VertResolution;  /* Vertical resolution in pixels per meter */
+	DWORD ColorsUsed;      /* Number of colors in the image */
+	DWORD ColorsImportant; /* Minimum number of important colors */
+	/* Fields added for Windows 4.x follow this line */
 
-INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
-                   _In_ PSTR lpCmdLine, _In_ INT nCmdShow)
+	DWORD RedMask;       /* Mask identifying bits of red component */
+	DWORD GreenMask;     /* Mask identifying bits of green component */
+	DWORD BlueMask;      /* Mask identifying bits of blue component */
+	DWORD AlphaMask;     /* Mask identifying bits of alpha component */
+	DWORD CSType;        /* Color space type */
+	LONG  RedX;          /* X coordinate of red endpoint */
+	LONG  RedY;          /* Y coordinate of red endpoint */
+	LONG  RedZ;          /* Z coordinate of red endpoint */
+	LONG  GreenX;        /* X coordinate of green endpoint */
+	LONG  GreenY;        /* Y coordinate of green endpoint */
+	LONG  GreenZ;        /* Z coordinate of green endpoint */
+	LONG  BlueX;         /* X coordinate of blue endpoint */
+	LONG  BlueY;         /* Y coordinate of blue endpoint */
+	LONG  BlueZ;         /* Z coordinate of blue endpoint */
+	DWORD GammaRed;      /* Gamma red coordinate scale value */
+	DWORD GammaGreen;    /* Gamma green coordinate scale value */
+	DWORD GammaBlue;     /* Gamma blue coordinate scale value */
+};
+#pragma pack(pop)
+struct BitmapImage
+{
+    static BitmapImage loadBitmapFromFile(char *filepath);
+    BitmapHeader *bh;
+    void *pixels;
+};
+BitmapImage BitmapImage::loadBitmapFromFile(char *filepath)
+{
+    BitmapImage bmp;
+    bmp.bh = (BitmapHeader *)(readWholeFile(filepath).data);
+    bmp.pixels = bmp.bh + bmp.bh->Size;
+    return bmp;
+}
+struct Assets
+{
+    Assets();
+    BitmapImage test_image;
+    // ? FIXME: free memory
+};
+Assets::Assets()
+{
+    char *path = (char *)"font.bmp2";
+    this->test_image = BitmapImage::loadBitmapFromFile(path);
+    // FIXME: no safeguard against read errors
+    // FIXME: This is all just wrong, wtf is = and why does it have to be here?
+    // FIXME: whyyyyyyyy
+    // TODO:
+    return;
+}
+int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
+                   _In_ PSTR lpCmdLine, _In_ int32 nCmdShow)
 {
     DEBUGprintSystemPageSize();
-    file_contents test_file_contents = readWholeFile((char *)"test.txt"); // TODO: you need to create test.txt for this to print something
-    OutputDebugStringA((char *)test_file_contents.data);
-    OutputDebugStringA("^^^ test file was supposed to print here. Did it? ^^^\n");
+    {
+#ifdef DEBUG
+        file_contents test_file_contents = readWholeFile((char *)"test.txt"); // TODO: you need to create test.txt for this to print something
+        OutputDebugStringA((char *)test_file_contents.data);
+        OutputDebugStringA("\n^^^ test file was supposed to print here. Did it? ^^^\n");
+#endif
+    }
+
+    Assets assets = Assets();
+
+    {
+#ifdef DEBUG
+        int32 h = assets.test_image.bh->Height;
+        char buf[128];
+        sprintf(buf, "%ld\n", h);
+        OutputDebugStringA(buf);
+#endif
+    }
 
     // TODO: write to file
 
@@ -359,21 +485,21 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     BackBuffer back_buffer = {};
     back_buffer.width = default_scene_width;
     back_buffer.height = default_scene_height;
-    size_t DIB_size = sizeof(uint32_t) * default_scene_width * default_scene_height;
-    back_buffer.bits = (uint32_t *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
+    memory_index DIB_size = sizeof(uint32) * default_scene_width * default_scene_height;
+    back_buffer.bits = (uint32 *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
     SetWindowPos(window, HWND_TOP, 300, 180, back_buffer.width, back_buffer.height, 0); // FIXME: weird black stripes
 
     keyboard_state = {};
     Win32ResizeDibSection(window);
-    const double target_fps = 60;
-    const double ms_per_tick = 1000.0 / target_fps;
-    unsigned long ticks = 0;
-    double last_tick = GetTimeMillis();
-    unsigned int last_fps = 0;
-    double last_fps_log_time = GetTimeMillis();
+    const real64 target_fps = 60;
+    const real64 ms_per_tick = 1000.0 / target_fps;
+    uint64 ticks = 0;
+    real64 last_tick = GetTimeMillis();
+    uint32 last_fps = 0;
+    real64 last_fps_log_time = GetTimeMillis();
     while (running)
     {
-        double time = GetTimeMillis();
+        real64 time = GetTimeMillis();
         if (time - last_tick < ms_per_tick)
         {
             time - last_tick > 1 ? Sleep((long)time - last_tick - 1) : Sleep(0);
@@ -393,13 +519,22 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         unsigned char registered_controllers = 1;
         pollXInputControllers(registered_controllers);
         gameUpdateAndRender(back_buffer);
-        if (!(GetTimeMillis() - last_tick < ms_per_tick))
+        if (!(GetTimeMillis() - last_tick < ms_per_tick * 2))
         {
 // this game update went overbudget
 // renders red screen
 #ifdef DEBUG
-            for (int i = 0; i < back_buffer.width * back_buffer.height; i++)
+#define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
+#define test_image(x, y) ((int32*)assets.test_image.pixels)[assets.test_image.bh->Width * y + x]
+            for (int32 i = 0; i < back_buffer.width * back_buffer.height; i++)
                 back_buffer.bits[i] &= 0xffff0000;
+            for (int32 x = 0; x < 12; x++)
+            {
+                for (int32 y = 0; y < 12; y++)
+                {
+                    back_buffer(x, y) = test_image(x, y);
+                }
+            }
 // ? TODO: render "frozen" text in lower left corner instead (disconnect rendering from update??)
 // TODO: over a certain treshold, skip frame
 // TODO: skip based on average of last n ticks

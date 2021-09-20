@@ -10,7 +10,7 @@ config = {
     'compiler_flags': [
         '-INCREMENTAL:YES',
         '-FC',
-        # '-ZI',
+        '-ZI',
         '-Od',
         # '-O2',
         '-Isrc',
