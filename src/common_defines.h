@@ -4,6 +4,13 @@
 #define persistent static
 #include <stdint.h> // FIXME: no stl, you lazy goddarn pig
 
+
+
+// TEMPORARY, debug only, to fix vscode highlighting
+#ifndef DEBUG
+#define DEBUG
+#endif
+
 // #define UINT8 unsigned char
 // #define UINT16 unsigned short
 // #define UINT32 unsigned int

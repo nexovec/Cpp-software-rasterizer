@@ -253,7 +253,6 @@ struct file_contents
 {
     long size;
     void *data;
-    // TODO: destructor
 };
 file_contents readWholeFile(char *path)
 {
@@ -315,23 +314,22 @@ void DEBUGprintSystemPageSize()
 #endif
 }
 #pragma pack(push, 1)
-// TODO: find the right header
 struct BitmapHeader1
 {
-	WORD Type;          /* File type identifier (always 0) */
-	WORD Width;         /* Width of the bitmap in pixels */
-	WORD Height;        /* Height of the bitmap in scan lines */
-	WORD ByteWidth;     /* Width of bitmap in bytes */
-	BYTE Planes;        /* Number of color planes */
-	BYTE BitsPerPixel;  /* Number of bits per pixel */
+    WORD Type;         /* File type identifier (always 0) */
+    WORD Width;        /* Width of the bitmap in pixels */
+    WORD Height;       /* Height of the bitmap in scan lines */
+    WORD ByteWidth;    /* Width of bitmap in bytes */
+    BYTE Planes;       /* Number of color planes */
+    BYTE BitsPerPixel; /* Number of bits per pixel */
 };
-struct BitmapHeader2
+struct BitmapHeader
 {
-    WORD   FileType;     /* File type, always 4D42h ("BM") */
-	DWORD  FileSize;     /* Size of the file in bytes */
-	WORD   Reserved1;    /* Always 0 */
-	WORD   Reserved2;    /* Always 0 */
-	DWORD  BitmapOffset; /* Starting position of image data in bytes */
+    WORD FileType;         /* File type, always 4D42h ("BM") */
+    DWORD FileSize;        /* Size of the file in bytes */
+    WORD Reserved1;        /* Always 0 */
+    WORD Reserved2;        /* Always 0 */
+    DWORD BitmapOffset;    /* Starting position of image data in bytes */
     DWORD Size;            /* Size of this header in bytes */
     LONG Width;            /* Image width in pixels */
     LONG Height;           /* Image height in pixels */
@@ -346,51 +344,51 @@ struct BitmapHeader2
 };
 struct BitmapHeader3
 {
-	DWORD Size;            /* Size of this header in bytes */
-	LONG  Width;           /* Image width in pixels */
-	LONG  Height;          /* Image height in pixels */
-	WORD  Planes;          /* Number of color planes */
-	WORD  BitsPerPixel;    /* Number of bits per pixel */
-	/* Fields added for Windows 3.x follow this line */
-	DWORD Compression;     /* Compression methods used */
-	DWORD SizeOfBitmap;    /* Size of bitmap in bytes */
-	LONG  HorzResolution;  /* Horizontal resolution in pixels per meter */
-	LONG  VertResolution;  /* Vertical resolution in pixels per meter */
-	DWORD ColorsUsed;      /* Number of colors in the image */
-	DWORD ColorsImportant; /* Minimum number of important colors */
+    DWORD Size;        /* Size of this header in bytes */
+    LONG Width;        /* Image width in pixels */
+    LONG Height;       /* Image height in pixels */
+    WORD Planes;       /* Number of color planes */
+    WORD BitsPerPixel; /* Number of bits per pixel */
+    /* Fields added for Windows 3.x follow this line */
+    DWORD Compression;     /* Compression methods used */
+    DWORD SizeOfBitmap;    /* Size of bitmap in bytes */
+    LONG HorzResolution;   /* Horizontal resolution in pixels per meter */
+    LONG VertResolution;   /* Vertical resolution in pixels per meter */
+    DWORD ColorsUsed;      /* Number of colors in the image */
+    DWORD ColorsImportant; /* Minimum number of important colors */
 };
 struct BitmapHeader4
 {
-	DWORD Size;            /* Size of this header in bytes */
-	LONG  Width;           /* Image width in pixels */
-	LONG  Height;          /* Image height in pixels */
-	WORD  Planes;          /* Number of color planes */
-	WORD  BitsPerPixel;    /* Number of bits per pixel */
-	DWORD Compression;     /* Compression methods used */
-	DWORD SizeOfBitmap;    /* Size of bitmap in bytes */
-	LONG  HorzResolution;  /* Horizontal resolution in pixels per meter */
-	LONG  VertResolution;  /* Vertical resolution in pixels per meter */
-	DWORD ColorsUsed;      /* Number of colors in the image */
-	DWORD ColorsImportant; /* Minimum number of important colors */
-	/* Fields added for Windows 4.x follow this line */
+    DWORD Size;            /* Size of this header in bytes */
+    LONG Width;            /* Image width in pixels */
+    LONG Height;           /* Image height in pixels */
+    WORD Planes;           /* Number of color planes */
+    WORD BitsPerPixel;     /* Number of bits per pixel */
+    DWORD Compression;     /* Compression methods used */
+    DWORD SizeOfBitmap;    /* Size of bitmap in bytes */
+    LONG HorzResolution;   /* Horizontal resolution in pixels per meter */
+    LONG VertResolution;   /* Vertical resolution in pixels per meter */
+    DWORD ColorsUsed;      /* Number of colors in the image */
+    DWORD ColorsImportant; /* Minimum number of important colors */
+    /* Fields added for Windows 4.x follow this line */
 
-	DWORD RedMask;       /* Mask identifying bits of red component */
-	DWORD GreenMask;     /* Mask identifying bits of green component */
-	DWORD BlueMask;      /* Mask identifying bits of blue component */
-	DWORD AlphaMask;     /* Mask identifying bits of alpha component */
-	DWORD CSType;        /* Color space type */
-	LONG  RedX;          /* X coordinate of red endpoint */
-	LONG  RedY;          /* Y coordinate of red endpoint */
-	LONG  RedZ;          /* Z coordinate of red endpoint */
-	LONG  GreenX;        /* X coordinate of green endpoint */
-	LONG  GreenY;        /* Y coordinate of green endpoint */
-	LONG  GreenZ;        /* Z coordinate of green endpoint */
-	LONG  BlueX;         /* X coordinate of blue endpoint */
-	LONG  BlueY;         /* Y coordinate of blue endpoint */
-	LONG  BlueZ;         /* Z coordinate of blue endpoint */
-	DWORD GammaRed;      /* Gamma red coordinate scale value */
-	DWORD GammaGreen;    /* Gamma green coordinate scale value */
-	DWORD GammaBlue;     /* Gamma blue coordinate scale value */
+    DWORD RedMask;    /* Mask identifying bits of red component */
+    DWORD GreenMask;  /* Mask identifying bits of green component */
+    DWORD BlueMask;   /* Mask identifying bits of blue component */
+    DWORD AlphaMask;  /* Mask identifying bits of alpha component */
+    DWORD CSType;     /* Color space type */
+    LONG RedX;        /* X coordinate of red endpoint */
+    LONG RedY;        /* Y coordinate of red endpoint */
+    LONG RedZ;        /* Z coordinate of red endpoint */
+    LONG GreenX;      /* X coordinate of green endpoint */
+    LONG GreenY;      /* Y coordinate of green endpoint */
+    LONG GreenZ;      /* Z coordinate of green endpoint */
+    LONG BlueX;       /* X coordinate of blue endpoint */
+    LONG BlueY;       /* Y coordinate of blue endpoint */
+    LONG BlueZ;       /* Z coordinate of blue endpoint */
+    DWORD GammaRed;   /* Gamma red coordinate scale value */
+    DWORD GammaGreen; /* Gamma green coordinate scale value */
+    DWORD GammaBlue;  /* Gamma blue coordinate scale value */
 };
 #pragma pack(pop)
 struct BitmapImage
@@ -403,7 +401,7 @@ BitmapImage BitmapImage::loadBitmapFromFile(char *filepath)
 {
     BitmapImage bmp;
     bmp.bh = (BitmapHeader *)(readWholeFile(filepath).data);
-    bmp.pixels = bmp.bh + bmp.bh->Size;
+    bmp.pixels = bmp.bh + bmp.bh->BitmapOffset;
     return bmp;
 }
 struct Assets
@@ -414,7 +412,7 @@ struct Assets
 };
 Assets::Assets()
 {
-    char *path = (char *)"font.bmp2";
+    char *path = (char *)"font.bmp";
     this->test_image = BitmapImage::loadBitmapFromFile(path);
     // FIXME: no safeguard against read errors
     // FIXME: This is all just wrong, wtf is = and why does it have to be here?
@@ -422,8 +420,24 @@ Assets::Assets()
     // TODO:
     return;
 }
+// void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
+void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset, int32 y_offset)
+{
+#define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
+#define bmp(x, y) ((int32 *)bmp.pixels)[bmp.bh->Width * y + x]
+    // ! FIXME: offsets are totally broken
+    for (int32 x = 0; x < bmp.bh->Width; x++)
+    {
+        for (int32 y = 0; y < bmp.bh->Height; y++)
+        {
+            back_buffer(x + x_offset, y + y_offset) = bmp(x, y);
+        }
+    }
+#undef back_buffer
+#undef bmp
+}
 int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
-                   _In_ PSTR lpCmdLine, _In_ int32 nCmdShow)
+                     _In_ PSTR lpCmdLine, _In_ int32 nCmdShow)
 {
     DEBUGprintSystemPageSize();
     {
@@ -525,16 +539,10 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 // renders red screen
 #ifdef DEBUG
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
-#define test_image(x, y) ((int32*)assets.test_image.pixels)[assets.test_image.bh->Width * y + x]
+#define test_image(x, y) ((int32 *)assets.test_image.pixels)[assets.test_image.bh->Width * y + x]
             for (int32 i = 0; i < back_buffer.width * back_buffer.height; i++)
                 back_buffer.bits[i] &= 0xffff0000;
-            for (int32 x = 0; x < 12; x++)
-            {
-                for (int32 y = 0; y < 12; y++)
-                {
-                    back_buffer(x, y) = test_image(x, y);
-                }
-            }
+            DEBUGBltBmp(back_buffer, assets.test_image, 800, 100);
 // ? TODO: render "frozen" text in lower left corner instead (disconnect rendering from update??)
 // TODO: over a certain treshold, skip frame
 // TODO: skip based on average of last n ticks
