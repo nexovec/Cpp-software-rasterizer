@@ -414,7 +414,7 @@ struct Assets
 {
     Assets();
     BitmapImage test_image;
-    // ? FIXME: free memory
+    // ? FIXME: optionl memory free
 };
 Assets::Assets()
 {
@@ -427,40 +427,64 @@ Assets::Assets()
     return;
 }
 // void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
+class uint32_dynamic_2D_array_wrapper
+{
+    // ? TODO: Do we even want this whole thing?
+    // FIXME: this is unsafe
+    struct uint32_wrapper
+    {
+        uint32 *number;
+        uint32_wrapper(uint32 *num) : number(num) {}
+        uint32_wrapper *operator=(uint32_wrapper other)
+        {
+            uint32 *number = this->number;
+            *number = *other.number;
+            return this;
+        }
+    };
+    struct row
+    {
+        uint32 *bits;
+        row(uint32 *bits) : bits(bits) {}
+        uint32_wrapper operator[](int32 y)
+        {
+            return uint32_wrapper(&this->bits[y]);
+        }
+    };
+    uint32 *bits;
+    uint32 width;
+
+public:
+    uint32_dynamic_2D_array_wrapper(uint32 *bits, uint32 width)
+    {
+        this->bits = bits;
+        this->width = width;
+    }
+    inline row operator[](int32 x)
+    {
+        return row(&(this->bits[this->width * x]));
+    }
+    inline uint32 set(int32 x, int32 y, uint32 val)
+    {
+        return this->bits[this->width * y + x] = val;
+    }
+};
 void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage *bmp, int32 x_offset, int32 y_offset)
 {
     // FIXME: protect overflows
-    struct uint32p_dynamic_array
-    {
-        uint32 *bits;
-        uint32 width;
-        inline uint32p_dynamic_array(uint32 *bits, uint32 width)
-        {
-            this->bits = bits;
-            this->width = width;
-        }
-        inline uint32 get(int32 x, int32 y)
-        {
-            return this->bits[this->width * y + x];
-        }
-        inline uint32 set(int32 x, int32 y, uint32 val)
-        {
-            return this->bits[this->width * y + x] = val;
-        }
-    };
-    uint32p_dynamic_array back_buffer_bits = uint32p_dynamic_array(back_buffer->bits, back_buffer->width);
-    uint32p_dynamic_array bmp_pixels = uint32p_dynamic_array(bmp->pixels, bmp->bh->Width);
+    // FIXME: colors are a bit broken
+    uint32_dynamic_2D_array_wrapper back_buffer_bits = uint32_dynamic_2D_array_wrapper(back_buffer->bits, back_buffer->width);
+    uint32_dynamic_2D_array_wrapper bmp_pixels = uint32_dynamic_2D_array_wrapper(bmp->pixels, bmp->bh->Width);
 
-    // ! FIXME: offsets are totally broken
     for (int32 x = 0; x < bmp->bh->Width; x++)
     {
         for (int32 y = 0; y < bmp->bh->Height; y++)
         {
-            back_buffer_bits.set(x + x_offset, y + y_offset, bmp_pixels.get(x, y));
+            back_buffer_bits[y + y_offset][x + x_offset] = bmp_pixels[y][x];
+            // back_buffer_bits.set(x + x_offset, y + y_offset, bmp_pixels[x][y]);
+            // back_buffer_bits.set(x + x_offset, y + y_offset, bmp_pixels.get(x, y));
         }
     }
-#undef back_buffer
-#undef bmp
 }
 int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
                      _In_ PSTR lpCmdLine, _In_ int32 nCmdShow)
