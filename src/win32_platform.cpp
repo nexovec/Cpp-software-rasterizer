@@ -253,8 +253,14 @@ struct file_contents
 {
     long size;
     void *data;
+    static file_contents readWholeFile(char *path);
+    void free();
 };
-file_contents readWholeFile(char *path)
+void file_contents::free()
+{
+    VirtualFree(this->data, 0, MEM_RELEASE);
+}
+file_contents file_contents::readWholeFile(char *path)
 {
 #ifdef DEBUG
     OutputDebugStringA(path);
@@ -395,13 +401,13 @@ struct BitmapImage
 {
     static BitmapImage loadBitmapFromFile(char *filepath);
     BitmapHeader *bh;
-    void *pixels;
+    uint32 *pixels;
 };
 BitmapImage BitmapImage::loadBitmapFromFile(char *filepath)
 {
     BitmapImage bmp;
-    bmp.bh = (BitmapHeader *)(readWholeFile(filepath).data);
-    bmp.pixels = bmp.bh + bmp.bh->BitmapOffset;
+    bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data);
+    bmp.pixels = (uint32 *)(bmp.bh + bmp.bh->BitmapOffset);
     return bmp;
 }
 struct Assets
@@ -421,16 +427,36 @@ Assets::Assets()
     return;
 }
 // void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
-void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset, int32 y_offset)
+void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage *bmp, int32 x_offset, int32 y_offset)
 {
-#define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
-#define bmp(x, y) ((int32 *)bmp.pixels)[bmp.bh->Width * y + x]
-    // ! FIXME: offsets are totally broken
-    for (int32 x = 0; x < bmp.bh->Width; x++)
+    // FIXME: protect overflows
+    struct uint32p_dynamic_array
     {
-        for (int32 y = 0; y < bmp.bh->Height; y++)
+        uint32 *bits;
+        uint32 width;
+        inline uint32p_dynamic_array(uint32 *bits, uint32 width)
         {
-            back_buffer(x + x_offset, y + y_offset) = bmp(x, y);
+            this->bits = bits;
+            this->width = width;
+        }
+        inline uint32 get(int32 x, int32 y)
+        {
+            return this->bits[this->width * y + x];
+        }
+        inline uint32 set(int32 x, int32 y, uint32 val)
+        {
+            return this->bits[this->width * y + x] = val;
+        }
+    };
+    uint32p_dynamic_array back_buffer_bits = uint32p_dynamic_array(back_buffer->bits, back_buffer->width);
+    uint32p_dynamic_array bmp_pixels = uint32p_dynamic_array(bmp->pixels, bmp->bh->Width);
+
+    // ! FIXME: offsets are totally broken
+    for (int32 x = 0; x < bmp->bh->Width; x++)
+    {
+        for (int32 y = 0; y < bmp->bh->Height; y++)
+        {
+            back_buffer_bits.set(x + x_offset, y + y_offset, bmp_pixels.get(x, y));
         }
     }
 #undef back_buffer
@@ -442,7 +468,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     DEBUGprintSystemPageSize();
     {
 #ifdef DEBUG
-        file_contents test_file_contents = readWholeFile((char *)"test.txt"); // TODO: you need to create test.txt for this to print something
+        file_contents test_file_contents = file_contents::readWholeFile((char *)"test.txt"); // TODO: you need to create test.txt for this to print something
         OutputDebugStringA((char *)test_file_contents.data);
         OutputDebugStringA("\n^^^ test file was supposed to print here. Did it? ^^^\n");
 #endif
@@ -533,22 +559,22 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         unsigned char registered_controllers = 1;
         pollXInputControllers(registered_controllers);
         gameUpdateAndRender(back_buffer);
+#ifdef DEBUG
         if (!(GetTimeMillis() - last_tick < ms_per_tick * 2))
         {
 // this game update went overbudget
 // renders red screen
-#ifdef DEBUG
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
 #define test_image(x, y) ((int32 *)assets.test_image.pixels)[assets.test_image.bh->Width * y + x]
             for (int32 i = 0; i < back_buffer.width * back_buffer.height; i++)
                 back_buffer.bits[i] &= 0xffff0000;
-            DEBUGBltBmp(back_buffer, assets.test_image, 800, 100);
-// ? TODO: render "frozen" text in lower left corner instead (disconnect rendering from update??)
-// TODO: over a certain treshold, skip frame
-// TODO: skip based on average of last n ticks
-// TODO: measure skipped frames
-#endif
+            DEBUGBltBmp(&back_buffer, &assets.test_image, 400, 300);
+            // ? TODO: render "frozen" text in lower left corner instead (disconnect rendering from update??)
+            // TODO: over a certain treshold, skip frame
+            // TODO: skip based on average of last n ticks
+            // TODO: measure skipped frames
         }
+#endif
         Win32UpdateWindow(device_context, window, back_buffer);
 
         last_fps++;
