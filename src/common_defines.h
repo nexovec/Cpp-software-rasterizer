@@ -2,19 +2,19 @@
 #define global static
 #define internal static
 #define persistent static
-#include <stdint.h> // FIXME: no stl, you lazy goddarn pig
 
+typedef char int8;
+typedef short int16;
+typedef int int32;
+typedef long int64;
+typedef bool bool32;
 
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+typedef unsigned long uint64;
 
-// TEMPORARY, debug only, to fix vscode highlighting
+// TEMPORARY: debug only, to fix vscode highlighting
 #ifndef DEBUG
 #define DEBUG
 #endif
-
-// #define UINT8 unsigned char
-// #define UINT16 unsigned short
-// #define UINT32 unsigned int
-// #define UINT64 unsigned long
-
-// #define FLOAT32 float
-// #define FLOAT64 double

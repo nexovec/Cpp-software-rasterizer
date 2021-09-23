@@ -10,7 +10,7 @@
 global BOOL running = true;
 global KeyboardState keyboard_state;
 
-#define XINPUT_GET_STATE_SIG(name) DWORD name(DWORD dwUserIndex, XINPUT_STATE *pState)
+#define XINPUT_GET_STATE_SIG(name) uint64 name(uint64 dwUserIndex, XINPUT_STATE *pState)
 typedef XINPUT_GET_STATE_SIG(x_input_get_state);
 XINPUT_GET_STATE_SIG(XInputGetStateStub)
 {
@@ -19,7 +19,7 @@ XINPUT_GET_STATE_SIG(XInputGetStateStub)
 global x_input_get_state *XInputGetState_ = XInputGetStateStub;
 #define XInputGetState XInputGetState_
 
-#define XINPUT_SET_STATE_SIG(name) DWORD name(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration)
+#define XINPUT_SET_STATE_SIG(name) uint64 name(uint64 dwUserIndex, XINPUT_VIBRATION *pVibration)
 typedef XINPUT_SET_STATE_SIG(x_input_set_state);
 internal XINPUT_SET_STATE_SIG(XInputSetStateStub)
 {
@@ -251,7 +251,7 @@ void dispatchSystemMessages()
 }
 struct file_contents
 {
-    long size;
+    int64 size;
     void *data;
     static file_contents readWholeFile(char *path);
     void free();
@@ -282,7 +282,7 @@ file_contents file_contents::readWholeFile(char *path)
     }
     file.data = VirtualAlloc(0, file.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-    DWORD bytes_read;
+    uint64 bytes_read;
     if (!file.data)
     {
         OutputDebugStringA("can't allocate buffer for file data\n");
@@ -291,7 +291,7 @@ file_contents file_contents::readWholeFile(char *path)
     {
         OutputDebugStringA("file is too big");
     }
-    else if (!ReadFile(file_handle, file.data, (DWORD)file.size, &bytes_read, 0))
+    else if (!ReadFile(file_handle, file.data, (uint64)file.size, &bytes_read, 0))
     {
         OutputDebugStringA("can't read from file\n");
     }
@@ -322,79 +322,79 @@ void DEBUGprintSystemPageSize()
 #pragma pack(push, 1)
 struct BitmapHeader1
 {
-    WORD Type;         /* File type identifier (always 0) */
-    WORD Width;        /* Width of the bitmap in pixels */
-    WORD Height;       /* Height of the bitmap in scan lines */
-    WORD ByteWidth;    /* Width of bitmap in bytes */
-    BYTE Planes;       /* Number of color planes */
-    BYTE BitsPerPixel; /* Number of bits per pixel */
+    uint16 Type;       /* File type identifier (always 0) */
+    uint16 Width;      /* Width of the bitmap in pixels */
+    uint16 Height;     /* Height of the bitmap in scan lines */
+    uint16 ByteWidth;  /* Width of bitmap in ints */
+    int8 Planes;       /* Number of color planes */
+    int8 BitsPerPixel; /* Number of bits per pixel */
 };
 struct BitmapHeader
 {
-    WORD FileType;         /* File type, always 4D42h ("BM") */
-    DWORD FileSize;        /* Size of the file in bytes */
-    WORD Reserved1;        /* Always 0 */
-    WORD Reserved2;        /* Always 0 */
-    DWORD BitmapOffset;    /* Starting position of image data in bytes */
-    DWORD Size;            /* Size of this header in bytes */
-    LONG Width;            /* Image width in pixels */
-    LONG Height;           /* Image height in pixels */
-    WORD Planes;           /* Number of color planes */
-    WORD BitsPerPixel;     /* Number of bits per pixel */
-    DWORD Compression;     /* Compression methods used */
-    DWORD SizeOfBitmap;    /* Size of bitmap in bytes */
-    LONG HorzResolution;   /* Horizontal resolution in pixels per meter */
-    LONG VertResolution;   /* Vertical resolution in pixels per meter */
-    DWORD ColorsUsed;      /* Number of colors in the image */
-    DWORD ColorsImportant; /* Minimum number of important colors */
+    uint16 FileType;        /* File type, always 4D42h ("BM") */
+    uint64 FileSize;        /* Size of the file in bytes */
+    uint16 Reserved1;       /* Always 0 */
+    uint16 Reserved2;       /* Always 0 */
+    uint64 BitmapOffset;    /* Starting position of image data in bytes */
+    uint64 Size;            /* Size of this header in bytes */
+    int64 Width;            /* Image width in pixels */
+    int64 Height;           /* Image height in pixels */
+    uint16 Planes;          /* Number of color planes */
+    uint16 BitsPerPixel;    /* Number of bits per pixel */
+    uint64 Compression;     /* Compression methods used */
+    uint64 SizeOfBitmap;    /* Size of bitmap in bytes */
+    int64 HorzResolution;   /* Horizontal resolution in pixels per meter */
+    int64 VertResolution;   /* Vertical resolution in pixels per meter */
+    uint64 ColorsUsed;      /* Number of colors in the image */
+    uint64 ColorsImportant; /* Minimum number of important colors */
 };
 struct BitmapHeader3
 {
-    DWORD Size;        /* Size of this header in bytes */
-    LONG Width;        /* Image width in pixels */
-    LONG Height;       /* Image height in pixels */
-    WORD Planes;       /* Number of color planes */
-    WORD BitsPerPixel; /* Number of bits per pixel */
+    uint64 Size;         /* Size of this header in bytes */
+    int64 Width;         /* Image width in pixels */
+    int64 Height;        /* Image height in pixels */
+    uint16 Planes;       /* Number of color planes */
+    uint16 BitsPerPixel; /* Number of bits per pixel */
     /* Fields added for Windows 3.x follow this line */
-    DWORD Compression;     /* Compression methods used */
-    DWORD SizeOfBitmap;    /* Size of bitmap in bytes */
-    LONG HorzResolution;   /* Horizontal resolution in pixels per meter */
-    LONG VertResolution;   /* Vertical resolution in pixels per meter */
-    DWORD ColorsUsed;      /* Number of colors in the image */
-    DWORD ColorsImportant; /* Minimum number of important colors */
+    uint64 Compression;     /* Compression methods used */
+    uint64 SizeOfBitmap;    /* Size of bitmap in bytes */
+    int64 HorzResolution;   /* Horizontal resolution in pixels per meter */
+    int64 VertResolution;   /* Vertical resolution in pixels per meter */
+    uint64 ColorsUsed;      /* Number of colors in the image */
+    uint64 ColorsImportant; /* Minimum number of important colors */
 };
 struct BitmapHeader4
 {
-    DWORD Size;            /* Size of this header in bytes */
-    LONG Width;            /* Image width in pixels */
-    LONG Height;           /* Image height in pixels */
-    WORD Planes;           /* Number of color planes */
-    WORD BitsPerPixel;     /* Number of bits per pixel */
-    DWORD Compression;     /* Compression methods used */
-    DWORD SizeOfBitmap;    /* Size of bitmap in bytes */
-    LONG HorzResolution;   /* Horizontal resolution in pixels per meter */
-    LONG VertResolution;   /* Vertical resolution in pixels per meter */
-    DWORD ColorsUsed;      /* Number of colors in the image */
-    DWORD ColorsImportant; /* Minimum number of important colors */
+    uint64 Size;            /* Size of this header in bytes */
+    int64 Width;            /* Image width in pixels */
+    int64 Height;           /* Image height in pixels */
+    uint16 Planes;          /* Number of color planes */
+    uint16 BitsPerPixel;    /* Number of bits per pixel */
+    uint64 Compression;     /* Compression methods used */
+    uint64 SizeOfBitmap;    /* Size of bitmap in bytes */
+    int64 HorzResolution;   /* Horizontal resolution in pixels per meter */
+    int64 VertResolution;   /* Vertical resolution in pixels per meter */
+    uint64 ColorsUsed;      /* Number of colors in the image */
+    uint64 ColorsImportant; /* Minimum number of important colors */
     /* Fields added for Windows 4.x follow this line */
 
-    DWORD RedMask;    /* Mask identifying bits of red component */
-    DWORD GreenMask;  /* Mask identifying bits of green component */
-    DWORD BlueMask;   /* Mask identifying bits of blue component */
-    DWORD AlphaMask;  /* Mask identifying bits of alpha component */
-    DWORD CSType;     /* Color space type */
-    LONG RedX;        /* X coordinate of red endpoint */
-    LONG RedY;        /* Y coordinate of red endpoint */
-    LONG RedZ;        /* Z coordinate of red endpoint */
-    LONG GreenX;      /* X coordinate of green endpoint */
-    LONG GreenY;      /* Y coordinate of green endpoint */
-    LONG GreenZ;      /* Z coordinate of green endpoint */
-    LONG BlueX;       /* X coordinate of blue endpoint */
-    LONG BlueY;       /* Y coordinate of blue endpoint */
-    LONG BlueZ;       /* Z coordinate of blue endpoint */
-    DWORD GammaRed;   /* Gamma red coordinate scale value */
-    DWORD GammaGreen; /* Gamma green coordinate scale value */
-    DWORD GammaBlue;  /* Gamma blue coordinate scale value */
+    uint64 RedMask;    /* Mask identifying bits of red component */
+    uint64 GreenMask;  /* Mask identifying bits of green component */
+    uint64 BlueMask;   /* Mask identifying bits of blue component */
+    uint64 AlphaMask;  /* Mask identifying bits of alpha component */
+    uint64 CSType;     /* Color space type */
+    int64 RedX;        /* X coordinate of red endpoint */
+    int64 RedY;        /* Y coordinate of red endpoint */
+    int64 RedZ;        /* Z coordinate of red endpoint */
+    int64 GreenX;      /* X coordinate of green endpoint */
+    int64 GreenY;      /* Y coordinate of green endpoint */
+    int64 GreenZ;      /* Z coordinate of green endpoint */
+    int64 BlueX;       /* X coordinate of blue endpoint */
+    int64 BlueY;       /* Y coordinate of blue endpoint */
+    int64 BlueZ;       /* Z coordinate of blue endpoint */
+    uint64 GammaRed;   /* Gamma red coordinate scale value */
+    uint64 GammaGreen; /* Gamma green coordinate scale value */
+    uint64 GammaBlue;  /* Gamma blue coordinate scale value */
 };
 #pragma pack(pop)
 struct BitmapImage
@@ -405,6 +405,7 @@ struct BitmapImage
 };
 BitmapImage BitmapImage::loadBitmapFromFile(char *filepath)
 {
+    // FIXME: error handling
     BitmapImage bmp;
     bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data);
     bmp.pixels = (uint32 *)(bmp.bh + bmp.bh->BitmapOffset);
@@ -427,7 +428,7 @@ Assets::Assets()
     return;
 }
 // void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
-class uint32_dynamic_2D_array_wrapper
+class uint32_2D_array_wrapper
 {
     // ? TODO: Do we even want this whole thing?
     // FIXME: this is unsafe
@@ -455,7 +456,7 @@ class uint32_dynamic_2D_array_wrapper
     uint32 width;
 
 public:
-    uint32_dynamic_2D_array_wrapper(uint32 *bits, uint32 width)
+    uint32_2D_array_wrapper(uint32 *bits, uint32 width)
     {
         this->bits = bits;
         this->width = width;
@@ -464,17 +465,13 @@ public:
     {
         return row(&(this->bits[this->width * x]));
     }
-    inline uint32 set(int32 x, int32 y, uint32 val)
-    {
-        return this->bits[this->width * y + x] = val;
-    }
 };
 void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage *bmp, int32 x_offset, int32 y_offset)
 {
     // FIXME: protect overflows
     // FIXME: colors are a bit broken
-    uint32_dynamic_2D_array_wrapper back_buffer_bits = uint32_dynamic_2D_array_wrapper(back_buffer->bits, back_buffer->width);
-    uint32_dynamic_2D_array_wrapper bmp_pixels = uint32_dynamic_2D_array_wrapper(bmp->pixels, bmp->bh->Width);
+    uint32_2D_array_wrapper back_buffer_bits = uint32_2D_array_wrapper(back_buffer->bits, back_buffer->width);
+    uint32_2D_array_wrapper bmp_pixels = uint32_2D_array_wrapper(bmp->pixels, bmp->bh->Width);
 
     for (int32 x = 0; x < bmp->bh->Width; x++)
     {
@@ -583,22 +580,24 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         unsigned char registered_controllers = 1;
         pollXInputControllers(registered_controllers);
         gameUpdateAndRender(back_buffer);
-#ifdef DEBUG
-        if (!(GetTimeMillis() - last_tick < ms_per_tick * 2))
-        {
-// this game update went overbudget
-// renders red screen
-#define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
-#define test_image(x, y) ((int32 *)assets.test_image.pixels)[assets.test_image.bh->Width * y + x]
-            for (int32 i = 0; i < back_buffer.width * back_buffer.height; i++)
-                back_buffer.bits[i] &= 0xffff0000;
-            DEBUGBltBmp(&back_buffer, &assets.test_image, 400, 300);
-            // ? TODO: render "frozen" text in lower left corner instead (disconnect rendering from update??)
-            // TODO: over a certain treshold, skip frame
-            // TODO: skip based on average of last n ticks
-            // TODO: measure skipped frames
-        }
+#ifndef DEBUG
+        static_assert(false);
 #endif
+        DEBUGBltBmp(&back_buffer, &assets.test_image, 400, 300);
+
+        //         if (!(GetTimeMillis() - last_tick < ms_per_tick * 2))
+        //         {
+        // // this game update went overbudget
+        // // renders red screen
+        // #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
+        // #define test_image(x, y) ((int32 *)assets.test_image.pixels)[assets.test_image.bh->Width * y + x]
+        //             for (int32 i = 0; i < back_buffer.width * back_buffer.height; i++)
+        //                 back_buffer.bits[i] &= 0xffff0000;
+        //             // ? TODO: render "frozen" text in lower left corner instead (disconnect rendering from update??)
+        //             // TODO: over a certain treshold, skip frame
+        //             // TODO: skip based on average of last n ticks
+        //             // TODO: measure skipped frames
+        //         }
         Win32UpdateWindow(device_context, window, back_buffer);
 
         last_fps++;

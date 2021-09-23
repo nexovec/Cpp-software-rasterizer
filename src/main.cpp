@@ -72,25 +72,22 @@ internal inline unsigned int interpolatedColor(float lam_1, float lam_2, float l
     // return 0xff00ff00;
 
     //  ? TODO: for performance reasons, you should decompose colors per-triangle, not per-pixel, but bitwise is fast and this isn't production code anywway
-    const unsigned char a1 = (color1 >> 24);
-    const unsigned char r1 = (color1 >> 16);
-    const unsigned char g1 = (color1 >> 8);
-    const unsigned char b1 = (color1 >> 0);
-
-    const unsigned char a2 = (color2 >> 24);
-    const unsigned char r2 = (color2 >> 16);
-    const unsigned char g2 = (color2 >> 8);
-    const unsigned char b2 = (color2 >> 0);
-
-    const unsigned char a3 = (color3 >> 24);
-    const unsigned char r3 = (color3 >> 16);
-    const unsigned char g3 = (color3 >> 8);
-    const unsigned char b3 = (color3 >> 0);
-
-    const unsigned char final_a = a1 * lam_1 + a2 * lam_2 + a3 * lam_3;
-    const unsigned char final_r = r1 * lam_1 + r2 * lam_2 + r3 * lam_3;
-    const unsigned char final_g = g1 * lam_1 + g2 * lam_2 + g3 * lam_3;
-    const unsigned char final_b = b1 * lam_1 + b2 * lam_2 + b3 * lam_3;
+    const uint8 a1 = (color1 >> 24);
+    const uint8 r1 = (color1 >> 16);
+    const uint8 g1 = (color1 >> 8);
+    const uint8 b1 = (color1 >> 0);
+    const uint8 a2 = (color2 >> 24);
+    const uint8 r2 = (color2 >> 16);
+    const uint8 g2 = (color2 >> 8);
+    const uint8 b2 = (color2 >> 0);
+    const uint8 a3 = (color3 >> 24);
+    const uint8 r3 = (color3 >> 16);
+    const uint8 g3 = (color3 >> 8);
+    const uint8 b3 = (color3 >> 0);
+    const uint8 final_a = a1 * lam_1 + a2 * lam_2 + a3 * lam_3;
+    const uint8 final_r = r1 * lam_1 + r2 * lam_2 + r3 * lam_3;
+    const uint8 final_g = g1 * lam_1 + g2 * lam_2 + g3 * lam_3;
+    const uint8 final_b = b1 * lam_1 + b2 * lam_2 + b3 * lam_3;
 
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
