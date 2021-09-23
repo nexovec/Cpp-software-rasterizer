@@ -397,37 +397,6 @@ struct BitmapHeader4
     uint64 GammaBlue;  /* Gamma blue coordinate scale value */
 };
 #pragma pack(pop)
-struct BitmapImage
-{
-    static BitmapImage loadBitmapFromFile(char *filepath);
-    BitmapHeader *bh;
-    uint32 *pixels;
-};
-BitmapImage BitmapImage::loadBitmapFromFile(char *filepath)
-{
-    // FIXME: error handling
-    BitmapImage bmp;
-    bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data);
-    bmp.pixels = (uint32 *)(bmp.bh + bmp.bh->BitmapOffset);
-    return bmp;
-}
-struct Assets
-{
-    Assets();
-    BitmapImage test_image;
-    // ? FIXME: optionl memory free
-};
-Assets::Assets()
-{
-    char *path = (char *)"font.bmp";
-    this->test_image = BitmapImage::loadBitmapFromFile(path);
-    // FIXME: no safeguard against read errors
-    // FIXME: This is all just wrong, wtf is = and why does it have to be here?
-    // FIXME: whyyyyyyyy
-    // TODO:
-    return;
-}
-// void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
 class uint32_2D_array_wrapper
 {
     // ? TODO: Do we even want this whole thing?
@@ -436,11 +405,26 @@ class uint32_2D_array_wrapper
     {
         uint32 *number;
         uint32_wrapper(uint32 *num) : number(num) {}
+        uint32_wrapper operator*(uint32 other)
+        {
+            uint32 *number = this->number;
+            *number *= other;
+            return *this;
+        }
         uint32_wrapper *operator=(uint32_wrapper other)
         {
             uint32 *number = this->number;
             *number = *other.number;
             return this;
+        }
+        uint32 operator==(uint32 other)
+        {
+            uint32 *number = this->number;
+            return other == *number;
+            // if (other == *number)
+            //     return 1;
+            // else
+            //     return 0;
         }
     };
     struct row
@@ -466,6 +450,53 @@ public:
         return row(&(this->bits[this->width * x]));
     }
 };
+struct BitmapImage
+{
+    static BitmapImage loadBitmapFromFile(char *filepath);
+    static BitmapImage setAlphaColor(BitmapImage bmp, uint32 alpha_color);
+    BitmapHeader *bh;
+    uint32 *pixels;
+};
+BitmapImage BitmapImage::setAlphaColor(BitmapImage bmp, uint32 alpha_color)
+{
+    uint32_2D_array_wrapper bmp_pixels = uint32_2D_array_wrapper(bmp.pixels, bmp.bh->Width);
+
+    for (int32 x = 0; x < bmp.bh->Width; x++)
+    {
+        for (int32 y = 0; y < bmp.bh->Height; y++)
+        {
+            // zero out if alpha is 0
+            // bmp_pixels[y][x] = bmp_pixels[y][x] * ((*(bmp_pixels[y][x].number) >> 24) & 0xff != 0);
+            uint32 shouldZero = bmp_pixels[y][x] == alpha_color;
+            bmp_pixels[y][x] = bmp_pixels[y][x] * !shouldZero;
+        }
+    }
+    return bmp;
+}
+BitmapImage BitmapImage::loadBitmapFromFile(char *filepath)
+{
+    // FIXME: error handling
+    BitmapImage bmp;
+    bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data);
+    bmp.pixels = (uint32 *)(bmp.bh + bmp.bh->BitmapOffset);
+    return bmp;
+}
+struct Assets
+{
+    Assets();
+    BitmapImage test_image;
+    // ? FIXME: optional memory free
+};
+Assets::Assets()
+{
+    char *path = (char *)"font.bmp";
+    // this->test_image = BitmapImage::loadBitmapFromFile(path);
+    // ! FIXME:
+    this->test_image = BitmapImage::setAlphaColor(BitmapImage::loadBitmapFromFile(path), 0xffff00ff);
+    // FIXME: no safeguard against read errors
+    return;
+}
+// void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
 void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage *bmp, int32 x_offset, int32 y_offset)
 {
     // FIXME: protect overflows
