@@ -11,8 +11,8 @@ BitmapImage BitmapImage::setColorAsAlpha(BitmapImage bmp, uint32 alpha_color)
         {
             // zero out if alpha is 0
             // bmp_pixels[y][x] = bmp_pixels[y][x] * ((*(bmp_pixels[y][x].number) >> 24) & 0xff != 0);
-            // uint32 shouldZero = bmp_pixels[y][x] == alpha_color;
-            // bmp_pixels[y][x] = bmp_pixels[y][x] * !shouldZero;
+            uint32 shouldZero = bmp_pixels[y][x] == alpha_color;
+            bmp_pixels[y][x] = bmp_pixels[y][x] * !shouldZero;
         }
     }
     return bmp;

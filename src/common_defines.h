@@ -28,25 +28,25 @@ class uint32_2D_array_wrapper_unsafe
         uint32_wrapper(uint32 *num) : number(num) {}
         uint32 operator*(uint32 other)
         {
-            uint32 number = *(this->number);
-            return number * other;
+            uint32 num = *(this->number);
+            return num * other;
         }
         uint32_wrapper *operator=(uint32 other)
         {
-            uint32 *number = this->number;
-            *number = other;
+            uint32 *num = this->number;
+            *num = other;
             return this;
         }
         uint32_wrapper *operator=(uint32_wrapper other)
         {
-            uint32 *number = this->number;
-            *number = *other.number;
+            uint32 *num = this->number;
+            *num = *other.number;
             return this;
         }
         uint32 operator==(uint32 other)
         {
-            uint32 *number = this->number;
-            return other == *number;
+            uint32 *num = this->number;
+            return other == *num;
         }
     };
     struct row

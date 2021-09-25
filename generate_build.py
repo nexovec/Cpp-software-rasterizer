@@ -11,6 +11,7 @@ config = {
         '-INCREMENTAL:YES',
         '-FC',
         '-ZI',
+        '-W4',
         # '-Od',
         '-O2',
         '-Isrc',

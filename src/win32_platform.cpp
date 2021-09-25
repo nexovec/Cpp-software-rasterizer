@@ -38,7 +38,7 @@ internal void win32InitXInput()
     }
     if (!lib)
     {
-        ExitProcess(-1);
+        ExitProcess(1);
     }
     XInputSetState_ = (x_input_set_state *)GetProcAddress(lib, "XInputSetState");
     XInputGetState_ = (x_input_get_state *)GetProcAddress(lib, "XInputGetState");
@@ -80,7 +80,7 @@ internal void Win32ResizeDibSection(HWND window)
     SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((real64)width / aspect_ratio), 0);
     prev_size = window_coords;
 }
-internal void Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back_buffer)
+internal int32 Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back_buffer)
 {
     // TODO: benchmark against https://gamedev.net/forums/topic/385918-fast-drawing-to-screen-win32gdi/3552067/
     RECT rect;
@@ -92,8 +92,8 @@ internal void Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back
     bitmap_info.bmiHeader.biPlanes = 1;
     bitmap_info.bmiHeader.biBitCount = 32;
     bitmap_info.bmiHeader.biCompression = BI_RGB;
-    int32 width = rect.right - rect.left;
-    int32 height = rect.bottom - rect.top;
+    // int32 width = rect.right - rect.left;
+    // int32 height = rect.bottom - rect.top;
     // TODO: use StretchDIBits and fixed window size
     int32 res = StretchDIBits(
         device_context,
@@ -109,6 +109,7 @@ internal void Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back
         &bitmap_info,
         DIB_RGB_COLORS,
         SRCCOPY);
+    return res;
 }
 internal int32 HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
 {
@@ -164,13 +165,13 @@ internal real64 GetTimeMillis()
     if (!QueryPerformanceCounter(&lpPerformanceCount))
     {
         // TODO: error handle
-        ExitProcess(-1);
+        ExitProcess(1);
     }
     persistent LARGE_INTEGER lpFrequency;
     if (!QueryPerformanceFrequency(&lpFrequency))
     {
         // TODO: error handle
-        ExitProcess(-1);
+        ExitProcess(1);
     }
     real64 time_in_seconds = (real64)lpPerformanceCount.QuadPart / (real64)lpFrequency.QuadPart;
     return time_in_seconds * 1000;
@@ -245,7 +246,7 @@ void dispatchSystemMessages()
         0);
     if (bRet == -1)
     {
-        ExitProcess(-1);
+        ExitProcess(1);
     }
     TranslateMessage(&message);
     DispatchMessage(&message);
@@ -309,7 +310,7 @@ void DEBUGprintSystemPageSize()
     SYSTEM_INFO si;
     GetSystemInfo(&si);
     char print[512];
-    sprintf((char *const)&print, "The page size for this system is %u bytes.\n", si.dwPageSize);
+    sprintf_s((char *const)&print, 512, "The page size for this system is %u bytes.\n", si.dwPageSize);
     OutputDebugStringA(print);
 #endif
 }
@@ -367,7 +368,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 #ifdef DEBUG
         int32 h = assets.test_image.bh->bmp_info_header.Height;
         char buf[128];
-        sprintf(buf, "%ld\n", h);
+        sprintf_s(buf, 128, "%ld\n", h);
         OutputDebugStringA(buf);
 #endif
     }
@@ -385,7 +386,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     window_class_ex.lpszClassName = "SuperWindowClass";
     ATOM window_class_atom = RegisterClassEx(&window_class_ex);
     if (!window_class_atom)
-        ExitProcess(-1);
+        ExitProcess(1);
     HWND window = CreateWindowEx(
         WS_EX_OVERLAPPEDWINDOW,
         window_class_ex.lpszClassName,
@@ -402,7 +403,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     if (!window)
     {
         // TODO: error handle
-        ExitProcess(-1);
+        ExitProcess(1);
     }
     SetFocus(window);
     // FIXME: this gets multiplied by windows global scale multiplier for some reason:
@@ -429,7 +430,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         real64 time = GetTimeMillis();
         if (time - last_tick < ms_per_tick)
         {
-            time - last_tick > 1 ? Sleep((long)time - last_tick - 1) : Sleep(0);
+            time - last_tick > 1 ? Sleep((int64)(time - last_tick - 1)) : Sleep(0);
             // Sleep(0);
             continue;
         }
@@ -470,7 +471,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         if (GetTimeMillis() - last_fps_log_time > 1000)
         {
             char title[128];
-            sprintf((char *const)&title, "handmade_test | fps: %u", last_fps);
+            sprintf_s((char *const)&title, 128, "handmade_test | fps: %u", last_fps);
             SetWindowText(window, title);
             last_fps = 0;
             last_fps_log_time = GetTimeMillis();

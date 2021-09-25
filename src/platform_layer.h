@@ -47,7 +47,7 @@ typedef double real64;
 
 struct file_contents
 {
-    int64 size;
+    uint64 size;
     void *data;
     static file_contents readWholeFile(char *path);
     void free();
