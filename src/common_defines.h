@@ -18,3 +18,57 @@ typedef unsigned long uint64;
 #ifndef DEBUG
 #define DEBUG
 #endif
+
+class uint32_2D_array_wrapper_unsafe
+{
+    // ? TODO: Do we even want this whole thing?
+    struct uint32_wrapper
+    {
+        uint32 *number;
+        uint32_wrapper(uint32 *num) : number(num) {}
+        uint32 operator*(uint32 other)
+        {
+            uint32 number = *(this->number);
+            return number * other;
+        }
+        uint32_wrapper *operator=(uint32 other)
+        {
+            uint32 *number = this->number;
+            *number = other;
+            return this;
+        }
+        uint32_wrapper *operator=(uint32_wrapper other)
+        {
+            uint32 *number = this->number;
+            *number = *other.number;
+            return this;
+        }
+        uint32 operator==(uint32 other)
+        {
+            uint32 *number = this->number;
+            return other == *number;
+        }
+    };
+    struct row
+    {
+        uint32 *bits;
+        row(uint32 *bits) : bits(bits) {}
+        uint32_wrapper operator[](int32 y)
+        {
+            return uint32_wrapper(&this->bits[y]);
+        }
+    };
+    uint32 *bits;
+    uint32 width;
+
+public:
+    uint32_2D_array_wrapper_unsafe(uint32 *bits, uint32 width)
+    {
+        this->bits = bits;
+        this->width = width;
+    }
+    inline row operator[](int32 x)
+    {
+        return row(&(this->bits[this->width * x]));
+    }
+};

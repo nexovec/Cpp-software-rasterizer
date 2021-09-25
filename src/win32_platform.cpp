@@ -1,5 +1,6 @@
-#include "win32_platform.h"
 #include "common_defines.h"
+#include "platform_layer.h"
+#include "data_parsing.h"
 #include "main.h"
 #include <windows.h>
 #include <xinput.h>
@@ -249,13 +250,6 @@ void dispatchSystemMessages()
     TranslateMessage(&message);
     DispatchMessage(&message);
 }
-struct file_contents
-{
-    int64 size;
-    void *data;
-    static file_contents readWholeFile(char *path);
-    void free();
-};
 void file_contents::free()
 {
     VirtualFree(this->data, 0, MEM_RELEASE);
@@ -319,168 +313,7 @@ void DEBUGprintSystemPageSize()
     OutputDebugStringA(print);
 #endif
 }
-#pragma pack(push, 1)
-struct BitmapHeader1
-{
-    uint16 Type;       /* File type identifier (always 0) */
-    uint16 Width;      /* Width of the bitmap in pixels */
-    uint16 Height;     /* Height of the bitmap in scan lines */
-    uint16 ByteWidth;  /* Width of bitmap in ints */
-    int8 Planes;       /* Number of color planes */
-    int8 BitsPerPixel; /* Number of bits per pixel */
-};
-struct BitmapHeader
-{
-    uint16 FileType;        /* File type, always 4D42h ("BM") */
-    uint64 FileSize;        /* Size of the file in bytes */
-    uint16 Reserved1;       /* Always 0 */
-    uint16 Reserved2;       /* Always 0 */
-    uint64 BitmapOffset;    /* Starting position of image data in bytes */
-    uint64 Size;            /* Size of this header in bytes */
-    int64 Width;            /* Image width in pixels */
-    int64 Height;           /* Image height in pixels */
-    uint16 Planes;          /* Number of color planes */
-    uint16 BitsPerPixel;    /* Number of bits per pixel */
-    uint64 Compression;     /* Compression methods used */
-    uint64 SizeOfBitmap;    /* Size of bitmap in bytes */
-    int64 HorzResolution;   /* Horizontal resolution in pixels per meter */
-    int64 VertResolution;   /* Vertical resolution in pixels per meter */
-    uint64 ColorsUsed;      /* Number of colors in the image */
-    uint64 ColorsImportant; /* Minimum number of important colors */
-};
-struct BitmapHeader3
-{
-    uint64 Size;         /* Size of this header in bytes */
-    int64 Width;         /* Image width in pixels */
-    int64 Height;        /* Image height in pixels */
-    uint16 Planes;       /* Number of color planes */
-    uint16 BitsPerPixel; /* Number of bits per pixel */
-    /* Fields added for Windows 3.x follow this line */
-    uint64 Compression;     /* Compression methods used */
-    uint64 SizeOfBitmap;    /* Size of bitmap in bytes */
-    int64 HorzResolution;   /* Horizontal resolution in pixels per meter */
-    int64 VertResolution;   /* Vertical resolution in pixels per meter */
-    uint64 ColorsUsed;      /* Number of colors in the image */
-    uint64 ColorsImportant; /* Minimum number of important colors */
-};
-struct BitmapHeader4
-{
-    uint64 Size;            /* Size of this header in bytes */
-    int64 Width;            /* Image width in pixels */
-    int64 Height;           /* Image height in pixels */
-    uint16 Planes;          /* Number of color planes */
-    uint16 BitsPerPixel;    /* Number of bits per pixel */
-    uint64 Compression;     /* Compression methods used */
-    uint64 SizeOfBitmap;    /* Size of bitmap in bytes */
-    int64 HorzResolution;   /* Horizontal resolution in pixels per meter */
-    int64 VertResolution;   /* Vertical resolution in pixels per meter */
-    uint64 ColorsUsed;      /* Number of colors in the image */
-    uint64 ColorsImportant; /* Minimum number of important colors */
-    /* Fields added for Windows 4.x follow this line */
 
-    uint64 RedMask;    /* Mask identifying bits of red component */
-    uint64 GreenMask;  /* Mask identifying bits of green component */
-    uint64 BlueMask;   /* Mask identifying bits of blue component */
-    uint64 AlphaMask;  /* Mask identifying bits of alpha component */
-    uint64 CSType;     /* Color space type */
-    int64 RedX;        /* X coordinate of red endpoint */
-    int64 RedY;        /* Y coordinate of red endpoint */
-    int64 RedZ;        /* Z coordinate of red endpoint */
-    int64 GreenX;      /* X coordinate of green endpoint */
-    int64 GreenY;      /* Y coordinate of green endpoint */
-    int64 GreenZ;      /* Z coordinate of green endpoint */
-    int64 BlueX;       /* X coordinate of blue endpoint */
-    int64 BlueY;       /* Y coordinate of blue endpoint */
-    int64 BlueZ;       /* Z coordinate of blue endpoint */
-    uint64 GammaRed;   /* Gamma red coordinate scale value */
-    uint64 GammaGreen; /* Gamma green coordinate scale value */
-    uint64 GammaBlue;  /* Gamma blue coordinate scale value */
-};
-#pragma pack(pop)
-class uint32_2D_array_wrapper
-{
-    // ? TODO: Do we even want this whole thing?
-    // FIXME: this is unsafe
-    struct uint32_wrapper
-    {
-        uint32 *number;
-        uint32_wrapper(uint32 *num) : number(num) {}
-        uint32_wrapper operator*(uint32 other)
-        {
-            uint32 *number = this->number;
-            *number *= other;
-            return *this;
-        }
-        uint32_wrapper *operator=(uint32_wrapper other)
-        {
-            uint32 *number = this->number;
-            *number = *other.number;
-            return this;
-        }
-        uint32 operator==(uint32 other)
-        {
-            uint32 *number = this->number;
-            return other == *number;
-            // if (other == *number)
-            //     return 1;
-            // else
-            //     return 0;
-        }
-    };
-    struct row
-    {
-        uint32 *bits;
-        row(uint32 *bits) : bits(bits) {}
-        uint32_wrapper operator[](int32 y)
-        {
-            return uint32_wrapper(&this->bits[y]);
-        }
-    };
-    uint32 *bits;
-    uint32 width;
-
-public:
-    uint32_2D_array_wrapper(uint32 *bits, uint32 width)
-    {
-        this->bits = bits;
-        this->width = width;
-    }
-    inline row operator[](int32 x)
-    {
-        return row(&(this->bits[this->width * x]));
-    }
-};
-struct BitmapImage
-{
-    static BitmapImage loadBitmapFromFile(char *filepath);
-    static BitmapImage setAlphaColor(BitmapImage bmp, uint32 alpha_color);
-    BitmapHeader *bh;
-    uint32 *pixels;
-};
-BitmapImage BitmapImage::setAlphaColor(BitmapImage bmp, uint32 alpha_color)
-{
-    uint32_2D_array_wrapper bmp_pixels = uint32_2D_array_wrapper(bmp.pixels, bmp.bh->Width);
-
-    for (int32 x = 0; x < bmp.bh->Width; x++)
-    {
-        for (int32 y = 0; y < bmp.bh->Height; y++)
-        {
-            // zero out if alpha is 0
-            // bmp_pixels[y][x] = bmp_pixels[y][x] * ((*(bmp_pixels[y][x].number) >> 24) & 0xff != 0);
-            uint32 shouldZero = bmp_pixels[y][x] == alpha_color;
-            bmp_pixels[y][x] = bmp_pixels[y][x] * !shouldZero;
-        }
-    }
-    return bmp;
-}
-BitmapImage BitmapImage::loadBitmapFromFile(char *filepath)
-{
-    // FIXME: error handling
-    BitmapImage bmp;
-    bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data);
-    bmp.pixels = (uint32 *)(bmp.bh + bmp.bh->BitmapOffset);
-    return bmp;
-}
 struct Assets
 {
     Assets();
@@ -491,8 +324,7 @@ Assets::Assets()
 {
     char *path = (char *)"font.bmp";
     // this->test_image = BitmapImage::loadBitmapFromFile(path);
-    // ! FIXME:
-    this->test_image = BitmapImage::setAlphaColor(BitmapImage::loadBitmapFromFile(path), 0xffff00ff);
+    this->test_image = BitmapImage::setColorAsAlpha(BitmapImage::loadBitmapFromFile(path), 0xffff00ff);
     // FIXME: no safeguard against read errors
     return;
 }
@@ -501,16 +333,19 @@ void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage *bmp, int32 x_offset, int3
 {
     // FIXME: protect overflows
     // FIXME: colors are a bit broken
-    uint32_2D_array_wrapper back_buffer_bits = uint32_2D_array_wrapper(back_buffer->bits, back_buffer->width);
-    uint32_2D_array_wrapper bmp_pixels = uint32_2D_array_wrapper(bmp->pixels, bmp->bh->Width);
+    uint32_2D_array_wrapper_unsafe back_buffer_bits = uint32_2D_array_wrapper_unsafe(back_buffer->bits, back_buffer->width);
+    uint32_2D_array_wrapper_unsafe bmp_pixels = uint32_2D_array_wrapper_unsafe(bmp->pixels, bmp->bh->bmp_info_header.Width);
 
-    for (int32 x = 0; x < bmp->bh->Width; x++)
+    for (int32 x = 0; x < bmp->bh->bmp_info_header.Width; x++)
     {
-        for (int32 y = 0; y < bmp->bh->Height; y++)
+        for (int32 y = 0; y < bmp->bh->bmp_info_header.Height; y++)
         {
             back_buffer_bits[y + y_offset][x + x_offset] = bmp_pixels[y][x];
             // back_buffer_bits.set(x + x_offset, y + y_offset, bmp_pixels[x][y]);
             // back_buffer_bits.set(x + x_offset, y + y_offset, bmp_pixels.get(x, y));
+            uint32 is_alpha = *bmp_pixels[y][x].number == 0xffff00ff;
+            // uint32 is_alpha = *bmp_pixels[y][x].number == (uint32)0;
+            back_buffer_bits[y + y_offset][x + x_offset] = back_buffer_bits[y + y_offset][x + x_offset] * is_alpha + bmp_pixels[y][x] * !is_alpha;
         }
     }
 }
@@ -530,7 +365,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     {
 #ifdef DEBUG
-        int32 h = assets.test_image.bh->Height;
+        int32 h = assets.test_image.bh->bmp_info_header.Height;
         char buf[128];
         sprintf(buf, "%ld\n", h);
         OutputDebugStringA(buf);
@@ -614,7 +449,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 #ifndef DEBUG
         static_assert(false);
 #endif
-        DEBUGBltBmp(&back_buffer, &assets.test_image, 400, 300);
+        DEBUGBltBmp(&back_buffer, &assets.test_image, 500, 300);
 
         //         if (!(GetTimeMillis() - last_tick < ms_per_tick * 2))
         //         {

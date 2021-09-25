@@ -1,7 +1,8 @@
 {
     // "C_Cpp.errorSquiggles": "Disabled",
     "files.associations": {
-        "*.rh": "cpp"
+        "*.rh": "cpp",
+        "cstdlib": "cpp"
     },
     "python.formatting.provider": "autopep8",
     "C_Cpp.errorSquiggles": "Disabled",
