@@ -51,14 +51,14 @@ struct BitmapHeader
     BmpFileHeaderSection bmp_file_header;
     BmpInfoHeaderSection bmp_info_header;
     BmpCompressionHeaderSection bmp_compression_header;
-    // BmpColorHeader bmp_color_header;
+    BmpColorHeader bmp_color_header;
 };
 
 #pragma pack(pop)
 
 struct BitmapImage
 {
-    static BitmapImage loadBitmapFromFile(char *filepath);
+    static int loadBitmapFromFile(BitmapImage *bmp, char *filepath);
     BitmapHeader *bh;
     uint32 *pixels;
 };

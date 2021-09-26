@@ -34,7 +34,7 @@ config = {
             ]
         }
     ],
-    'launch_debugger': True, # defaults to False
+    'launch_debugger': True,  # defaults to False
     # 'run_executable': True,  # defaults to False
     'pause_after_build': True,  # defaults to False
     # 'build_examples': True  # defaults to False
@@ -88,7 +88,8 @@ commands_win32 = [
     ''.join(''.join(map(lambda str: 'cl '+str+'\n', cl_args_examples)
                     ).split("\n")[:-1]) if config.get('build_examples')else '',
     'START devenv ' +
-    main_exe_path if config.get('launch_debugger') == True and "devenv.exe" not in (p.name() for p in psutil.process_iter()) else '',
+    main_exe_path if config.get('launch_debugger') == True and "devenv.exe" not in (
+        p.name() for p in psutil.process_iter()) else '',
     'START '+main_exe_path if config.get("run_executable") else '',
     'set "endTime=%time: =0%"',
     'rem Get elapsed time:',

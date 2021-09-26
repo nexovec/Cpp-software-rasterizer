@@ -300,7 +300,7 @@ file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
         CloseHandle(file_handle);
         return file;
     }
-
+    OutputDebugStringA("Something went wrong opening a file");
     CloseHandle(file_handle);
     VirtualFree(file.data, 0, MEM_RELEASE);
     return {};
@@ -330,7 +330,7 @@ Assets::Assets()
 {
     char *path = (char *)"font.bmp";
     // this->test_image = BitmapImage::loadBitmapFromFile(path);
-    this->test_image = BitmapImage::loadBitmapFromFile(path);
+    BitmapImage::loadBitmapFromFile(&this->test_image, path);
     // FIXME: no safeguard against read errors
     return;
 }
@@ -345,9 +345,9 @@ void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage bmp, int32 x_offset, int32
         for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
         {
             back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = bmp.pixels[y * bmp.bh->bmp_info_header.Width + x];
-            uint32 is_alpha = bmp.pixels[bmp.bh->bmp_info_header.Width * y + x] == 0xffff00ff;
+            // uint32 is_alpha = bmp.pixels[bmp.bh->bmp_info_header.Width * y + x] == 0xffff00ff;
             // uint32 is_zero = *bmp_pixels[y][x].number == (uint32)0;
-            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] * is_alpha + bmp.pixels[y * bmp.bh->bmp_info_header.Width + x] * !is_alpha;
+            // back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] * is_alpha + bmp.pixels[y * bmp.bh->bmp_info_header.Width + x] * !is_alpha;
         }
     }
 }
