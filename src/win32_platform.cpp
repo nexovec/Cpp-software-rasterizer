@@ -328,7 +328,7 @@ struct Assets
 };
 Assets::Assets()
 {
-    char *path = (char *)"font.bmp";
+    char *path = (char *)"soldier.bmp";
     // this->test_image = BitmapImage::loadBitmapFromFile(path);
     BitmapImage::loadBitmapFromFile(&this->test_image, path);
     // FIXME: no safeguard against read errors
@@ -337,7 +337,6 @@ Assets::Assets()
 // void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
 void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
 {
-    // FIXME: protect overflows
     // FIXME: colors are a bit broken
 
     for (int32 x = 0; x < bmp.bh->bmp_info_header.Width; x++)
@@ -451,7 +450,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 #ifndef DEBUG
         static_assert(false);
 #endif
-        DEBUGBltBmp(&back_buffer, assets.test_image, 500, 300);
+        DEBUGBltBmp(&back_buffer, assets.test_image, 100, 200);
 
         //         if (!(GetTimeMillis() - last_tick < ms_per_tick * 2))
         //         {

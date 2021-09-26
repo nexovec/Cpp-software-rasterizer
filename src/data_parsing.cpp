@@ -2,13 +2,7 @@
 #include "platform_layer.h"
 int BitmapImage::loadBitmapFromFile(BitmapImage *bmp, char *filepath)
 {
-    // FIXME: error handling
-    // HOW THE F DOES ˇˇTHISˇˇ COMPILE?!
-    // bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data,sizeof(BitmapHeader));
-    //
-
     bmp->bh = (BitmapHeader *)(file_contents::readWholeFile(filepath, sizeof(BitmapHeader)).data);
-    // FIXME: this is not the correct way to do things
     if (bmp->bh == 0)
     {
         TerminateProcess(1);
@@ -26,14 +20,30 @@ int BitmapImage::loadBitmapFromFile(BitmapImage *bmp, char *filepath)
     if (bmp->bh->bmp_info_header.Size > sizeof(BmpFileHeaderSection) + sizeof(BmpInfoHeaderSection))
     {
         // compression header exists
-        if (bmp->bh->bmp_info_header.BitsPerPixel != 32)
+        // TODO: convert to 32 bits per pixel
+        switch (bmp->bh->bmp_info_header.BitsPerPixel)
         {
-            // TODO: convert to 32 bits per pixel
-            TerminateProcess(1);
+        case 32:
+            break;
+        case 24:
+        {
         }
-        if (bmp->bh->bmp_compression_header.Compression)
+        break;
+        default:
+            TerminateProcess(1);
+            break;
+        }
+
+        // TODO: decompress
+        switch (bmp->bh->bmp_compression_header.Compression)
         {
-            // TODO: decompress
+        case 0:
+            break;
+        case 3:
+            break;
+        default:
+            TerminateProcess(1);
+            break;
         }
     }
     if (bmp->bh->bmp_info_header.Size > sizeof(BmpFileHeaderSection) + sizeof(BmpInfoHeaderSection) + sizeof(BmpCompressionHeaderSection))
