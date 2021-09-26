@@ -1,7 +1,7 @@
 #pragma once
 #include "common_defines.h"
 #pragma pack(push, 1)
-struct BmpFileHeader
+struct BmpFileHeaderSection
 {
     uint16 FileType;     /* File type, always 4D42h ("BM") */
     uint64 FileSize;     /* Size of the file in bytes */
@@ -9,7 +9,7 @@ struct BmpFileHeader
     uint16 Reserved2;    /* Always 0 */
     uint64 BitmapOffset; /* Starting position of image data in bytes */
 };
-struct BmpInfoHeader
+struct BmpInfoHeaderSection
 {
     uint64 Size;         /* Size of this header in bytes */
     int64 Width;         /* Image width in pixels */
@@ -17,7 +17,7 @@ struct BmpInfoHeader
     uint16 Planes;       /* Number of color planes */
     uint16 BitsPerPixel; /* Number of bits per pixel */
 };
-struct BmpCompressionHeader
+struct BmpCompressionHeaderSection
 {
     uint64 Compression;     /* Compression methods used */
     uint64 SizeOfBitmap;    /* Size of bitmap in bytes */
@@ -26,16 +26,8 @@ struct BmpCompressionHeader
     uint64 ColorsUsed;      /* Number of colors in the image */
     uint64 ColorsImportant; /* Minimum number of important colors */
 };
-struct BitmapHeader
-{
-    BmpFileHeader bmp_file_header;
-    BmpInfoHeader bmp_info_header;
-    // BmpCompressionHeader bch;
-};
-
 struct BmpColorHeader
 {
-    // TODO: use
     uint64 RedMask;    /* Mask identifying bits of red component */
     uint64 GreenMask;  /* Mask identifying bits of green component */
     uint64 BlueMask;   /* Mask identifying bits of blue component */
@@ -54,12 +46,19 @@ struct BmpColorHeader
     uint64 GammaGreen; /* Gamma green coordinate scale value */
     uint64 GammaBlue;  /* Gamma blue coordinate scale value */
 };
+struct BitmapHeader
+{
+    BmpFileHeaderSection bmp_file_header;
+    BmpInfoHeaderSection bmp_info_header;
+    BmpCompressionHeaderSection bmp_compression_header;
+    // BmpColorHeader bmp_color_header;
+};
+
 #pragma pack(pop)
 
 struct BitmapImage
 {
     static BitmapImage loadBitmapFromFile(char *filepath);
-    static BitmapImage setColorAsAlpha(BitmapImage bmp, uint32 alpha_color);
     BitmapHeader *bh;
     uint32 *pixels;
 };

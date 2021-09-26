@@ -1,27 +1,46 @@
 #include "data_parsing.h"
 #include "platform_layer.h"
-BitmapImage BitmapImage::setColorAsAlpha(BitmapImage bmp, uint32 alpha_color)
-{
-    // TODO:
-    uint32_2D_array_wrapper_unsafe bmp_pixels = uint32_2D_array_wrapper_unsafe(bmp.pixels, bmp.bh->bmp_info_header.Width);
-
-    for (int32 x = 0; x < bmp.bh->bmp_info_header.Width; x++)
-    {
-        for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
-        {
-            // zero out if alpha is 0
-            // bmp_pixels[y][x] = bmp_pixels[y][x] * ((*(bmp_pixels[y][x].number) >> 24) & 0xff != 0);
-            uint32 shouldZero = bmp_pixels[y][x] == alpha_color;
-            bmp_pixels[y][x] = bmp_pixels[y][x] * !shouldZero;
-        }
-    }
-    return bmp;
-}
 BitmapImage BitmapImage::loadBitmapFromFile(char *filepath)
 {
     // FIXME: error handling
     BitmapImage bmp;
-    bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data);
+    // FIXME: HOW THE F DOES ˇˇTHISˇˇ COMPILE?!
+    // bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data,sizeof(BitmapHeader));
+    //
+
+    bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath, sizeof(BitmapHeader)).data);
+    // FIXME: this is not the correct way to do things
+    if (bmp.bh == 0)
+    {
+        TerminateProcess(2);
+    }
+    // bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data);
     bmp.pixels = (uint32 *)(bmp.bh + bmp.bh->bmp_file_header.BitmapOffset);
+
+    // if (bmp.bh->bmp_file_header.FileType!=0x4D42)
+    uint8 *file_type = reinterpret_cast<uint8 *>(&bmp.bh->bmp_file_header.FileType);
+    if (file_type[0] != 'B' || file_type[1] != 'M')
+    {
+        // invalid file type
+        TerminateProcess(1);
+    }
+    if (bmp.bh->bmp_info_header.Size > sizeof(BmpFileHeaderSection) + sizeof(BmpInfoHeaderSection))
+    {
+        // compression header exists
+        if (bmp.bh->bmp_info_header.BitsPerPixel == 24)
+        {
+            // TODO: convert to 32 bits per pixel
+            TerminateProcess(1);
+        }
+        // if (bmp.bh->bmp_compression_header.Compression)
+        // {
+        //     // TODO: decompress
+        // }
+    }
+    if (bmp.bh->bmp_info_header.Size > sizeof(BmpFileHeaderSection) + sizeof(BmpInfoHeaderSection) + sizeof(BmpCompressionHeaderSection))
+    {
+        // color header exists
+    }
+
     return bmp;
 }

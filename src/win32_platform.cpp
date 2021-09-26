@@ -255,7 +255,7 @@ void file_contents::free()
 {
     VirtualFree(this->data, 0, MEM_RELEASE);
 }
-file_contents file_contents::readWholeFile(char *path)
+file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
 {
 #ifdef DEBUG
     OutputDebugStringA(path);
@@ -275,6 +275,7 @@ file_contents file_contents::readWholeFile(char *path)
         CloseHandle(file_handle);
         return {};
     }
+    file.size = max(file.size, min_allocd_size);
     file.data = VirtualAlloc(0, file.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
     uint64 bytes_read;
@@ -314,7 +315,11 @@ void DEBUGprintSystemPageSize()
     OutputDebugStringA(print);
 #endif
 }
-
+void TerminateProcess(int ret_code)
+{
+    __debugbreak();
+    ExitProcess(ret_code);
+}
 struct Assets
 {
     Assets();
@@ -325,28 +330,24 @@ Assets::Assets()
 {
     char *path = (char *)"font.bmp";
     // this->test_image = BitmapImage::loadBitmapFromFile(path);
-    this->test_image = BitmapImage::setColorAsAlpha(BitmapImage::loadBitmapFromFile(path), 0xffff00ff);
+    this->test_image = BitmapImage::loadBitmapFromFile(path);
     // FIXME: no safeguard against read errors
     return;
 }
 // void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
-void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage *bmp, int32 x_offset, int32 y_offset)
+void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
 {
     // FIXME: protect overflows
     // FIXME: colors are a bit broken
-    uint32_2D_array_wrapper_unsafe back_buffer_bits = uint32_2D_array_wrapper_unsafe(back_buffer->bits, back_buffer->width);
-    uint32_2D_array_wrapper_unsafe bmp_pixels = uint32_2D_array_wrapper_unsafe(bmp->pixels, bmp->bh->bmp_info_header.Width);
 
-    for (int32 x = 0; x < bmp->bh->bmp_info_header.Width; x++)
+    for (int32 x = 0; x < bmp.bh->bmp_info_header.Width; x++)
     {
-        for (int32 y = 0; y < bmp->bh->bmp_info_header.Height; y++)
+        for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
         {
-            back_buffer_bits[y + y_offset][x + x_offset] = bmp_pixels[y][x];
-            // back_buffer_bits.set(x + x_offset, y + y_offset, bmp_pixels[x][y]);
-            // back_buffer_bits.set(x + x_offset, y + y_offset, bmp_pixels.get(x, y));
-            uint32 is_alpha = *bmp_pixels[y][x].number == 0xffff00ff;
-            // uint32 is_alpha = *bmp_pixels[y][x].number == (uint32)0;
-            back_buffer_bits[y + y_offset][x + x_offset] = back_buffer_bits[y + y_offset][x + x_offset] * is_alpha + bmp_pixels[y][x] * !is_alpha;
+            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = bmp.pixels[y * bmp.bh->bmp_info_header.Width + x];
+            uint32 is_alpha = bmp.pixels[bmp.bh->bmp_info_header.Width * y + x] == 0xffff00ff;
+            // uint32 is_zero = *bmp_pixels[y][x].number == (uint32)0;
+            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] * is_alpha + bmp.pixels[y * bmp.bh->bmp_info_header.Width + x] * !is_alpha;
         }
     }
 }
@@ -450,7 +451,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 #ifndef DEBUG
         static_assert(false);
 #endif
-        DEBUGBltBmp(&back_buffer, &assets.test_image, 500, 300);
+        DEBUGBltBmp(&back_buffer, assets.test_image, 500, 300);
 
         //         if (!(GetTimeMillis() - last_tick < ms_per_tick * 2))
         //         {

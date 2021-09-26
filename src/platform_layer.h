@@ -49,6 +49,7 @@ struct file_contents
 {
     uint64 size;
     void *data;
-    static file_contents readWholeFile(char *path);
+    static file_contents readWholeFile(char *path, uint64 min_allocd_size = 0);
     void free();
 };
+void TerminateProcess(int ret_code);
