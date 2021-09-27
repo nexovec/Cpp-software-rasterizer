@@ -18,17 +18,17 @@ struct Triangle2D
     Vec2f v3;
 };
 template <typename T>
-T sgn(T, T = 0);
+T math_sgn(T, T = 0);
 template <typename T>
-inline T sgn(T n, T zero)
+inline T math_sgn(T n, T zero)
 {
     return (n > 0) - (n < 0);
 }
-inline real32 lerp(real32 a, real32 b, real32 ratio)
+inline real32 math_lerp(real32 a, real32 b, real32 ratio)
 {
     return a + ratio * (b - a);
 }
-inline real32 invLerp(real32 a, real32 b, real32 val)
+inline real32 math_invLerp(real32 a, real32 b, real32 val)
 {
     return (val - a) / (b - a);
 }
@@ -102,7 +102,7 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         {
             real32 relative_y_diff = y - lower_vertex.y;
             real32 lerp_unit = 1.0f / (higher_vertex.y - lower_vertex.y);
-            real32 x_bound = lerp(lower_vertex.x, higher_vertex.x, lerp_unit * relative_y_diff);
+            real32 x_bound = math_lerp(lower_vertex.x, higher_vertex.x, lerp_unit * relative_y_diff);
             if (scanline_x_start[(int32)y])
             {
                 // this row has scanline boundary cached for this triangle

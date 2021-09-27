@@ -10,7 +10,7 @@
 global BOOL running = true;
 global KeyboardState keyboard_state;
 
-#define XINPUT_GET_STATE_SIG(name) uint64 name(uint64 dwUserIndex, XINPUT_STATE *pState)
+#define XINPUT_GET_STATE_SIG(name) uint64 name(uint64, XINPUT_STATE *)
 typedef XINPUT_GET_STATE_SIG(x_input_get_state);
 XINPUT_GET_STATE_SIG(XInputGetStateStub)
 {
@@ -19,7 +19,7 @@ XINPUT_GET_STATE_SIG(XInputGetStateStub)
 global x_input_get_state *XInputGetState_ = XInputGetStateStub;
 #define XInputGetState XInputGetState_
 
-#define XINPUT_SET_STATE_SIG(name) uint64 name(uint64 dwUserIndex, XINPUT_VIBRATION *pVibration)
+#define XINPUT_SET_STATE_SIG(name) uint64 name(uint64, XINPUT_VIBRATION *)
 typedef XINPUT_SET_STATE_SIG(x_input_set_state);
 internal XINPUT_SET_STATE_SIG(XInputSetStateStub)
 {
@@ -352,8 +352,8 @@ void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage bmp, int32 x_offset, int32
         }
     }
 }
-int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ PSTR lpCmdLine, _In_ int32 nCmdShow)
+int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
+                     PSTR, int32)
 {
     DEBUGprintSystemPageSize();
     {

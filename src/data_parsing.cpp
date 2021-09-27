@@ -7,6 +7,7 @@ int BitmapImage::loadBmpFromFile(BitmapImage *bmp, char *filepath)
     bmp->bh = (BitmapHeader *)(file_contents::readWholeFile(filepath, sizeof(BitmapHeader)).data);
     if (bmp->bh == 0)
     {
+        // DEBUG: did you copy assets contents into build folder?
         TerminateProcess(1);
     }
     // bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data);

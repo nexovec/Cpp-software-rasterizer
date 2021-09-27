@@ -39,19 +39,19 @@ struct Triangle2D // FIXME: replace with Vec3
     Vec2<T> v3;
 };
 template <typename T>
-T sgn(T, T = 0);
+T math_sgn(T, T = 0);
 template <typename T>
-internal inline T sgn(T n, T zero)
+internal inline T math_sgn(T n, T zero)
 {
     return (n > 0) - (n < 0);
 }
 template <typename T>
-internal inline T lerp(T a, T b, real32 ratio)
+internal inline T math_lerp(T a, T b, real32 ratio)
 {
     return a + ratio * (b - a);
 }
 template <typename T>
-internal inline real32 invLerp(T a, T b, real32 val)
+internal inline real32 math_invLerp(T a, T b, real32 val)
 {
     return (val - a) / (b - a);
 }
@@ -134,7 +134,7 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<real32> *tria
         {
             real32 relative_y_diff = y - lower_vertex.y;
             real32 lerp_unit = 1.0f / (higher_vertex.y - lower_vertex.y);
-            real32 x_bound = lerp(lower_vertex.x, higher_vertex.x, lerp_unit * relative_y_diff);
+            real32 x_bound = math_lerp(lower_vertex.x, higher_vertex.x, lerp_unit * relative_y_diff);
             if (scanline_x_start[y])
             {
                 // this row has scanline boundary cached for this triangle
