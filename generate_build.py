@@ -29,7 +29,7 @@ config = {
         {
             'name': "triangle",
             'needed': [
-                'win32_platform.cpp',
+                # 'win32_platform.cpp',
                 'triangle.cpp'
             ]
         }
@@ -37,7 +37,7 @@ config = {
     'launch_debugger': True,  # defaults to False
     # 'run_executable': True,  # defaults to False
     'pause_after_build': True,  # defaults to False
-    # 'build_examples': True  # defaults to False
+    'build_examples': True  # defaults to False
 }
 # TODO: ensure good defaults
 
@@ -70,7 +70,7 @@ for example in config.get("examples"):
             code_files_example.append(os.path.join(root, file))
     recursive_file_search("src", example_cbk)
     recursive_file_search("examples", example_cbk)
-    cl_args_example = ' '.join([' '.join(config['compiler_flags']), '-Feexamples\\'+example.get('name')+'.exe',
+    cl_args_example = ' '.join([' '.join(config['compiler_flags']), '-Fe'+example.get('name')+'.exe',
                                 ' '.join(code_files_example), ' '.join(config['links'])])
     cl_args_examples.append(cl_args_example)
 # print([p for p in sorted([p.name() for p in psutil.process_iter()]) if "devenv" in p])
@@ -85,8 +85,11 @@ commands_win32 = [
     'pushd %~dp0\\build',
     'rm '+main_exe_path,
     'cl '+cl_args,  # + '>' + thisdir+'\\cl_output.txt',
+    'mkdir examples\n' +
+    'pushd .\\examples\n' +
     ''.join(''.join(map(lambda str: 'cl '+str+'\n', cl_args_examples)
                     ).split("\n")[:-1]) if config.get('build_examples')else '',
+    'popd',
     'START devenv ' +
     main_exe_path if config.get('launch_debugger') == True and "devenv.exe" not in (
         p.name() for p in psutil.process_iter()) else '',

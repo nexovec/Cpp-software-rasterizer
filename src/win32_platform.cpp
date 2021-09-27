@@ -443,7 +443,8 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
             ticks++;
         }
         // OutputDebugStringA("tick!\n");
-        // TODO: move this outside of tick to poll more frequently
+        // PERFORMANCE: I suspect performance problems when polling XInput controllers(measure, fix, add other controller API?)
+        // TODO: move this outside of tick to poll more frequently (test if it helps)
         // TODO: disable inputs on out of focus
         // TODO: don't poll disconnected controllers
         unsigned char registered_controllers = 1;

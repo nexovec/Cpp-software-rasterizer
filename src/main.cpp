@@ -99,9 +99,6 @@ struct DEBUGTexture
 // TODO:
 // internal inline unsigned int DEBUGtextureColor(real32 lam_1, real32 lam_2, real32 lam_3, DEBUGTexture *texture)
 // {
-//     // TODO: load bmp
-//     // TODO: parse bmp
-//     // TODO: return correct color
 //     return 0;
 // }
 internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<real32> *triangle_ptr = 0)
@@ -131,14 +128,13 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<real32> *tria
             lower_vertex = v2;
             higher_vertex = v1;
         }
-        // ? TODO: benchmark copying of data vs. pointers vs. vertex layouts etc.
-        // TODO: optimize by better type choices
-        for (int y = (int)lower_vertex.y; y < (int)higher_vertex.y; y++)
+        int32 lower_y_border = max((int32)lower_vertex.y, (int32)0);
+        int32 higher_y_border = min((int32)higher_vertex.y, (int32)back_buffer.height);
+        for (int32 y = lower_y_border; y < higher_y_border; y++)
         {
             real32 relative_y_diff = y - lower_vertex.y;
             real32 lerp_unit = 1.0f / (higher_vertex.y - lower_vertex.y);
             real32 x_bound = lerp(lower_vertex.x, higher_vertex.x, lerp_unit * relative_y_diff);
-            // ! TODO: ignore scanlines outside of screenspace
             if (scanline_x_start[y])
             {
                 // this row has scanline boundary cached for this triangle
@@ -155,7 +151,7 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<real32> *tria
                     real32 lam_1 = ((vert_2.y - vert_3.y) * (x - vert_3.x) + (vert_3.x - vert_2.x) * (y - vert_3.y)) / det_t;
                     real32 lam_2 = ((vert_3.y - vert_1.y) * (x - vert_3.x) + (vert_1.x - vert_3.x) * (y - vert_3.y)) / det_t;
                     real32 lam_3 = 1 - lam_2 - lam_1;
-                    // TODO: use gradient of the barycentric coordinates
+                    // PERFORMANCE: use gradient of the barycentric coordinates
                     // #if defined(DEBUG)
                     //                     back_buffer(x, y) = DEBUGtextureColor(lam_1, lam_2, lam_3, 0);
                     // #endif
@@ -174,7 +170,7 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<real32> *tria
 struct ColoredTrianglesVertexBuffer
 {
     Triangle2D<real32> positions;
-    Vec3<unsigned int> colors;
+    Vec3<uint32> colors;
 };
 struct Mat2x2f
 {
@@ -211,7 +207,6 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         rotating_point = Mat2x2f::RotationMatrix(0.1f) * (rotating_point - midpoint) + midpoint;
         Vec2<real32> other{0, 0};
         Vec2<real32> newly_generated;
-        // FIXME: some vertices are barely out of screenspace
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {(i + 1.0f) * (real32)default_scene_width / 8 - 1, 0}; //+((rand() % default_scene_width)-default_scene_width/2)
@@ -248,7 +243,6 @@ void gameUpdateAndRender(BackBuffer back_buffer)
         }
     }
     // TODO: generate quads
-    // TODO: load textures
     // TODO: use textures
     // TODO: 2D AABB(+rects) physics
     // TODO: 2D GJK
