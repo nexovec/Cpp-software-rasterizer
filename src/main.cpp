@@ -1,5 +1,5 @@
-#include "common_defines.h"
-#include "main.h"
+#include "common_defines.hpp"
+#include "main.hpp"
 #include <cmath>
 // FIXME: abstract math into a separate file
 template <typename T>

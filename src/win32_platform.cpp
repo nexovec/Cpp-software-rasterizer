@@ -1,11 +1,10 @@
-#include "common_defines.h"
-#include "platform_layer.h"
-#include "data_parsing.h"
-#include "main.h"
+// FIXME: get rid of big imports
+#include "common_defines.hpp"
+#include "platform_layer.hpp"
+#include "data_parsing.hpp"
+#include "main.hpp"
 #include <windows.h>
 #include <xinput.h>
-
-// FIXME: shame on you
 #include <stdio.h>
 
 global BOOL running = true;
@@ -287,7 +286,7 @@ file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
     {
         OutputDebugStringA("file is too big");
     }
-    else if (!ReadFile(file_handle, file.data, (uint64)file.size, &bytes_read, 0))
+    else if (!ReadFile(file_handle, file.data, (uint32)file.size, (LPDWORD)&bytes_read, 0))
     {
         OutputDebugStringA("can't read from file\n");
     }
@@ -311,7 +310,7 @@ void DEBUGprintSystemPageSize()
     SYSTEM_INFO si;
     GetSystemInfo(&si);
     char print[512];
-    sprintf_s((char *const)&print, 512, "The page size for this system is %u bytes.\n", si.dwPageSize);
+    sprintf_s((char *)&print, 512, "The page size for this system is %u bytes.\n", si.dwPageSize);
     OutputDebugStringA(print);
 #endif
 }
@@ -329,8 +328,9 @@ struct Assets
 Assets::Assets()
 {
     char *path = (char *)"soldier.bmp";
-    // this->test_image = BitmapImage::loadBitmapFromFile(path);
-    BitmapImage::loadBitmapFromFile(&this->test_image, path);
+    // this->test_image = BitmapImage::loadBmpFromFile(path);
+    BitmapImage::loadBmpFromFile(&this->test_image, path);
+    this->test_image.setFullyOpaque();
     // FIXME: no safeguard against read errors
     return;
 }
@@ -343,7 +343,9 @@ void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage bmp, int32 x_offset, int32
     {
         for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
         {
-            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = bmp.pixels[y * bmp.bh->bmp_info_header.Width + x];
+            // TODO: debranch
+            if (bmp.pixels[y * bmp.bh->bmp_info_header.Width + x] >> 24 != 0)
+                back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = bmp.pixels[y * bmp.bh->bmp_info_header.Width + x];
             // uint32 is_alpha = bmp.pixels[bmp.bh->bmp_info_header.Width * y + x] == 0xffff00ff;
             // uint32 is_zero = *bmp_pixels[y][x].number == (uint32)0;
             // back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] * is_alpha + bmp.pixels[y * bmp.bh->bmp_info_header.Width + x] * !is_alpha;
@@ -366,7 +368,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     {
 #ifdef DEBUG
-        int32 h = assets.test_image.bh->bmp_info_header.Height;
+        int32 h = (int32)assets.test_image.bh->bmp_info_header.Height;
         char buf[128];
         sprintf_s(buf, 128, "%ld\n", h);
         OutputDebugStringA(buf);
@@ -430,7 +432,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         real64 time = GetTimeMillis();
         if (time - last_tick < ms_per_tick)
         {
-            time - last_tick > 1 ? Sleep((int64)(time - last_tick - 1)) : Sleep(0);
+            time - last_tick > 1 ? Sleep((int32)(time - last_tick - 1)) : Sleep(0);
             // Sleep(0);
             continue;
         }

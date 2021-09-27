@@ -1,7 +1,9 @@
-#include "data_parsing.h"
-#include "platform_layer.h"
-int BitmapImage::loadBitmapFromFile(BitmapImage *bmp, char *filepath)
+#include "data_parsing.hpp"
+#include "platform_layer.hpp"
+int BitmapImage::loadBmpFromFile(BitmapImage *bmp, char *filepath)
 {
+    // NOTE: every bmp exported by gimp is fully transparent by default??
+    // SECURITY: check validity of dimensions (are used as uint32)
     bmp->bh = (BitmapHeader *)(file_contents::readWholeFile(filepath, sizeof(BitmapHeader)).data);
     if (bmp->bh == 0)
     {
@@ -52,4 +54,17 @@ int BitmapImage::loadBitmapFromFile(BitmapImage *bmp, char *filepath)
     }
 
     return 1;
+}
+BitmapImage BitmapImage::setFullyOpaque()
+{
+    uint32 w = (uint32)this->bh->bmp_info_header.Width;
+    uint32 h = (uint32)this->bh->bmp_info_header.Height;
+    for (uint32 x = 0; x < w; x++)
+    {
+        for (uint32 y = 0; y < h; y++)
+        {
+            this->pixels[w * y + x] = this->pixels[w * y + x] | 0xff000000;
+        }
+    }
+    return *this;
 }
