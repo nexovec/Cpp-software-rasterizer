@@ -58,7 +58,7 @@ struct BitmapHeader
 
 struct BitmapImage
 {
-    BitmapImage setFullyOpaque();
+    BitmapImage setOpaquenessTo(uint32 desired_alpha);
     static int loadBmpFromFile(BitmapImage *bmp, char *filepath);
     BitmapHeader *bh;
     uint32 *pixels;

@@ -56,7 +56,7 @@ int BitmapImage::loadBmpFromFile(BitmapImage *bmp, char *filepath)
 
     return 1;
 }
-BitmapImage BitmapImage::setFullyOpaque()
+BitmapImage BitmapImage::setOpaquenessTo(uint32 desired_alpha)
 {
     uint32 w = (uint32)this->bh->bmp_info_header.Width;
     uint32 h = (uint32)this->bh->bmp_info_header.Height;
@@ -64,7 +64,7 @@ BitmapImage BitmapImage::setFullyOpaque()
     {
         for (uint32 y = 0; y < h; y++)
         {
-            this->pixels[w * y + x] = this->pixels[w * y + x] | 0xff000000;
+            this->pixels[w * y + x] = this->pixels[w * y + x] | desired_alpha;
         }
     }
     return *this;

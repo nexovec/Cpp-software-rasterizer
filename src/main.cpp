@@ -66,7 +66,7 @@ internal void clearScreen(BackBuffer back_buffer)
         }
     }
 }
-internal inline unsigned int interpolatedColor(real32 lam_1, real32 lam_2, real32 lam_3, unsigned int color1, unsigned int color2, unsigned int color3)
+internal inline uint32 interpolatedColor(real32 lam_1, real32 lam_2, real32 lam_3, uint32 color1, uint32 color2, uint32 color3)
 {
     // use solid color
     // return 0xff00ff00;
@@ -97,10 +97,11 @@ struct DEBUGTexture
 {
 };
 // TODO:
-// internal inline unsigned int DEBUGtextureColor(real32 lam_1, real32 lam_2, real32 lam_3, DEBUGTexture *texture)
+// internal inline uint32 DEBUGtextureColor(real32 lam_1, real32 lam_2, real32 lam_3, DEBUGTexture *texture)
 // {
 //     return 0;
 // }
+
 internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<real32> *triangle_ptr = 0)
 {
     // SECTION: generate sample triangle
@@ -155,7 +156,7 @@ internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<real32> *tria
                     // #if defined(DEBUG)
                     //                     back_buffer(x, y) = DEBUGtextureColor(lam_1, lam_2, lam_3, 0);
                     // #endif
-                    back_buffer(x, y) = interpolatedColor(lam_1, lam_2, lam_3, 0xffff00ff, 0xffffff00, 0xffffffff);
+                    back_buffer(x, y) = interpolatedColor(lam_1, lam_2, lam_3, 0x88ff00ff, 0x88ffff00, 0x88ffffff);
                 }
                 scanline_x_start[y] = 0;
             }

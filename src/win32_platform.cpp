@@ -50,7 +50,7 @@ internal void pollXInputControllers(unsigned char registered_controllers)
         XINPUT_STATE &pState = states[registered_controllers];
         XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
         XInputGetState(i, &pState);
-        // ! DEBUG:
+        // DEBUG:
         XINPUT_VIBRATION controller_vibration = {GAMEPAD_RUMBLE_LEVEL::OFF, GAMEPAD_RUMBLE_LEVEL::OFF};
         if (controller_state->bRightTrigger)
         {
@@ -58,26 +58,13 @@ internal void pollXInputControllers(unsigned char registered_controllers)
             controller_vibration.wLeftMotorSpeed = GAMEPAD_RUMBLE_LEVEL::LEVEL_2;
         }
         XInputSetState(i, &controller_vibration);
-        // !
     }
 }
 internal bool win32InitDirectsound()
 {
-    // ! TODO:
+    // TODO: sound
     // LoadLibrary("./dlls/Dsound3d.dll");
     return false;
-}
-internal void Win32ResizeDibSection(HWND window)
-{
-    static RECT prev_size;
-    RECT window_coords;
-    GetWindowRect(window, &window_coords);
-    // uint32 height = prev_size.bottom - prev_size.top;
-    uint32 width = prev_size.right - prev_size.left;
-    constexpr real64 aspect_ratio = 16. / 9.;
-    // FIXME: set the client rect to this size instead of the whole window
-    SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((real64)width / aspect_ratio), 0);
-    prev_size = window_coords;
 }
 internal int32 Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back_buffer)
 {
@@ -188,7 +175,6 @@ internal LRESULT CALLBACK WindowProc(
     {
     case WM_SIZE:
     {
-        Win32ResizeDibSection(window);
         RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
         OutputDebugStringA("WM_SIZE\n");
     }
@@ -330,11 +316,22 @@ Assets::Assets()
     char *path = (char *)"soldier.bmp";
     // this->test_image = BitmapImage::loadBmpFromFile(path);
     BitmapImage::loadBmpFromFile(&this->test_image, path);
-    this->test_image.setFullyOpaque();
+    this->test_image.setOpaquenessTo(0x55000000);
     // FIXME: no safeguard against read errors
     return;
 }
 // void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
+uint32 alphaBlendColors(uint32 colora, uint32 colorb)
+{
+    // RESEARCH: wtf why does this work?
+    uint32 alpha = colora >> 24;
+    // uint32 alpha = 10;
+    uint32 rb1 = ((0x100 - alpha) * (colora & 0xFF00FF)) >> 8;
+    uint32 rb2 = (alpha * (colorb & 0xFF00FF)) >> 8;
+    uint32 g1 = ((0x100 - alpha) * (colora & 0x00FF00)) >> 8;
+    uint32 g2 = (alpha * (colorb & 0x00FF00)) >> 8;
+    return ((rb1 | rb2) & 0xFF00FF) + ((g1 | g2) & 0x00FF00);
+}
 void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
 {
     // FIXME: colors are a bit broken
@@ -344,8 +341,7 @@ void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage bmp, int32 x_offset, int32
         for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
         {
             // TODO: debranch
-            if (bmp.pixels[y * bmp.bh->bmp_info_header.Width + x] >> 24 != 0)
-                back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = bmp.pixels[y * bmp.bh->bmp_info_header.Width + x];
+            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alphaBlendColors(bmp.pixels[y * bmp.bh->bmp_info_header.Width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
             // uint32 is_alpha = bmp.pixels[bmp.bh->bmp_info_header.Width * y + x] == 0xffff00ff;
             // uint32 is_zero = *bmp_pixels[y][x].number == (uint32)0;
             // back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] * is_alpha + bmp.pixels[y * bmp.bh->bmp_info_header.Width + x] * !is_alpha;
@@ -417,10 +413,9 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
     back_buffer.height = default_scene_height;
     memory_index DIB_size = sizeof(uint32) * default_scene_width * default_scene_height;
     back_buffer.bits = (uint32 *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
-    SetWindowPos(window, HWND_TOP, 300, 180, back_buffer.width, back_buffer.height, 0); // FIXME: weird black stripes
-
+    // FIXME: weird window style
+    SetWindowPos(window, HWND_TOP, 300, 180, back_buffer.width + 20, back_buffer.height + 40, 0);
     keyboard_state = {};
-    Win32ResizeDibSection(window);
     const real64 target_fps = 60;
     const real64 ms_per_tick = 1000.0 / target_fps;
     uint64 ticks = 0;
