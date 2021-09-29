@@ -357,9 +357,9 @@ void TileMap::DEBUGdraw(BackBuffer *back_buffer, int32 x, int32 y, int32 x_offse
     // FIXME: access violation on negative offsets
     // FIXME: This is copying bmp headers
     BitmapImage bmp = this->imageData;
-    for (int32 xx = 0; xx < this->tile_width; xx++)
+    for (int32 xx = 0; xx < (int32)this->tile_width; xx++)
     {
-        for (int32 yy = 0; yy < this->tile_height; yy++)
+        for (int32 yy = 0; yy < (int32)this->tile_height; yy++)
         {
             // HACK: the indexing, LUL.
             uint32 new_color = bmp.pixels[((this->tiles_per_height - 1 - y) * this->tile_height + yy) * bmp.bh->bmp_info_header.Width + x * this->tile_width + xx];
@@ -369,21 +369,28 @@ void TileMap::DEBUGdraw(BackBuffer *back_buffer, int32 x, int32 y, int32 x_offse
 }
 void TileMap::DEBUGrenderBitmapText(BackBuffer *back_buffer, char *text, int32 x_offset, int32 y_offset)
 {
-    // TODO: test with 0 length text
-    // TODO: support multi-line text
     // TODO: auto-allign
     // NOTE: this works with ASCII only 32x4 tilemapped bitmap fonts. Their resolution is supplied on init.
     // FIXME: can try to access unsupported characters
     int32 index = 0;
-    int32 character = 'a';
-    do
+    int32 cursor_pos_vert = 0;
+    int32 cursor_pos_hor = 0;
+    while (text[index] != '\0')
     {
-        character = (int32)text[index];
-        // this->DEBUGdraw(back_buffer,character%this->tiles_per_width,character/this->tiles_per_width,x_offset+index*this->tile_width,y_offset);
-        // FIXME: indexed bottom
-        this->DEBUGdraw(back_buffer, character % 32, character / 32, x_offset + index * this->tile_width, y_offset);
+        int32 character = (int32)text[index];
+        switch (character)
+        {
+        case '\n':
+            cursor_pos_hor = 0;
+            cursor_pos_vert--;
+            break;
+        default:
+            this->DEBUGdraw(back_buffer, character % 32, character / 32, x_offset + cursor_pos_hor * this->tile_width, y_offset + this->tile_height * cursor_pos_vert);
+            cursor_pos_hor++;
+            break;
+        }
         index++;
-    } while (text[index] != '\0');
+    }
 }
 Assets::Assets()
 {
@@ -499,7 +506,7 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
 #endif
         DEBUGBltBmp(&back_buffer, assets.font_image, 100, 200);
         // font_tile_map.DEBUGdraw(&back_buffer, 6, 1, 200, 400);
-        font_tile_map.DEBUGrenderBitmapText(&back_buffer, (char *)"Fabulous!", 200, 400);
+        font_tile_map.DEBUGrenderBitmapText(&back_buffer, (char *)"A quick brown fox \nate the brownie \nbox!\n", 200, 400);
         Win32UpdateWindow(device_context, window, back_buffer);
 
         last_fps++;
