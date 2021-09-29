@@ -308,22 +308,32 @@ void TerminateProcess(int ret_code)
 struct Assets
 {
     Assets();
-    BitmapImage test_image;
+    BitmapImage font_image;
     // ? FIXME: optional memory free
 };
-Assets::Assets()
+struct TileMap
 {
-    char *path = (char *)"soldier.bmp";
-    // this->test_image = BitmapImage::loadBmpFromFile(path);
-    BitmapImage::loadBmpFromFile(&this->test_image, path);
-    this->test_image.setOpaquenessTo(0x55000000);
-    // FIXME: no safeguard against read errors
-    return;
+    // FIXME: have generic image class
+    BitmapImage imageData;
+    uint32 tile_width;
+    uint32 tile_height;
+    uint32 tiles_per_width;
+    uint32 tiles_per_height;
+    TileMap(BitmapImage imageData, uint32 tile_width, uint32 tile_height);
+    void DEBUGdraw(BackBuffer *back_buffer, int32 x, int32 y, int32 x_offset, int32 y_offset);
+    void DEBUGrenderBitmapText(BackBuffer *back_buffer, char *text, int32 x_offset, int32 y_offset);
+};
+TileMap::TileMap(BitmapImage imageData, uint32 tile_width, uint32 tile_height)
+{
+    this->imageData = imageData;
+    this->tile_width = tile_width;
+    this->tile_height = tile_height;
+    this->tiles_per_height = imageData.bh->bmp_info_header.Height / this->tile_height;
+    this->tiles_per_width = imageData.bh->bmp_info_header.Width / this->tile_width;
 }
-// void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
 uint32 alphaBlendColors(uint32 colora, uint32 colorb)
 {
-    // RESEARCH: wtf why does this work?
+    // RESEARCH: bit shift has cycling?? what happens to the blue channel?
     uint32 alpha = colora >> 24;
     // uint32 alpha = 10;
     uint32 rb1 = ((0x100 - alpha) * (colora & 0xFF00FF)) >> 8;
@@ -334,20 +344,58 @@ uint32 alphaBlendColors(uint32 colora, uint32 colorb)
 }
 void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
 {
-    // FIXME: colors are a bit broken
-
     for (int32 x = 0; x < bmp.bh->bmp_info_header.Width; x++)
     {
         for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
         {
-            // TODO: debranch
             back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alphaBlendColors(bmp.pixels[y * bmp.bh->bmp_info_header.Width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
-            // uint32 is_alpha = bmp.pixels[bmp.bh->bmp_info_header.Width * y + x] == 0xffff00ff;
-            // uint32 is_zero = *bmp_pixels[y][x].number == (uint32)0;
-            // back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] * is_alpha + bmp.pixels[y * bmp.bh->bmp_info_header.Width + x] * !is_alpha;
         }
     }
 }
+void TileMap::DEBUGdraw(BackBuffer *back_buffer, int32 x, int32 y, int32 x_offset, int32 y_offset)
+{
+    // FIXME: access violation on negative offsets
+    // FIXME: This is copying bmp headers
+    BitmapImage bmp = this->imageData;
+    for (int32 xx = 0; xx < this->tile_width; xx++)
+    {
+        for (int32 yy = 0; yy < this->tile_height; yy++)
+        {
+            // HACK: the indexing, LUL.
+            uint32 new_color = bmp.pixels[((this->tiles_per_height - 1 - y) * this->tile_height + yy) * bmp.bh->bmp_info_header.Width + x * this->tile_width + xx];
+            back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset] = alphaBlendColors(new_color, back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset]);
+        }
+    }
+}
+void TileMap::DEBUGrenderBitmapText(BackBuffer *back_buffer, char *text, int32 x_offset, int32 y_offset)
+{
+    // TODO: test with 0 length text
+    // TODO: support multi-line text
+    // TODO: auto-allign
+    // NOTE: this works with ASCII only 32x4 tilemapped bitmap fonts. Their resolution is supplied on init.
+    // FIXME: can try to access unsupported characters
+    int32 index = 0;
+    int32 character = 'a';
+    do
+    {
+        character = (int32)text[index];
+        // this->DEBUGdraw(back_buffer,character%this->tiles_per_width,character/this->tiles_per_width,x_offset+index*this->tile_width,y_offset);
+        // FIXME: indexed bottom
+        this->DEBUGdraw(back_buffer, character % 32, character / 32, x_offset + index * this->tile_width, y_offset);
+        index++;
+    } while (text[index] != '\0');
+}
+Assets::Assets()
+{
+    int8 *path = (int8 *)"font.bmp";
+    // this->font_image = BitmapImage::loadBmpFromFile(path);
+    BitmapImage::loadBmpFromFile(&this->font_image, path);
+    // FIXME: this needs to get called, otherwise it throws?!
+    this->font_image.setOpaquenessTo(0x22000000);
+    // FIXME: no safeguard against read errors
+    return;
+}
+// void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
 int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
                      PSTR, int32)
 {
@@ -361,10 +409,11 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
     }
 
     Assets assets = Assets();
+    TileMap font_tile_map = TileMap(assets.font_image, 512 / 32, 96 / 4);
 
     {
 #ifdef DEBUG
-        int32 h = (int32)assets.test_image.bh->bmp_info_header.Height;
+        int32 h = (int32)assets.font_image.bh->bmp_info_header.Height;
         char buf[128];
         sprintf_s(buf, 128, "%ld\n", h);
         OutputDebugStringA(buf);
@@ -448,21 +497,9 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
 #ifndef DEBUG
         static_assert(false);
 #endif
-        DEBUGBltBmp(&back_buffer, assets.test_image, 100, 200);
-
-        //         if (!(GetTimeMillis() - last_tick < ms_per_tick * 2))
-        //         {
-        // // this game update went overbudget
-        // // renders red screen
-        // #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
-        // #define test_image(x, y) ((int32 *)assets.test_image.pixels)[assets.test_image.bh->Width * y + x]
-        //             for (int32 i = 0; i < back_buffer.width * back_buffer.height; i++)
-        //                 back_buffer.bits[i] &= 0xffff0000;
-        //             // ? TODO: render "frozen" text in lower left corner instead (disconnect rendering from update??)
-        //             // TODO: over a certain treshold, skip frame
-        //             // TODO: skip based on average of last n ticks
-        //             // TODO: measure skipped frames
-        //         }
+        DEBUGBltBmp(&back_buffer, assets.font_image, 100, 200);
+        // font_tile_map.DEBUGdraw(&back_buffer, 6, 1, 200, 400);
+        font_tile_map.DEBUGrenderBitmapText(&back_buffer, (char *)"Fabulous!", 200, 400);
         Win32UpdateWindow(device_context, window, back_buffer);
 
         last_fps++;

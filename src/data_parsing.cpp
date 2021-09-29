@@ -4,6 +4,7 @@ int BitmapImage::loadBmpFromFile(BitmapImage *bmp, char *filepath)
 {
     // NOTE: every bmp exported by gimp is fully transparent by default??
     // SECURITY: check validity of dimensions (are used as uint32)
+    // FIXME: nobody keeps track of the underlying file data
     bmp->bh = (BitmapHeader *)(file_contents::readWholeFile(filepath, sizeof(BitmapHeader)).data);
     if (bmp->bh == 0)
     {
