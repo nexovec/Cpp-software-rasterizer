@@ -1,40 +1,42 @@
 #pragma once
 #include <cmath> // FIXME: reconsider
-template <typename T>
-struct Vec2
+struct Vec_2f
 {
-    T x;
-    T y;
-    Vec2<T> operator+(const Vec2<T> &other)
+    float x;
+    float y;
+    Vec_2f operator+(const Vec_2f &other)
     {
-        return Vec2<T>{x + other.x, y + other.y};
+        return Vec_2f{x + other.x, y + other.y};
     };
-    Vec2<T> operator-(const Vec2<T> &other)
+    Vec_2f operator-(const Vec_2f &other)
     {
-        return Vec2<T>{x - other.x, y - other.y};
+        return Vec_2f{x - other.x, y - other.y};
     };
 };
-template <typename T>
-struct Vec3
+struct Vec_3f
 {
-    T x;
-    T y;
-    T z;
+    float x;
+    float y;
+    float z;
 };
-template <typename T>
-struct Vec4
+struct Vec_3ui
 {
-    T x;
-    T y;
-    T z;
-    T w;
+    uint32 x;
+    uint32 y;
+    uint32 z;
 };
-template <typename T>
+struct Vec_4f
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
 struct Triangle2D // FIXME: replace with Vec3
 {
-    Vec2<T> v1;
-    Vec2<T> v2;
-    Vec2<T> v3;
+    Vec_2f v1;
+    Vec_2f v2;
+    Vec_2f v3;
 };
 
 template <typename T>

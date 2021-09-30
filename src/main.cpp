@@ -46,13 +46,13 @@ internal inline uint32 interpolatedColor(real32 lam_1, real32 lam_2, real32 lam_
 //     return 0;
 // }
 
-internal void rasterizeTriangle(ARGBTexture back_buffer, Triangle2D<real32> *triangle_ptr = 0)
+internal void rasterizeTriangle(ARGBTexture back_buffer, Triangle2D *triangle_ptr = 0)
 {
     // SECTION: generate sample triangle
-    Triangle2D<real32> triangle;
-    Vec2<real32> x_vert = {200.0f, 250.0f};
-    Vec2<real32> y_vert = {500.0f, 200.0f};
-    Vec2<real32> z_vert = {350.0f, 350.0f};
+    Triangle2D triangle;
+    Vec_2f x_vert = {200.0f, 250.0f};
+    Vec_2f y_vert = {500.0f, 200.0f};
+    Vec_2f z_vert = {350.0f, 350.0f};
     triangle = {x_vert, y_vert, z_vert};
     if (triangle_ptr)
         triangle = *triangle_ptr;
@@ -60,14 +60,14 @@ internal void rasterizeTriangle(ARGBTexture back_buffer, Triangle2D<real32> *tri
     // TODO: render wireframe
     // SECTION: rasterize triangles
     uint32 scanline_x_start[default_scene_width] = {}; // should probably be common for all triangles, should use unsigned short[]
-    Vec2<real32> *vertices = (Vec2<real32> *)&triangle;
+    Vec_2f *vertices = (Vec_2f *)&triangle;
     for (int i1 = 0; i1 < 3; i1++)
     {
         int i2 = (i1 + 1) % 3;
-        Vec2<real32> v1 = vertices[i1];
-        Vec2<real32> v2 = vertices[i2];
-        Vec2<real32> lower_vertex = v1;
-        Vec2<real32> higher_vertex = v2;
+        Vec_2f v1 = vertices[i1];
+        Vec_2f v2 = vertices[i2];
+        Vec_2f lower_vertex = v1;
+        Vec_2f higher_vertex = v2;
         if (v1.y > v2.y)
         {
             lower_vertex = v2;
@@ -88,9 +88,9 @@ internal void rasterizeTriangle(ARGBTexture back_buffer, Triangle2D<real32> *tri
                 uint32 higher_x_bound = (uint32)(condition * scanline_x_start[y] + !condition * x_bound);
                 for (uint32 x = lower_x_bound; x < higher_x_bound; x++)
                 {
-                    Vec2<real32> vert_1 = triangle.v1;
-                    Vec2<real32> vert_2 = triangle.v2;
-                    Vec2<real32> vert_3 = triangle.v3;
+                    Vec_2f vert_1 = triangle.v1;
+                    Vec_2f vert_2 = triangle.v2;
+                    Vec_2f vert_3 = triangle.v3;
                     // get barycentric coordinates
                     real32 det_t = (vert_2.y - vert_3.y) * (vert_1.x - vert_3.x) + (vert_3.x - vert_2.x) * (vert_1.y - vert_3.y);
                     real32 lam_1 = ((vert_2.y - vert_3.y) * (x - vert_3.x) + (vert_3.x - vert_2.x) * (y - vert_3.y)) / det_t;
@@ -114,15 +114,15 @@ internal void rasterizeTriangle(ARGBTexture back_buffer, Triangle2D<real32> *tri
 }
 struct ColoredTrianglesVertexBuffer
 {
-    Triangle2D<real32> positions;
-    Vec3<uint32> colors;
+    Vec_2f positions;
+    Vec_3ui colors;
 };
 struct Mat2x2f
 {
     real32 rows[4];
-    Vec2<real32> operator*(const Vec2<real32> vec)
+    Vec_2f operator*(const Vec_2f vec)
     {
-        Vec2<real32> back;
+        Vec_2f back;
         // TODO: investigate SIMD
         back.x = rows[0] * vec.x + rows[1] * vec.y;
         back.y = rows[2] * vec.x + rows[3] * vec.y;
@@ -149,15 +149,19 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
         // Triangle2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
         // rasterizeTriangle(back_buffer, &triangle);
         // TODO: create example
-        constexpr Vec2<real32> midpoint = {640.f, 360.f};
-        static Vec2<real32> rotating_point = {480.f, 280.f};
+        constexpr Vec_2f midpoint = {640.f, 360.f};
+        // FIXME:
+
+
+        
+        static Vec_2f rotating_point = {480.f, 280.f};
         rotating_point = Mat2x2f::RotationMatrix(0.1f) * (rotating_point - midpoint) + midpoint;
-        Vec2<real32> other{0, 0};
-        Vec2<real32> newly_generated;
+        Vec_2f other{0, 0};
+        Vec_2f newly_generated;
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {(i + 1.0f) * (real32)default_scene_width / 8 - 1, 0}; //+((rand() % default_scene_width)-default_scene_width/2)
-            Triangle2D<real32> triangle = {other, newly_generated, rotating_point};
+            Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
@@ -166,7 +170,7 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {default_scene_width - 1, (i + 1.0f) * (real32)default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
-            Triangle2D<real32> triangle = {other, newly_generated, rotating_point};
+            Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
@@ -175,7 +179,7 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {(i + 1.0f) * (real32)default_scene_width / 8, default_scene_height - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
-            Triangle2D<real32> triangle = {other, newly_generated, rotating_point};
+            Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
@@ -184,7 +188,7 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {1, (i + 1.0f) * default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2);
-            Triangle2D<real32> triangle = {other, newly_generated, rotating_point};
+            Triangle2D triangle = {other, newly_generated, rotating_point};
             rasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }

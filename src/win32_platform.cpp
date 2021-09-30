@@ -3,10 +3,11 @@
 #include "platform_layer.hpp"
 #include "data_parsing.hpp"
 #include "main.hpp"
+#undef UNICODE
 #include <windows.h>
 #include <xinput.h>
 #include <stdio.h>
-
+#include <stdio.h>
 global BOOL running = true;
 global KeyboardState keyboard_state;
 
@@ -250,7 +251,7 @@ file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
     file_contents file = {};
     if (file_handle == INVALID_HANDLE_VALUE)
     {
-        OutputDebugStringA("can't access file\n");
+        OutputDebugStringA("Can't access file\n");
         CloseHandle(file_handle);
         return {};
     }
@@ -263,29 +264,32 @@ file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
     file.size = max(file.size, min_allocd_size);
     file.data = VirtualAlloc(0, file.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-    uint64 bytes_read;
+    uint32 bytes_read;
     if (!file.data)
     {
-        OutputDebugStringA("can't allocate buffer for file data\n");
+        OutputDebugStringA("Can't allocate buffer for file data\n");
     }
     else if (!(file.size <= 0xffffffff))
     {
-        OutputDebugStringA("file is too big");
+        OutputDebugStringA("File is too big\n");
     }
     else if (!ReadFile(file_handle, file.data, (uint32)file.size, (LPDWORD)&bytes_read, 0))
     {
-        OutputDebugStringA("can't read from file\n");
+        
+        OutputDebugStringA("Can't read from file\n");
     }
     else if ((bytes_read != file.size))
     {
-        OutputDebugStringA("wrong size read from file");
+        char* log_message[512];
+        sprintf_s((char *)log_message, 512, "Wrong size read from file (%llu expected, got %llu)\n",file.size, (uint64)bytes_read);
+        OutputDebugStringA((LPCSTR)log_message);
     }
     else
     {
         CloseHandle(file_handle);
         return file;
     }
-    OutputDebugStringA("Something went wrong opening a file");
+    OutputDebugStringA("^^^ Something went wrong opening a file\n");
     CloseHandle(file_handle);
     VirtualFree(file.data, 0, MEM_RELEASE);
     return {};
