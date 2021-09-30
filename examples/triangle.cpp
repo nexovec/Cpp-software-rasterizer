@@ -33,7 +33,7 @@ inline real32 math_invLerp(real32 a, real32 b, real32 val)
     return (val - a) / (b - a);
 }
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
-void clearScreen(BackBuffer back_buffer)
+void clearScreen(ARGBTexture back_buffer)
 {
     for (uint32 i = 0; i < back_buffer.height; i++)
     {
@@ -79,7 +79,7 @@ uint32 interpolatedColor(Triangle2D triangle, real32 x, real32 y, uint32 color1,
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
-void gameUpdateAndRender(BackBuffer back_buffer)
+void gameUpdateAndRender(ARGBTexture back_buffer)
 {
     clearScreen(back_buffer);
     Triangle2D triangle = {{200.0f, 200.0f}, {500.0f, 200.0f}, {200.0f, 500.0f}};
@@ -145,7 +145,7 @@ internal void Win32ResizeDibSection(HWND window)
     SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((real64)width / aspect_ratio), 0);
     prev_size = window_coords;
 }
-internal int32 Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back_buffer)
+internal int32 Win32UpdateWindow(HDC device_context, HWND window, ARGBTexture back_buffer)
 {
     // TODO: benchmark against https://gamedev.net/forums/topic/385918-fast-drawing-to-screen-win32gdi/3552067/
     RECT rect;
@@ -347,7 +347,7 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, HINSTANCE, PSTR, int32)
     }
     SetFocus(window);
     HDC device_context = GetDC(window);
-    BackBuffer back_buffer = {};
+    ARGBTexture back_buffer = {};
     back_buffer.width = 1280;
     back_buffer.height = 720;
     memory_index DIB_size = sizeof(uint32) * 1280 * 720;

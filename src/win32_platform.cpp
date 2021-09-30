@@ -66,7 +66,7 @@ internal bool win32InitDirectsound()
     // LoadLibrary("./dlls/Dsound3d.dll");
     return false;
 }
-internal int32 Win32UpdateWindow(HDC device_context, HWND window, BackBuffer back_buffer)
+internal int32 Win32UpdateWindow(HDC device_context, HWND window, ARGBTexture back_buffer)
 {
     // TODO: benchmark against https://gamedev.net/forums/topic/385918-fast-drawing-to-screen-win32gdi/3552067/
     RECT rect;
@@ -221,7 +221,7 @@ internal LRESULT CALLBACK WindowProc(
     }
     return result;
 }
-void dispatchSystemMessages()
+internal void dispatchSystemMessages()
 {
     MSG message;
     BOOL bRet = GetMessage(
@@ -290,7 +290,7 @@ file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
     VirtualFree(file.data, 0, MEM_RELEASE);
     return {};
 }
-void DEBUGprintSystemPageSize()
+internal void DEBUGprintSystemPageSize()
 {
 #if defined(DEBUG)
     SYSTEM_INFO si;
@@ -305,104 +305,7 @@ void TerminateProcess(int ret_code)
     __debugbreak();
     ExitProcess(ret_code);
 }
-struct Assets
-{
-    Assets();
-    BitmapImage font_image;
-    // ? FIXME: optional memory free
-};
-struct TileMap
-{
-    // FIXME: have generic image class
-    BitmapImage imageData;
-    uint32 tile_width;
-    uint32 tile_height;
-    uint32 tiles_per_width;
-    uint32 tiles_per_height;
-    TileMap(BitmapImage imageData, uint32 tile_width, uint32 tile_height);
-    void DEBUGdraw(BackBuffer *back_buffer, int32 x, int32 y, int32 x_offset, int32 y_offset);
-    void DEBUGrenderBitmapText(BackBuffer *back_buffer, char *text, int32 x_offset, int32 y_offset);
-};
-TileMap::TileMap(BitmapImage imageData, uint32 tile_width, uint32 tile_height)
-{
-    this->imageData = imageData;
-    this->tile_width = tile_width;
-    this->tile_height = tile_height;
-    this->tiles_per_height = imageData.bh->bmp_info_header.Height / this->tile_height;
-    this->tiles_per_width = imageData.bh->bmp_info_header.Width / this->tile_width;
-}
-uint32 alphaBlendColors(uint32 colora, uint32 colorb)
-{
-    // RESEARCH: bit shift has cycling?? what happens to the blue channel?
-    uint32 alpha = colora >> 24;
-    // uint32 alpha = 10;
-    uint32 rb1 = ((0x100 - alpha) * (colora & 0xFF00FF)) >> 8;
-    uint32 rb2 = (alpha * (colorb & 0xFF00FF)) >> 8;
-    uint32 g1 = ((0x100 - alpha) * (colora & 0x00FF00)) >> 8;
-    uint32 g2 = (alpha * (colorb & 0x00FF00)) >> 8;
-    return ((rb1 | rb2) & 0xFF00FF) + ((g1 | g2) & 0x00FF00);
-}
-void DEBUGBltBmp(BackBuffer *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
-{
-    for (int32 x = 0; x < bmp.bh->bmp_info_header.Width; x++)
-    {
-        for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
-        {
-            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alphaBlendColors(bmp.pixels[y * bmp.bh->bmp_info_header.Width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
-        }
-    }
-}
-void TileMap::DEBUGdraw(BackBuffer *back_buffer, int32 x, int32 y, int32 x_offset, int32 y_offset)
-{
-    // FIXME: access violation on negative offsets
-    // FIXME: This is copying bmp headers
-    BitmapImage bmp = this->imageData;
-    for (int32 xx = 0; xx < (int32)this->tile_width; xx++)
-    {
-        for (int32 yy = 0; yy < (int32)this->tile_height; yy++)
-        {
-            // HACK: the indexing, LUL.
-            uint32 new_color = bmp.pixels[((this->tiles_per_height - 1 - y) * this->tile_height + yy) * bmp.bh->bmp_info_header.Width + x * this->tile_width + xx];
-            back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset] = alphaBlendColors(new_color, back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset]);
-        }
-    }
-}
-void TileMap::DEBUGrenderBitmapText(BackBuffer *back_buffer, char *text, int32 x_offset, int32 y_offset)
-{
-    // TODO: auto-allign
-    // NOTE: this works with ASCII only 32x4 tilemapped bitmap fonts. Their resolution is supplied on init.
-    // FIXME: can try to access unsupported characters
-    int32 index = 0;
-    int32 cursor_pos_vert = 0;
-    int32 cursor_pos_hor = 0;
-    while (text[index] != '\0')
-    {
-        int32 character = (int32)text[index];
-        switch (character)
-        {
-        case '\n':
-            cursor_pos_hor = 0;
-            cursor_pos_vert--;
-            break;
-        default:
-            this->DEBUGdraw(back_buffer, character % 32, character / 32, x_offset + cursor_pos_hor * this->tile_width, y_offset + this->tile_height * cursor_pos_vert);
-            cursor_pos_hor++;
-            break;
-        }
-        index++;
-    }
-}
-Assets::Assets()
-{
-    int8 *path = (int8 *)"font.bmp";
-    // this->font_image = BitmapImage::loadBmpFromFile(path);
-    BitmapImage::loadBmpFromFile(&this->font_image, path);
-    // FIXME: this needs to get called, otherwise it throws?!
-    this->font_image.setOpaquenessTo(0x22000000);
-    // FIXME: no safeguard against read errors
-    return;
-}
-// void DEBUGBltBmp(BackBuffer &back_buffer, BitmapImage &bmp, int32 x_offset = 0, int32 y_offset = 0);
+// TODO: write to file
 int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
                      PSTR, int32)
 {
@@ -414,20 +317,6 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
         OutputDebugStringA("\n^^^ test file was supposed to print here. Did it? ^^^\n");
 #endif
     }
-
-    Assets assets = Assets();
-    TileMap font_tile_map = TileMap(assets.font_image, 512 / 32, 96 / 4);
-
-    {
-#ifdef DEBUG
-        int32 h = (int32)assets.font_image.bh->bmp_info_header.Height;
-        char buf[128];
-        sprintf_s(buf, 128, "%ld\n", h);
-        OutputDebugStringA(buf);
-#endif
-    }
-
-    // TODO: write to file
 
     win32InitXInput();
     win32InitDirectsound();
@@ -464,7 +353,7 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
     // TODO: center window on screen
 
     HDC device_context = GetDC(window);
-    BackBuffer back_buffer = {};
+    ARGBTexture back_buffer = {};
     back_buffer.width = default_scene_width;
     back_buffer.height = default_scene_height;
     memory_index DIB_size = sizeof(uint32) * default_scene_width * default_scene_height;
@@ -501,12 +390,6 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
         unsigned char registered_controllers = 1;
         pollXInputControllers(registered_controllers);
         gameUpdateAndRender(back_buffer);
-#ifndef DEBUG
-        static_assert(false);
-#endif
-        DEBUGBltBmp(&back_buffer, assets.font_image, 100, 200);
-        // font_tile_map.DEBUGdraw(&back_buffer, 6, 1, 200, 400);
-        font_tile_map.DEBUGrenderBitmapText(&back_buffer, (char *)"A quick brown fox \nate the brownie \nbox!\n", 200, 400);
         Win32UpdateWindow(device_context, window, back_buffer);
 
         last_fps++;

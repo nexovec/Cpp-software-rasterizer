@@ -18,7 +18,7 @@ config = {
         '-DDEBUG',
         # '-analyze',
         # '-Wall',
-        "-std:c++20"
+        "-std:c++latest"
     ],
     'links': [
         'user32.lib',

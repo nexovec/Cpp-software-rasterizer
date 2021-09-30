@@ -1,61 +1,9 @@
 #include "common_defines.hpp"
+#include "asset_API.hpp"
+#include "super_math.hpp"
 #include "main.hpp"
-#include <cmath>
-// FIXME: abstract math into a separate file
-template <typename T>
-struct Vec2
-{
-    T x;
-    T y;
-    Vec2<T> operator+(const Vec2<T> &other)
-    {
-        return Vec2<T>{x + other.x, y + other.y};
-    };
-    Vec2<T> operator-(const Vec2<T> &other)
-    {
-        return Vec2<T>{x - other.x, y - other.y};
-    };
-};
-template <typename T>
-struct Vec3
-{
-    T x;
-    T y;
-    T z;
-};
-template <typename T>
-struct Vec4
-{
-    T x;
-    T y;
-    T z;
-    T w;
-};
-template <typename T>
-struct Triangle2D // FIXME: replace with Vec3
-{
-    Vec2<T> v1;
-    Vec2<T> v2;
-    Vec2<T> v3;
-};
-template <typename T>
-T math_sgn(T, T = 0);
-template <typename T>
-internal inline T math_sgn(T n, T zero)
-{
-    return (n > 0) - (n < 0);
-}
-template <typename T>
-internal inline T math_lerp(T a, T b, real32 ratio)
-{
-    return a + ratio * (b - a);
-}
-template <typename T>
-internal inline real32 math_invLerp(T a, T b, real32 val)
-{
-    return (val - a) / (b - a);
-}
-internal void clearScreen(BackBuffer back_buffer)
+
+internal void clearScreen(ARGBTexture back_buffer)
 {
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
     for (uint32 i = 0; i < back_buffer.height; i++)
@@ -92,17 +40,13 @@ internal inline uint32 interpolatedColor(real32 lam_1, real32 lam_2, real32 lam_
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
-
-struct DEBUGTexture
-{
-};
 // TODO:
 // internal inline uint32 DEBUGtextureColor(real32 lam_1, real32 lam_2, real32 lam_3, DEBUGTexture *texture)
 // {
 //     return 0;
 // }
 
-internal void rasterizeTriangle(BackBuffer back_buffer, Triangle2D<real32> *triangle_ptr = 0)
+internal void rasterizeTriangle(ARGBTexture back_buffer, Triangle2D<real32> *triangle_ptr = 0)
 {
     // SECTION: generate sample triangle
     Triangle2D<real32> triangle;
@@ -190,7 +134,9 @@ struct Mat2x2f
         return matrix;
     }
 };
-void gameUpdateAndRender(BackBuffer back_buffer)
+Assets assets = Assets();
+TileMap font_tile_map = TileMap(assets.font_image, 512 / 32, 96 / 4);
+void gameUpdateAndRender(ARGBTexture back_buffer)
 {
     // NOTE: backbuffer format is ARGB
     // NOTE: backbuffer.width is default_scene_width; backbuffer_height is default_scene_height
@@ -243,6 +189,17 @@ void gameUpdateAndRender(BackBuffer back_buffer)
             other = newly_generated;
         }
     }
+
+    // TODO: print file info on file load
+    // #ifdef DEBUG
+    //     int32 h = (int32)assets.font_image.bh->bmp_info_header.Height;
+    //     char buf[128];
+    //     sprintf_s(buf, 128, "%ld\n", h);
+    //     OutputDebugStringA(buf);
+    // #endif
+    DEBUGBltBmp(&back_buffer, assets.font_image, 100, 200);
+    // font_tile_map.DEBUGdraw(&back_buffer, 6, 1, 200, 400);
+    font_tile_map.DEBUGrenderBitmapText(&back_buffer, (char *)"A quick brown fox \nate the brownie \nbox!\n", 200, 400);
     // TODO: generate quads
     // TODO: use textures
     // TODO: 2D AABB(+rects) physics

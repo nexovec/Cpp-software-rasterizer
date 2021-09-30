@@ -1,5 +1,6 @@
 #pragma once
 #include "common_defines.hpp"
+#include "platform_layer.hpp"
 #pragma pack(push, 1)
 struct BmpFileHeaderSection
 {
@@ -59,6 +60,7 @@ struct BitmapHeader
 struct BitmapImage
 {
     BitmapImage setOpaquenessTo(uint32 desired_alpha);
+    ARGBTexture getUnderlyingTexture();
     static int loadBmpFromFile(BitmapImage *bmp, char *filepath);
     BitmapHeader *bh;
     uint32 *pixels;

@@ -33,7 +33,7 @@ enum GAMEPAD_RUMBLE_LEVEL
     LEVEL_3 = 65535
 };
 
-struct BackBuffer
+struct ARGBTexture
 {
     uint32 *bits;
     uint32 width;

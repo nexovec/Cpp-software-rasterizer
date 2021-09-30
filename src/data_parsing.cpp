@@ -1,5 +1,9 @@
 #include "data_parsing.hpp"
 #include "platform_layer.hpp"
+ARGBTexture BitmapImage::getUnderlyingTexture()
+{
+    return {this->pixels, (uint32)this->bh->bmp_info_header.Width, (uint32)this->bh->bmp_info_header.Height};
+}
 int BitmapImage::loadBmpFromFile(BitmapImage *bmp, char *filepath)
 {
     // NOTE: every bmp exported by gimp is fully transparent by default??
