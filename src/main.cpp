@@ -136,6 +136,26 @@ struct Mat2x2f
 };
 Assets assets = Assets();
 TileMap font_tile_map = TileMap(assets.font_image, 512 / 32, 96 / 4);
+
+struct Quad2D
+{
+    Triangle2D bottom;
+    Triangle2D top;
+};
+/* Generates axis aligned quad. */
+Quad2D generateAAQuad(Vec_2f pos, Vec_2f size)
+{
+    // TODO: test
+    Triangle2D triangleA = {pos, pos + Vec_2f(1.0f, 0.0f) * size.y, pos + size};
+    Triangle2D triangleB = {pos, pos + Vec_2f(0.0f, 1.0f)*size.x, pos + size};
+    return {triangleA, triangleB};
+}
+void DEBUGrenderQuad2D(ARGBTexture back_buffer, Quad2D *quad){
+    Triangle2D *as_array = (Triangle2D *)quad;
+    for (int i = 0; i < 2;i++){
+        rasterizeTriangle(back_buffer,as_array+i);
+    }
+}
 void gameUpdateAndRender(ARGBTexture back_buffer)
 {
     // NOTE: backbuffer format is ARGB
@@ -152,8 +172,6 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
         constexpr Vec_2f midpoint = {640.f, 360.f};
         // FIXME:
 
-
-        
         static Vec_2f rotating_point = {480.f, 280.f};
         rotating_point = Mat2x2f::RotationMatrix(0.1f) * (rotating_point - midpoint) + midpoint;
         Vec_2f other{0, 0};
@@ -201,9 +219,23 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
     //     sprintf_s(buf, 128, "%ld\n", h);
     //     OutputDebugStringA(buf);
     // #endif
-    DEBUGBltBmp(&back_buffer, assets.font_image, 100, 200);
+    {
+        // render image
+        DEBUGBltBmp(&back_buffer, assets.font_image, 100, 200);
+    }
     // font_tile_map.DEBUGdraw(&back_buffer, 6, 1, 200, 400);
-    font_tile_map.DEBUGrenderBitmapText(&back_buffer, (char *)"A quick brown fox \nate the brownie \nbox!\n", 200, 400);
+    {
+        // render text to screen
+        // TODO: set font alpha
+        // TODO: font shadows
+        // TODO: font outlines
+        font_tile_map.DEBUGrenderBitmapText(&back_buffer, (char *)"A quick brown fox \nate the brownie \nbox!\n", 200, 400);
+    }
+    {
+        // draw quad
+        Quad2D quad = generateAAQuad(Vec_2f(100.0, 100.0), Vec_2f(200.0, 200.0));
+        DEBUGrenderQuad2D(back_buffer, &quad);
+    }
     // TODO: generate quads
     // TODO: use textures
     // TODO: 2D AABB(+rects) physics

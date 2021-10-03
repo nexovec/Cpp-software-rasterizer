@@ -5,3 +5,7 @@ build/
 temp/
 bin/
 obj/
+HelloWorld.vcxproj
+Test.sln
+HelloWorld.vcxproj.user
+font.bmp

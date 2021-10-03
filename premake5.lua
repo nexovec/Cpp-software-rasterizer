@@ -6,6 +6,7 @@ workspace "Test"
 project "HelloWorld"
    kind "WindowedApp"
    language "C++"
+   cppdialect "C++latest"
    targetdir "bin/%{cfg.buildcfg}"
 
    files { "src/**.hpp", "src/**.cpp" }

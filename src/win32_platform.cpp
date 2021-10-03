@@ -275,7 +275,6 @@ file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
     }
     else if (!ReadFile(file_handle, file.data, (uint32)file.size, (LPDWORD)&bytes_read, 0))
     {
-        
         OutputDebugStringA("Can't read from file\n");
     }
     else if ((bytes_read != file.size))

@@ -7,12 +7,19 @@ struct Vec_2f
     Vec_2f operator+(const Vec_2f &other)
     {
         return Vec_2f{x + other.x, y + other.y};
-    };
+    }
     Vec_2f operator-(const Vec_2f &other)
     {
         return Vec_2f{x - other.x, y - other.y};
-    };
+    }
+    Vec_2f operator* (real32 other) const {
+        return {this->x*other,this->y*other};
+    }
+    // inline static const Vec_2f DOWN;
+    // inline static const Vec_2f RIGHT;
 };
+// constexpr const Vec_2f Vec_2f::DOWN     = {-1.0, 0.0};
+// constexpr const Vec_2f Vec_2f::RIGHT = {0.0, 1.0};
 struct Vec_3f
 {
     float x;
