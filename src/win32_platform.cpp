@@ -370,7 +370,8 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
 #ifdef DEBUG
     DEBUGprintSystemPageSize();
     {
-        file_contents test_file_contents = file_contents::readWholeFile((char *)"test.txt"); // TODO: you need to create test.txt for this to print something
+        // TODO: search for assets folder
+        file_contents test_file_contents = file_contents::readWholeFile((char *)"assets/test.txt"); 
         OutputDebugStringA((char *)test_file_contents.data);
         OutputDebugStringA("\n^^^ test file was supposed to print here. Did it? ^^^\n");
     }
@@ -407,8 +408,9 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
         ExitProcess(1);
     }
     // FIXME: this gets multiplied by windows global scale multiplier for some reason:
-    // FIXME: weird window style behavior and client area offsets, investigate
+    // FIXME: client area isn't scaled properly with respect to the window size, investigate
     // TODO: center window on screen
+    // TODO: make window unresizable
     SetFocus(window);
     SetWindowPos(window, HWND_TOP, 300, 180, default_scene_width + 20, default_scene_height + 40, 0);
 
