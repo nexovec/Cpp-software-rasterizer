@@ -3,6 +3,9 @@
 #include "super_math.hpp"
 #include "main.hpp"
 
+Assets assets = Assets();
+TileMap font_tile_map = TileMap(assets.font_image, 512 / 32, 96 / 4);
+
 internal void clearScreen(ARGBTexture back_buffer)
 {
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
@@ -19,7 +22,7 @@ internal inline uint32 interpolatedColor(real32 lam_1, real32 lam_2, real32 lam_
     // use solid color
     // return 0xff00ff00;
 
-    //  ? TODO: for performance reasons, you should decompose colors per-triangle, not per-pixel, but bitwise is fast and this isn't production code anywway
+    //  ? TODO: for performance reasons, you should decompose colors per-triangle, not per-pixel, but bitwise is fast and this won't be used anywway
     const uint8 a1 = (uint8)(color1 >> 24);
     const uint8 r1 = (uint8)(color1 >> 16);
     const uint8 g1 = (uint8)(color1 >> 8);
@@ -40,11 +43,13 @@ internal inline uint32 interpolatedColor(real32 lam_1, real32 lam_2, real32 lam_
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
-// TODO:
-// internal inline uint32 DEBUGtextureColor(real32 lam_1, real32 lam_2, real32 lam_3, DEBUGTexture *texture)
-// {
-//     return 0;
-// }
+internal inline uint32 DEBUGtextureColor(real32 lam_1, real32 lam_2, real32 lam_3, Vec_2f texel_1, Vec_2f texel_2, Vec_2f texel_3, ARGBTexture texture)
+{
+    // NOTE: uses brycentric coords
+    // TODO: return nearest color in the texture to the specified lambda coordinates
+    // math_lerp();
+    return 0;
+}
 
 internal void rasterizeTriangle(ARGBTexture back_buffer, Triangle2D *triangle_ptr = 0)
 {
@@ -134,8 +139,6 @@ struct Mat2x2f
         return matrix;
     }
 };
-Assets assets = Assets();
-TileMap font_tile_map = TileMap(assets.font_image, 512 / 32, 96 / 4);
 
 struct Quad2D
 {
@@ -143,29 +146,36 @@ struct Quad2D
     Triangle2D top;
 };
 /* Generates axis aligned quad. */
-Quad2D generateAAQuad(Vec_2f pos, Vec_2f size)
+internal Quad2D generateAAQuad(Vec_2f pos, Vec_2f size)
 {
     // TODO: test
     Triangle2D triangleA = {pos, pos + Vec_2f(1.0f, 0.0f) * size.y, pos + size};
-    Triangle2D triangleB = {pos, pos + Vec_2f(0.0f, 1.0f)*size.x, pos + size};
+    Triangle2D triangleB = {pos, pos + Vec_2f(0.0f, 1.0f) * size.x, pos + size};
     return {triangleA, triangleB};
 }
-void DEBUGrenderQuad2D(ARGBTexture back_buffer, Quad2D *quad){
+internal void DEBUGrenderQuad2D(ARGBTexture back_buffer, Quad2D *quad)
+{
     Triangle2D *as_array = (Triangle2D *)quad;
-    for (int i = 0; i < 2;i++){
-        rasterizeTriangle(back_buffer,as_array+i);
+    for (int i = 0; i < 2; i++)
+    {
+        rasterizeTriangle(back_buffer, as_array + i);
     }
 }
 void gameUpdateAndRender(ARGBTexture back_buffer)
 {
     // NOTE: backbuffer format is ARGB
     // NOTE: backbuffer.width is default_scene_width; backbuffer_height is default_scene_height
-    { // Render one triangle
+
+    {
+        // Render one triangle
+
         clearScreen(back_buffer);
         rasterizeTriangle(back_buffer);
     }
 
-    { // Render multiple triangles
+    {
+        // Render multiple triangles
+
         // Triangle2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
         // rasterizeTriangle(back_buffer, &triangle);
         // TODO: create example
@@ -173,7 +183,7 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
         // FIXME:
 
         static Vec_2f rotating_point = {480.f, 280.f};
-        rotating_point = Mat2x2f::RotationMatrix(0.1f) * (rotating_point - midpoint) + midpoint;
+        // rotating_point = Mat2x2f::RotationMatrix(0.1f) * (rotating_point - midpoint) + midpoint;
         Vec_2f other{0, 0};
         Vec_2f newly_generated;
         for (int i = 0; i < 8; i++)
@@ -213,29 +223,38 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
     }
 
     // TODO: print file info on file load
+    // TODO: custom string classes
     // #ifdef DEBUG
     //     int32 h = (int32)assets.font_image.bh->bmp_info_header.Height;
     //     char buf[128];
     //     sprintf_s(buf, 128, "%ld\n", h);
     //     OutputDebugStringA(buf);
     // #endif
+
     {
         // render image
-        DEBUGBltBmp(&back_buffer, assets.font_image, 100, 200);
+
+        DEBUGBltBmp_old(&back_buffer, assets.soldier, 50, 150);
+        DEBUGBltBmp_new(&back_buffer, assets.soldier, 700, 150);
+        // font_tile_map.DEBUGdraw(&back_buffer, 6, 1, 200, 400);
     }
-    // font_tile_map.DEBUGdraw(&back_buffer, 6, 1, 200, 400);
+
     {
         // render text to screen
+
         // TODO: set font alpha
         // TODO: font shadows
         // TODO: font outlines
-        font_tile_map.DEBUGrenderBitmapText(&back_buffer, (char *)"A quick brown fox \nate the brownie \nbox!\n", 200, 400);
+        font_tile_map.DEBUGrenderBitmapText(&back_buffer, (char *)"A quick brown fox \nate the brownie \nbox!\n", 50, 100);
     }
+
     {
         // draw quad
-        Quad2D quad = generateAAQuad(Vec_2f(100.0, 100.0), Vec_2f(200.0, 200.0));
+
+        Quad2D quad = generateAAQuad(Vec_2f(400.0, 30.0), Vec_2f(100.0, 100.0));
         DEBUGrenderQuad2D(back_buffer, &quad);
     }
+
     // TODO: generate quads
     // TODO: use textures
     // TODO: 2D AABB(+rects) physics

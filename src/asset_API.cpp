@@ -10,7 +10,7 @@ TileMap::TileMap(BitmapImage imageData, uint32 tile_width, uint32 tile_height)
     this->tiles_per_height = imageData.bh->bmp_info_header.Height / this->tile_height;
     this->tiles_per_width = imageData.bh->bmp_info_header.Width / this->tile_width;
 }
-uint32 alphaBlendColors(uint32 color_to, uint32 color_from)
+uint32 alphaBlendColors_old(uint32 color_to, uint32 color_from)
 {
     uint32 alpha = color_to >> 24;
     // uint32 alpha = 10;
@@ -20,14 +20,34 @@ uint32 alphaBlendColors(uint32 color_to, uint32 color_from)
     uint32 g2 = (alpha * (color_from & 0x00FF00)) >> 8;
     return ((rb1 | rb2) & 0xFF00FF) + ((g1 | g2) & 0x00FF00);
 }
+uint32 alphaBlendColors_new(uint32 color_to, uint32 color_from)
+{
+    uint32 alpha = color_to >> 24;
+    // uint32 alpha = 10;
+    uint32 rb1 = ((0x100 - alpha) * (color_to & 0xFF00FF)) >> 8;
+    uint32 rb2 = (alpha * (color_from & 0xFF00FF)) >> 8;
+    uint32 g1 = ((0x100 - alpha) * (color_to & 0x00FF00)) >> 8;
+    uint32 g2 = (alpha * (color_from & 0x00FF00)) >> 8;
+    return ((rb1 + rb2) & 0xFF00FF) | ((g1 + g2) & 0x00FF00);
+}
 
-void DEBUGBltBmp(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
+void DEBUGBltBmp_old(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
 {
     for (int32 x = 0; x < bmp.bh->bmp_info_header.Width; x++)
     {
         for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
         {
-            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alphaBlendColors(bmp.pixels[y * bmp.bh->bmp_info_header.Width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
+            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alphaBlendColors_old(bmp.pixels[y * bmp.bh->bmp_info_header.Width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
+        }
+    }
+}
+void DEBUGBltBmp_new(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
+{
+    for (int32 x = 0; x < bmp.bh->bmp_info_header.Width; x++)
+    {
+        for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
+        {
+            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alphaBlendColors_new(bmp.pixels[y * bmp.bh->bmp_info_header.Width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
         }
     }
 }
@@ -42,7 +62,7 @@ void TileMap::DEBUGdraw(ARGBTexture *back_buffer, int32 x, int32 y, int32 x_offs
         {
             // HACK: the indexing, LUL.
             uint32 new_color = bmp.pixels[((this->tiles_per_height - 1 - y) * this->tile_height + yy) * bmp.bh->bmp_info_header.Width + x * this->tile_width + xx];
-            back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset] = alphaBlendColors(new_color, back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset]);
+            back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset] = alphaBlendColors_old(new_color, back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset]);
         }
     }
 }
@@ -74,11 +94,15 @@ void TileMap::DEBUGrenderBitmapText(ARGBTexture *back_buffer, char *text, int32 
 }
 Assets::Assets()
 {
-    int8 *path = (int8 *)"font.bmp";
+    // int8 *path = (int8 *)"font.bmp";
     // this->font_image = BitmapImage::loadBmpFromFile(path);
-    BitmapImage::loadBmpFromFile(&this->font_image, path);
-    // FIXME: this needs to get called, otherwise it throws?!
+    BitmapImage::loadBmpFromFile(&this->font_image, (char *) "font.bmp");
     this->font_image.setOpaquenessTo(0x22000000);
+    // FIXME: this needs to get called, otherwise it throws?!
+
+    // path = (int8 *)"font.bmp";
+    BitmapImage::loadBmpFromFile(&this->soldier, (char*) "soldier.bmp");
+    this->soldier.setOpaquenessTo(0x22000000);
     // FIXME: no safeguard against read errors
     return;
 }

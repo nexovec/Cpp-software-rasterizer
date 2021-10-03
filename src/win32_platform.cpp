@@ -317,9 +317,8 @@ struct RuntimeThreadParams
     ARGBTexture back_buffer;
     HDC device_context;
 };
-DWORD WINAPI runtimeThreadProc(LPVOID lpParam)
+internal DWORD WINAPI runtimeThreadProc(LPVOID lpParam)
 {
-    // PERFORMANCE: threading killed us?
     RuntimeThreadParams params = *(RuntimeThreadParams *)lpParam;
     HWND window = params.window;
     ARGBTexture back_buffer = params.back_buffer;
@@ -345,7 +344,6 @@ DWORD WINAPI runtimeThreadProc(LPVOID lpParam)
         }
         // OutputDebugStringA("tick!\n");
         // PERFORMANCE: I suspect performance problems when polling XInput controllers(measure, fix, add other controller API?)
-        // TODO: move this outside of tick to poll more frequently (test if it helps)
         // TODO: disable inputs on out of focus
         // TODO: don't poll disconnected controllers
         unsigned char registered_controllers = 1;

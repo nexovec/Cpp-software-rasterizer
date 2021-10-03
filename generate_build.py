@@ -1,4 +1,4 @@
-# FIXME: you hve to run python install psutil
+# FIXME: you have to run python install psutil
 import psutil
 import sys
 from subprocess import Popen, PIPE

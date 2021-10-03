@@ -6,6 +6,7 @@ struct Assets
 {
     Assets();
     BitmapImage font_image;
+    BitmapImage soldier;
     // ? FIXME: optional memory free
 };
 struct TileMap
@@ -20,4 +21,5 @@ struct TileMap
     void DEBUGdraw(ARGBTexture *back_buffer, int32 x, int32 y, int32 x_offset, int32 y_offset);
     void DEBUGrenderBitmapText(ARGBTexture *back_buffer, char *text, int32 x_offset, int32 y_offset);
 };
-void DEBUGBltBmp(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset);
+void DEBUGBltBmp_new(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset);
+void DEBUGBltBmp_old(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset);
