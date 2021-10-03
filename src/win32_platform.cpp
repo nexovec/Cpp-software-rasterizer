@@ -279,8 +279,8 @@ file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
     }
     else if ((bytes_read != file.size))
     {
-        char* log_message[512];
-        sprintf_s((char *)log_message, 512, "Wrong size read from file (%llu expected, got %llu)\n",file.size, (uint64)bytes_read);
+        char *log_message[512];
+        sprintf_s((char *)log_message, 512, "Wrong size read from file (%llu expected, got %llu)\n", file.size, (uint64)bytes_read);
         OutputDebugStringA((LPCSTR)log_message);
     }
     else
@@ -308,18 +308,75 @@ void TerminateProcess(int ret_code)
     __debugbreak();
     ExitProcess(ret_code);
 }
+
 // TODO: write to file
+
+struct RuntimeThreadParams
+{
+    HWND window;
+    ARGBTexture back_buffer;
+    HDC device_context;
+};
+DWORD WINAPI runtimeThreadProc(LPVOID lpParam)
+{
+    // PERFORMANCE: threading killed us?
+    RuntimeThreadParams params = *(RuntimeThreadParams *)lpParam;
+    HWND window = params.window;
+    ARGBTexture back_buffer = params.back_buffer;
+    HDC device_context = params.device_context;
+    constexpr real64 target_fps = 60;
+    constexpr real64 ms_per_tick = 1000.0 / target_fps;
+    uint64 ticks = 0;
+    real64 last_tick = GetTimeMillis();
+    uint32 last_fps = 0;
+    real64 last_fps_log_time = GetTimeMillis();
+    while (running)
+    {
+        real64 time = GetTimeMillis();
+        if (time - last_tick < ms_per_tick)
+        {
+            time - last_tick > 1 ? Sleep((int32)(time - last_tick - 1)) : Sleep(0);
+            continue;
+        }
+        else
+        {
+            last_tick += ms_per_tick;
+            ticks++;
+        }
+        // OutputDebugStringA("tick!\n");
+        // PERFORMANCE: I suspect performance problems when polling XInput controllers(measure, fix, add other controller API?)
+        // TODO: move this outside of tick to poll more frequently (test if it helps)
+        // TODO: disable inputs on out of focus
+        // TODO: don't poll disconnected controllers
+        unsigned char registered_controllers = 1;
+        pollXInputControllers(registered_controllers);
+        gameUpdateAndRender(back_buffer);
+        Win32UpdateWindow(device_context, window, back_buffer);
+
+        last_fps++;
+        if (GetTimeMillis() - last_fps_log_time > 1000)
+        {
+            char title[128];
+            sprintf_s((char *const)&title, 128, "handmade_test | fps: %u", last_fps);
+            SetWindowText(window, title);
+            last_fps = 0;
+            last_fps_log_time = GetTimeMillis();
+        }
+    }
+    return 0;
+}
+
 int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
                      PSTR, int32)
 {
+#ifdef DEBUG
     DEBUGprintSystemPageSize();
     {
-#ifdef DEBUG
         file_contents test_file_contents = file_contents::readWholeFile((char *)"test.txt"); // TODO: you need to create test.txt for this to print something
         OutputDebugStringA((char *)test_file_contents.data);
         OutputDebugStringA("\n^^^ test file was supposed to print here. Did it? ^^^\n");
-#endif
     }
+#endif
 
     win32InitXInput();
     win32InitDirectsound();
@@ -351,9 +408,11 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
         // TODO: error handle
         ExitProcess(1);
     }
-    SetFocus(window);
     // FIXME: this gets multiplied by windows global scale multiplier for some reason:
+    // FIXME: weird window style behavior and client area offsets, investigate
     // TODO: center window on screen
+    SetFocus(window);
+    SetWindowPos(window, HWND_TOP, 300, 180, default_scene_width + 20, default_scene_height + 40, 0);
 
     HDC device_context = GetDC(window);
     ARGBTexture back_buffer = {};
@@ -361,11 +420,16 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
     back_buffer.height = default_scene_height;
     memory_index DIB_size = sizeof(uint32) * default_scene_width * default_scene_height;
     back_buffer.bits = (uint32 *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
-    // FIXME: weird window style
-    SetWindowPos(window, HWND_TOP, 300, 180, back_buffer.width + 20, back_buffer.height + 40, 0);
-    keyboard_state = {};
-    const real64 target_fps = 60;
-    const real64 ms_per_tick = 1000.0 / target_fps;
+
+    // start runtime thread
+    // NOTE: this is done in order to prevent window from freezing when being moved
+    DWORD thread_id;
+    RuntimeThreadParams params = RuntimeThreadParams{window, back_buffer, device_context};
+    HANDLE thread_handle = CreateThread(NULL, 0, runtimeThreadProc, (LPVOID)&params, 0, &thread_id);
+
+    // do window management
+    constexpr real64 target_fps = 20;
+    constexpr real64 ms_per_tick = 1000.0 / target_fps;
     uint64 ticks = 0;
     real64 last_tick = GetTimeMillis();
     uint32 last_fps = 0;
@@ -376,7 +440,6 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
         if (time - last_tick < ms_per_tick)
         {
             time - last_tick > 1 ? Sleep((int32)(time - last_tick - 1)) : Sleep(0);
-            // Sleep(0);
             continue;
         }
         else
@@ -384,25 +447,6 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
             dispatchSystemMessages();
             last_tick += ms_per_tick;
             ticks++;
-        }
-        // OutputDebugStringA("tick!\n");
-        // PERFORMANCE: I suspect performance problems when polling XInput controllers(measure, fix, add other controller API?)
-        // TODO: move this outside of tick to poll more frequently (test if it helps)
-        // TODO: disable inputs on out of focus
-        // TODO: don't poll disconnected controllers
-        unsigned char registered_controllers = 1;
-        pollXInputControllers(registered_controllers);
-        gameUpdateAndRender(back_buffer);
-        Win32UpdateWindow(device_context, window, back_buffer);
-
-        last_fps++;
-        if (GetTimeMillis() - last_fps_log_time > 1000)
-        {
-            char title[128];
-            sprintf_s((char *const)&title, 128, "handmade_test | fps: %u", last_fps);
-            SetWindowText(window, title);
-            last_fps = 0;
-            last_fps_log_time = GetTimeMillis();
         }
     }
     return 0;
