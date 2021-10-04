@@ -283,6 +283,7 @@ internal LRESULT CALLBACK WindowProc(
     }
     return result;
 }
+LARGE_INTEGER lpFrequency;
 internal real64 GetTimeMillis()
 {
     LARGE_INTEGER lpPerformanceCount;
@@ -291,7 +292,6 @@ internal real64 GetTimeMillis()
         // TODO: error handle
         ExitProcess(1);
     }
-    persistent LARGE_INTEGER lpFrequency;
     if (!QueryPerformanceFrequency(&lpFrequency))
     {
         // TODO: error handle

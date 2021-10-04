@@ -6,6 +6,27 @@
 Assets assets = Assets();
 TileMap font_tile_map = TileMap(assets.font_image, 512 / 32, 96 / 4);
 
+struct ColoredTrianglesVertexBuffer
+{
+    Vec_2f positions;
+    Vec_4ui colors;
+};
+
+struct Triangle2D
+{
+    Vec_2f v1;
+    Vec_2f v2;
+    Vec_2f v3;
+};
+
+struct Quad2D
+{
+    Triangle2D bottom;
+    Triangle2D bottom_uv;
+    Triangle2D top;
+    Triangle2D top_uv;
+};
+
 internal void clearScreen(ARGBTexture back_buffer)
 {
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
@@ -44,7 +65,7 @@ internal inline uint32 interpolatedColor(real32 lam_1, real32 lam_2, real32 lam_
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
 
-internal void rasterizeTriangle(ARGBTexture back_buffer, Triangle2D *triangle_ptr = 0)
+internal void DEBUGrasterizeTriangle(ARGBTexture back_buffer, Triangle2D *triangle_ptr = 0)
 {
     // SECTION: generate sample triangle
     Triangle2D triangle;
@@ -115,8 +136,8 @@ internal inline uint32 DEBUGtextureColor(real32 lam_1, real32 lam_2, real32 lam_
     // NOTE: uses brycentric coords
     // TODO: bilinear filtering
     // TODO: trilinear filtering
-    uint32 final_x = (texel_1.x * lam_1 + texel_2.x * lam_2 + texel_3.x * lam_3) + 0.5;
-    uint32 final_y = (texel_1.y * lam_1 + texel_2.y * lam_2 + texel_3.y * lam_3) + 0.5;
+    int32 final_x = (int32)((texel_1.x * lam_1 + texel_2.x * lam_2 + texel_3.x * lam_3) + 0.5);
+    int32 final_y = (int32)((texel_1.y * lam_1 + texel_2.y * lam_2 + texel_3.y * lam_3) + 0.5);
 
     return texture.bits[(final_y * texture.width) + final_x];
 }
@@ -126,7 +147,7 @@ internal void rasterizeTriangleTextured(ARGBTexture back_buffer, Triangle2D *tri
     Triangle2D triangle = *triangle_ptr;
     // TODO: render wireframe
     // SECTION: rasterize triangles
-    uint32 scanline_x_start[default_scene_width] = {}; // should probably be common for all triangles, should use unsigned short[]
+    real32 scanline_x_start[default_scene_width] = {}; // should probably be common for all triangles, should use unsigned short[]
     Vec_2f *vertices = (Vec_2f *)&triangle;
     for (int i1 = 0; i1 < 3; i1++)
     {
@@ -150,10 +171,10 @@ internal void rasterizeTriangleTextured(ARGBTexture back_buffer, Triangle2D *tri
             if (scanline_x_start[y])
             {
                 // this row has scanline boundary cached for this triangle
-                uint32 condition = scanline_x_start[y] > x_bound;
-                uint32 lower_x_bound = (uint32)(condition * x_bound + !condition * scanline_x_start[y]);
-                uint32 higher_x_bound = (uint32)(condition * scanline_x_start[y] + !condition * x_bound);
-                for (uint32 x = lower_x_bound; x < higher_x_bound; x++)
+                // PERFORMANCE: you can cache some things here and avoid excessive casts
+                uint32 lower_x = (uint32)clamp<float>(min(x_bound, scanline_x_start[y]), 0, (real32)(back_buffer.width - 1));
+                uint32 higher_x = (uint32)clamp<float>(max(x_bound, scanline_x_start[y]), 0, (real32)(back_buffer.width - 1));
+                for (uint32 x = lower_x; x < higher_x; x++)
                 {
                     Vec_2f vert_1 = triangle.v1;
                     Vec_2f vert_2 = triangle.v2;
@@ -174,45 +195,15 @@ internal void rasterizeTriangleTextured(ARGBTexture back_buffer, Triangle2D *tri
             else
             {
                 // this row doesn't have scanline boundary cached for this triangle
-                scanline_x_start[y] = (uint32)x_bound;
+                scanline_x_start[y] = x_bound;
             }
         }
     }
 }
-struct ColoredTrianglesVertexBuffer
-{
-    Vec_2f positions;
-    Vec_3ui colors;
-};
-struct Mat2x2f
-{
-    real32 rows[4];
-    Vec_2f operator*(const Vec_2f vec)
-    {
-        Vec_2f back;
-        // TODO: investigate SIMD
-        back.x = rows[0] * vec.x + rows[1] * vec.y;
-        back.y = rows[2] * vec.x + rows[3] * vec.y;
-        return back;
-    }
-    static Mat2x2f RotationMatrix(real32 angle)
-    {
-        Mat2x2f matrix = {cos(angle), -sin(angle), sin(angle), cos(angle)};
-        return matrix;
-    }
-};
 
-struct Quad2D
-{
-    Triangle2D bottom;
-    Triangle2D bottom_uv;
-    Triangle2D top;
-    Triangle2D top_uv;
-};
 /* Generates axis aligned quad. */
 internal Quad2D generateAAQuad(Vec_2f pos, Vec_2f size)
 {
-    // TODO: test
     Triangle2D triangleA = {pos, pos + Vec_2f(1.0f, 0.0f) * size.y, pos + size};
     Triangle2D triangleA_uv = {{0.0f, 0.0f}, {512.0f, 0.0f}, {512.0f, 512.0f}};
     Triangle2D triangleB = {pos, pos + Vec_2f(0.0f, 1.0f) * size.x, pos + size};
@@ -236,27 +227,28 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
         // Render one triangle
 
         clearScreen(back_buffer);
-        rasterizeTriangle(back_buffer);
+        DEBUGrasterizeTriangle(back_buffer);
     }
 
     {
         // Render multiple triangles
 
         // Triangle2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
-        // rasterizeTriangle(back_buffer, &triangle);
+        // DEBUGrasterizeTriangle(back_buffer, &triangle);
+
         // TODO: create example
         constexpr Vec_2f midpoint = {640.f, 360.f};
-        // FIXME:
 
-        static Vec_2f rotating_point = {480.f, 280.f};
-        // rotating_point = Mat2x2f::RotationMatrix(0.1f) * (rotating_point - midpoint) + midpoint;
+        // FIXME: don't use persistent
+        persistent Vec_2f rotating_point = {480.f, 280.f};
+        rotating_point = Mat2x2f::rotationMatrix(0.1f) * (rotating_point - midpoint) + midpoint;
         Vec_2f other{0, 0};
         Vec_2f newly_generated;
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {(i + 1.0f) * (real32)default_scene_width / 8 - 1, 0}; //+((rand() % default_scene_width)-default_scene_width/2)
             Triangle2D triangle = {other, newly_generated, rotating_point};
-            rasterizeTriangle(back_buffer, &triangle);
+            DEBUGrasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
 
@@ -265,7 +257,7 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
         {
             newly_generated = {default_scene_width - 1, (i + 1.0f) * (real32)default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
             Triangle2D triangle = {other, newly_generated, rotating_point};
-            rasterizeTriangle(back_buffer, &triangle);
+            DEBUGrasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
 
@@ -274,7 +266,7 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
         {
             newly_generated = {(i + 1.0f) * (real32)default_scene_width / 8, default_scene_height - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
             Triangle2D triangle = {other, newly_generated, rotating_point};
-            rasterizeTriangle(back_buffer, &triangle);
+            DEBUGrasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
         // FIXME: investigate why you can't use 0
@@ -283,7 +275,7 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
         {
             newly_generated = {1, (i + 1.0f) * default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2);
             Triangle2D triangle = {other, newly_generated, rotating_point};
-            rasterizeTriangle(back_buffer, &triangle);
+            DEBUGrasterizeTriangle(back_buffer, &triangle);
             other = newly_generated;
         }
     }
@@ -318,8 +310,14 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
     {
         // draw texture-mapped quad
 
-        Quad2D quad = generateAAQuad(Vec_2f(400.0, 30.0), Vec_2f(400.0, 400.0));
+        Quad2D quad = generateAAQuad(Vec_2f(900.0, 30.0), Vec_2f(400.0, 400.0));
         DEBUGrenderQuad2D(back_buffer, &quad);
+    }
+
+    {
+        // draw texture-mapped cube
+
+        // ! TODO:
     }
     // TODO: 2D AABB(+rects) physics
     // TODO: 2D GJK

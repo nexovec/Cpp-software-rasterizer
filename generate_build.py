@@ -34,7 +34,7 @@ config = {
             ]
         }
     ],
-    'launch_debugger': True,  # defaults to False
+    # 'launch_debugger': True,  # defaults to False
     # 'run_executable': True,  # defaults to False
     'pause_after_build': True,  # defaults to False
     'build_examples': True  # defaults to False

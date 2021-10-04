@@ -42,9 +42,6 @@ struct ARGBTexture
 
 typedef size_t memory_index;
 
-typedef float real32;
-typedef double real64;
-
 struct file_contents
 {
     uint64 size;

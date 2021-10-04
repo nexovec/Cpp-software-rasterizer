@@ -1,3 +1,4 @@
+#include "super_math.hpp"
 #include "data_parsing.hpp"
 #include "platform_layer.hpp"
 #include "asset_API.hpp"
@@ -31,21 +32,35 @@ uint32 alphaBlendColors(uint32 color_to, uint32 color_from)
 
 void DEBUGBltBmp_fast(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
 {
-    for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
+    // TODO: blit texture instead of BitmapImage directly
+    ARGBTexture tex = bmp.getUnderlyingTexture();
+    for (int32 y = y_offset; y < y_offset + (int32)tex.height; y++)
     {
-        for (int32 x = 0; x < bmp.bh->bmp_info_header.Width; x++)
+        for (int32 x = x_offset; x < clamp(x_offset + (int32)tex.width, 0, (int32)back_buffer->width - 1); x++)
         {
-            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alphaBlendColors_fast(bmp.pixels[y * bmp.bh->bmp_info_header.Width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
+            // PERFORMANCE: oof.
+            // if (y < 0 || y >= tex.height)
+            //     continue;
+            // if (x < 0 || x >= tex.width)
+            //     continue;
+            back_buffer->bits[back_buffer->width * y + x] = alphaBlendColors_fast(bmp.pixels[(y - y_offset) * tex.width + x - x_offset], back_buffer->bits[back_buffer->width * y + x]);
         }
     }
 }
 void DEBUGBltBmp(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
 {
-    for (int32 y = 0; y < bmp.bh->bmp_info_header.Height; y++)
+    // TODO: blit texture instead of BitmapImage directly
+    ARGBTexture tex = bmp.getUnderlyingTexture();
+    for (int32 y = 0; y < (int32)tex.height; y++)
     {
-        for (int32 x = 0; x < bmp.bh->bmp_info_header.Width; x++)
+        for (int32 x = 0; x < (int32)tex.width; x++)
         {
-            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alphaBlendColors(bmp.pixels[y * bmp.bh->bmp_info_header.Width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
+            // PERFORMANCE: oof.
+            // if (y + y_offset < 0 || y_offset + y >= tex.height)
+            //     continue;
+            // if (x + x_offset < 0 || x + x_offset >= tex.width)
+            //     continue;
+            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alphaBlendColors(bmp.pixels[y * tex.width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
         }
     }
 }
@@ -53,6 +68,7 @@ void TileMap::DEBUGdraw(ARGBTexture *back_buffer, int32 x, int32 y, int32 x_offs
 {
     // FIXME: access violation on negative offsets
     // FIXME: This is copying bmp headers
+    // FIXME: duplicate of DEBUGBltBmp
     BitmapImage bmp = this->imageData;
     for (int32 xx = 0; xx < (int32)this->tile_width; xx++)
     {

@@ -146,6 +146,7 @@ internal int32 HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
     }
     return 0;
 }
+LARGE_INTEGER lpFrequency;
 internal real64 GetTimeMillis()
 {
     LARGE_INTEGER lpPerformanceCount;
@@ -154,7 +155,6 @@ internal real64 GetTimeMillis()
         // TODO: error handle
         ExitProcess(1);
     }
-    persistent LARGE_INTEGER lpFrequency;
     if (!QueryPerformanceFrequency(&lpFrequency))
     {
         // TODO: error handle
@@ -371,7 +371,7 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
     DEBUGprintSystemPageSize();
     {
         // TODO: search for assets folder
-        file_contents test_file_contents = file_contents::readWholeFile((char *)"assets/test.txt"); 
+        file_contents test_file_contents = file_contents::readWholeFile((char *)"assets/test.txt");
         OutputDebugStringA((char *)test_file_contents.data);
         OutputDebugStringA("\n^^^ test file was supposed to print here. Did it? ^^^\n");
     }
@@ -432,8 +432,6 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
     constexpr real64 ms_per_tick = 1000.0 / target_fps;
     uint64 ticks = 0;
     real64 last_tick = GetTimeMillis();
-    uint32 last_fps = 0;
-    real64 last_fps_log_time = GetTimeMillis();
     while (running)
     {
         real64 time = GetTimeMillis();
