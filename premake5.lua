@@ -1,12 +1,12 @@
 -- premake5.lua
 workspace "Test"
     configurations { "Debug", "Release" }
-    platforms { "Win32", "Win64", "Xbox360" }
+    platforms {"Win64"}
 
 project "HelloWorld"
    kind "WindowedApp"
    language "C++"
-   cppdialect "C++latest"
+   cppdialect "C++20"
    targetdir "bin/%{cfg.buildcfg}"
 
    files { "src/**.hpp", "src/**.cpp" }

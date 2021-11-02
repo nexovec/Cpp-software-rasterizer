@@ -1,4 +1,4 @@
-# WinKart WIP
+# Software rasterizer in C++ [WIP]
 
 ## How to build
 
