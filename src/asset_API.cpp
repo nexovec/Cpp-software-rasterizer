@@ -30,7 +30,7 @@ uint32 alphaBlendColors(uint32 color_to, uint32 color_from)
     return ((rb1 + rb2) & 0xFF00FF) | ((g1 + g2) & 0x00FF00);
 }
 
-void DEBUGBltBmp_fast(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
+void BltBmp_fast(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
 {
     // TODO: blit texture instead of BitmapImage directly
     ARGBTexture tex = bmp.getUnderlyingTexture();
@@ -47,13 +47,13 @@ void DEBUGBltBmp_fast(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset,
         }
     }
 }
-void DEBUGBltBmp(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
+void BltBmp(ARGBTexture *back_buffer, BitmapImage bmp, int32 x_offset, int32 y_offset)
 {
     // TODO: blit texture instead of BitmapImage directly
     ARGBTexture tex = bmp.getUnderlyingTexture();
-    for (int32 y = 0; y < (int32)tex.height; y++)
+    for (int32 y = 0; y < (int32)tex.height && y + y_offset < back_buffer->height; y++)
     {
-        for (int32 x = 0; x < (int32)tex.width; x++)
+        for (int32 x = 0; x < (int32)tex.width && x + x_offset < back_buffer->width; x++)
         {
             // PERFORMANCE: oof.
             // if (y + y_offset < 0 || y_offset + y >= tex.height)
@@ -68,11 +68,11 @@ void TileMap::DEBUGdraw(ARGBTexture *back_buffer, int32 x, int32 y, int32 x_offs
 {
     // FIXME: access violation on negative offsets
     // FIXME: This is copying bmp headers
-    // FIXME: duplicate of DEBUGBltBmp
+    // FIXME: duplicate of BltBmp
     BitmapImage bmp = this->imageData;
-    for (int32 xx = 0; xx < (int32)this->tile_width; xx++)
+    for (int32 xx = 0; xx < (int32)this->tile_width && y + y_offset < back_buffer->height; xx++)
     {
-        for (int32 yy = 0; yy < (int32)this->tile_height; yy++)
+        for (int32 yy = 0; yy < (int32)this->tile_height && x + x_offset < back_buffer->width; yy++)
         {
             // HACK: the indexing, LUL.
             uint32 new_color = bmp.pixels[((this->tiles_per_height - 1 - y) * this->tile_height + yy) * bmp.bh->bmp_info_header.Width + x * this->tile_width + xx];
@@ -106,17 +106,23 @@ void TileMap::DEBUGrenderBitmapText(ARGBTexture *back_buffer, char *text, int32 
         index++;
     }
 }
-Assets::Assets()
-{
+static TileMap loadFont1(){
+    BitmapImage font_image;
+    // TODO: error checking
+    BitmapImage::loadBmpFromFile(&font_image, (char *)"assets/font.bmp");
     // int8 *path = (int8 *)"font.bmp";
     // this->font_image = BitmapImage::loadBmpFromFile(path);
-    BitmapImage::loadBmpFromFile(&this->font_image, (char *)"assets/font.bmp");
-    this->font_image.setOpaquenessTo(0x22000000);
     // FIXME: this needs to get called, otherwise it throws?!
+    font_image.setOpaquenessTo(0x22000000);
+    return TileMap(font_image, 512 / 32, 96 / 4);
+}
+Assets::Assets():font1(loadFont1())
+{
 
     // path = (int8 *)"font.bmp";
+    // FIXME: no safeguard against read errors
     BitmapImage::loadBmpFromFile(&this->soldier, (char *)"assets/soldier.bmp");
     this->soldier.setOpaquenessTo(0x22000000);
-    // FIXME: no safeguard against read errors
-    return;
+
+    this->font1 = loadFont1();
 }

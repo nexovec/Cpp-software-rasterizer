@@ -4,7 +4,6 @@
 #include "main.hpp"
 
 Assets assets = Assets();
-TileMap font_tile_map = TileMap(assets.font_image, 512 / 32, 96 / 4);
 
 struct ColoredTrianglesVertexBuffer
 {
@@ -103,7 +102,7 @@ internal void DEBUGrasterizeTriangle(ARGBTexture back_buffer, Triangle2D *triang
             {
                 // this row has scanline boundary cached for this triangle
                 uint32 condition = scanline_x_start[y] > x_bound;
-                uint32 lower_x_bound = (uint32)(condition * x_bound + !condition * scanline_x_start[y]);
+                uint32 lower_x_bound = (uint32)(condition * x_bound + (!condition) * scanline_x_start[y]);
                 uint32 higher_x_bound = (uint32)(condition * scanline_x_start[y] + !condition * x_bound);
                 for (uint32 x = lower_x_bound; x < higher_x_bound; x++)
                 {
@@ -289,33 +288,33 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
     //     OutputDebugStringA(buf);
     // #endif
 
+    // render image
     {
-        // render image
 
-        DEBUGBltBmp(&back_buffer, assets.soldier, 50, 150);
-        DEBUGBltBmp_fast(&back_buffer, assets.soldier, 700, 150);
+        BltBmp(&back_buffer, assets.soldier, 50, 150);
+        BltBmp_fast(&back_buffer, assets.soldier, 700, 150);
         // font_tile_map.DEBUGdraw(&back_buffer, 6, 1, 200, 400);
     }
 
+    // render text to screen
     {
-        // render text to screen
 
         // TODO: set font alpha
         // TODO: font shadows
         // TODO: font outlines
         // TODO: remove whitespace before newline/NULL characters
-        font_tile_map.DEBUGrenderBitmapText(&back_buffer, (char *)"A quick brown fox\nate the brownie\nbox!\n", 50, 100);
+        assets.font1.DEBUGrenderBitmapText(&back_buffer, (char *)"Don't be\nangry", 50, 100);
     }
 
+    // draw texture-mapped quad
     {
-        // draw texture-mapped quad
 
         Quad2D quad = generateAAQuad(Vec_2f(900.0, 30.0), Vec_2f(400.0, 400.0));
         DEBUGrenderQuad2D(back_buffer, &quad);
     }
 
+    // draw texture-mapped cube
     {
-        // draw texture-mapped cube
 
         // ! TODO:
     }

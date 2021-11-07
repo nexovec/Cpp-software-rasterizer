@@ -9,3 +9,4 @@ HelloWorld.vcxproj
 Test.sln
 HelloWorld.vcxproj.user
 font.bmp
+**.code-workspace
