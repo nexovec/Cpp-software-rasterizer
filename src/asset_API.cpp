@@ -92,18 +92,20 @@ void TileMap::DEBUGrenderBitmapText(ARGBTexture *back_buffer, char *text, int32 
     while (text[index] != '\0')
     {
         int32 character = (int32)text[index];
-        switch (character)
+        index++;
+        if(character == '\n')
         {
-        case '\n':
             cursor_pos_hor = 0;
             cursor_pos_vert--;
-            break;
-        default:
-            this->DEBUGdraw(back_buffer, character % this->tiles_per_width, character / this->tiles_per_width, x_offset + cursor_pos_hor * this->tile_width, y_offset + this->tile_height * cursor_pos_vert);
-            cursor_pos_hor++;
-            break;
+            continue;
         }
-        index++;
+        
+        if(character < 0x20 || character > 126) // if it is a printable character in ascii
+        {
+            character = '?';
+        }
+        this->DEBUGdraw(back_buffer, character % this->tiles_per_width, character / this->tiles_per_width, x_offset + cursor_pos_hor * this->tile_width, y_offset + this->tile_height * cursor_pos_vert);
+        cursor_pos_hor++;
     }
 }
 static TileMap loadFont1(){

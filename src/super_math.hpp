@@ -5,46 +5,14 @@ struct Vec_2f
 {
     real32 x;
     real32 y;
-    Vec_2f operator+(const Vec_2f &other)
-    {
-        return Vec_2f{x + other.x, y + other.y};
-    }
-    Vec_2f operator-(const Vec_2f &other)
-    {
-        return Vec_2f{x - other.x, y - other.y};
-    }
-    Vec_2f operator*(real32 other) const
-    {
-        return {this->x * other, this->y * other};
-    }
-    real32 operator*(Vec_2f other) const
-    {
-        // NOTE: computes dot product
-        return other.x * (this->x) + other.y * (this->y);
-    }
-    constexpr static Vec_2f DOWN()
-    {
-        // TODO: test this is 0 cost
-        return {-1., 0.};
-    }
-    constexpr static Vec_2f UP()
-    {
-        // TODO: test this is 0 cost
-        return {1., 0.};
-    }
-    constexpr static Vec_2f LEFT()
-    {
-        // TODO: test this is 0 cost
-        return {0., -1.};
-    }
-    constexpr static Vec_2f RIGHT()
-    {
-        // TODO: test this is 0 cost
-        return {0., 1.};
-    }
-
-    // inline static const Vec_2f DOWN;
-    // inline static const Vec_2f RIGHT;
+    Vec_2f operator+(const Vec_2f &other);
+    Vec_2f operator-(const Vec_2f &other);
+    Vec_2f operator*(real32 other) const;
+    real32 operator*(Vec_2f other) const;
+    constexpr static Vec_2f DOWN();
+    constexpr static Vec_2f UP();
+    constexpr static Vec_2f LEFT();
+    constexpr static Vec_2f RIGHT();
 };
 // constexpr const Vec_2f Vec_2f::DOWN     = {-1.0, 0.0};
 // constexpr const Vec_2f Vec_2f::RIGHT = {0.0, 1.0};
@@ -67,69 +35,11 @@ struct Vec_4f
 struct Mat_4x4f
 {
     real32 row_aligned_elems[16];
-    Vec_4f operator*(Vec_4f other)
-    {
-        // TODO: test
-        // TODO: use SIMD
-        Vec_4f result = {};
-        float *res_unpacked = reinterpret_cast<float *>(&result);
-        for (int32 y = 0; y < 4; y++)
-        {
-            for (int32 x = 0; x < 4; x++)
-            {
-                res_unpacked[y * 4 + x] += this->row_aligned_elems[y * 4 + x] * (reinterpret_cast<float *>(&other))[x];
-            }
-        }
-        return result;
-    }
-    Mat_4x4f *transposed()
-    {
-        // NOTE: returns a transposed matrix
-        // TODO: test
-        Mat_4x4f result;
-        for (int32 x = 0; x < 4; x++)
-        {
-            for (int32 y = 0; y < 4; y++)
-            {
-                // TODO: swap more intelligently?
-                result.row_aligned_elems[y * 4 + x] = this->row_aligned_elems[x * 4 + y];
-                result.row_aligned_elems[x * 4 + y] = this->row_aligned_elems[y * 4 + x];
-            }
-        }
-        return this;
-    }
-    Mat_4x4f *in_place_transpose()
-    {
-        // NOTE: transposes the matrix in-place and returns a pointer to it.
-        // TODO: test
-        // TODO: transposed() (without side effects on the original matrix)
-        // PERFORMANCE: in_place_transpose() vs transposed() perf test
-        for (int32 y = 0; y < 4; y++)
-        {
-            for (int32 x = y; x < 4; x++)
-            {
-                // TODO: swap more intelligently?
-                real32 holder = this->row_aligned_elems[y * 4 + x];
-                this->row_aligned_elems[y * 4 + x] = this->row_aligned_elems[y * 4 + x];
-                this->row_aligned_elems[x * 4 + y] = holder;
-            }
-        }
-        return this;
-    }
-    static Mat_4x4f zero()
-    {
-        // TODO: test
-        return {};
-    }
-    static Mat_4x4f unitMatrix()
-    {
-        // TODO: test
-        return {
-            1., 0., 0., 0.,
-            0., 1., 0., 0.,
-            0., 0., 1., 0.,
-            0., 0., 0., 1.};
-    }
+    Vec_4f operator*(Vec_4f other);
+    Mat_4x4f *transposed();
+    Mat_4x4f *in_place_transpose();
+    static Mat_4x4f zero();
+    static Mat_4x4f unitMatrix();
     // static Mat_4x4f rotationMatrix(const Vec_4f vec)
     // {
     //     // ! TODO: implement

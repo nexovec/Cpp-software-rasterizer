@@ -323,7 +323,7 @@ internal DWORD WINAPI runtimeThreadProc(LPVOID lpParam)
     HWND window = params.window;
     ARGBTexture back_buffer = params.back_buffer;
     HDC device_context = params.device_context;
-    constexpr real64 target_fps = 60;
+    constexpr real64 target_fps = 60.0;
     constexpr real64 ms_per_tick = 1000.0 / target_fps;
     uint64 ticks = 0;
     real64 last_tick = GetTimeMillis();
@@ -337,11 +337,8 @@ internal DWORD WINAPI runtimeThreadProc(LPVOID lpParam)
             time - last_tick > 1 ? Sleep((int32)(time - last_tick - 1)) : Sleep(0);
             continue;
         }
-        else
-        {
-            last_tick += ms_per_tick;
-            ticks++;
-        }
+        last_tick += ms_per_tick;
+        ticks++;
         // OutputDebugStringA("tick!\n");
         // PERFORMANCE: I suspect performance problems when polling XInput controllers(measure, fix, add other controller API?)
         // TODO: disable inputs on out of focus
