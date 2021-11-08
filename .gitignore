@@ -1,6 +1,5 @@
 build/
 .vs/
-.vscode/
 .build.bat
 temp/
 bin/

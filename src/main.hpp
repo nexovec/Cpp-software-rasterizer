@@ -2,6 +2,6 @@
 #include "common_defines.hpp"
 #include "platform_layer.hpp"
 
-const uint16 default_scene_width = 1280;
-const uint16 default_scene_height = 720;
-void gameUpdateAndRender(ARGBTexture back_buffer);
+const uint_16 default_scene_width = 1280;
+const uint_16 default_scene_height = 720;
+void gameUpdateAndRender(argb_texture back_buffer);

@@ -33,20 +33,20 @@ enum GAMEPAD_RUMBLE_LEVEL
     LEVEL_3 = 65535
 };
 
-struct ARGBTexture
+struct argb_texture
 {
-    uint32 *bits;
-    uint32 width;
-    uint32 height;
+    uint_32 *bits;
+    uint_32 width;
+    uint_32 height;
 };
 
 typedef size_t memory_index;
 
 struct file_contents
 {
-    uint64 size;
+    uint_64 size;
     void *data;
-    static file_contents readWholeFile(char *path, uint64 min_allocd_size = 0);
+    static file_contents readWholeFile(char *path, uint_64 min_allocd_size = 0);
     void free();
 };
 void TerminateProcess(int ret_code);

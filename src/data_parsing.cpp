@@ -1,13 +1,13 @@
 #include "data_parsing.hpp"
 #include "platform_layer.hpp"
-ARGBTexture BitmapImage::getUnderlyingTexture()
+argb_texture bitmap_image::getUnderlyingTexture()
 {
-    return {this->pixels, (uint32)this->bh->bmp_info_header.Width, (uint32)this->bh->bmp_info_header.Height};
+    return {this->pixels, (uint_32)this->bh->bmp_info_header.Width, (uint_32)this->bh->bmp_info_header.Height};
 }
-int BitmapImage::loadBmpFromFile(BitmapImage *bmp, char *filepath)
+int bitmap_image::loadBmpFromFile(bitmap_image *bmp, char *filepath)
 {
     // NOTE: every bmp exported by gimp is fully transparent by default??
-    // SECURITY: check validity of dimensions (are used as uint32)
+    // SECURITY: check validity of dimensions (are used as uint_32)
     // FIXME: nobody keeps track of the underlying file data
     bmp->bh = (BitmapHeader *)(file_contents::readWholeFile(filepath, sizeof(BitmapHeader)).data);
     if (bmp->bh == 0)
@@ -16,10 +16,10 @@ int BitmapImage::loadBmpFromFile(BitmapImage *bmp, char *filepath)
         TerminateProcess(1);
     }
     // bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data);
-    bmp->pixels = (uint32 *)((uint8 *)bmp->bh + bmp->bh->bmp_file_header.BitmapOffset);
+    bmp->pixels = (uint_32 *)((uint_8 *)bmp->bh + bmp->bh->bmp_file_header.BitmapOffset);
 
     // if (bmp.bh->bmp_file_header.FileType!=0x4D42)
-    uint8 *file_type = reinterpret_cast<uint8 *>(&bmp->bh->bmp_file_header.FileType);
+    uint_8 *file_type = reinterpret_cast<uint_8 *>(&bmp->bh->bmp_file_header.FileType);
     if (file_type[0] != 'B' || file_type[1] != 'M')
     {
         // invalid file type
@@ -61,13 +61,13 @@ int BitmapImage::loadBmpFromFile(BitmapImage *bmp, char *filepath)
 
     return 1;
 }
-BitmapImage BitmapImage::setOpaquenessTo(uint32 desired_alpha)
+bitmap_image bitmap_image::setOpaquenessTo(uint_32 desired_alpha)
 {
-    uint32 w = (uint32)this->bh->bmp_info_header.Width;
-    uint32 h = (uint32)this->bh->bmp_info_header.Height;
-    for (uint32 x = 0; x < w; x++)
+    uint_32 w = (uint_32)this->bh->bmp_info_header.Width;
+    uint_32 h = (uint_32)this->bh->bmp_info_header.Height;
+    for (uint_32 x = 0; x < w; x++)
     {
-        for (uint32 y = 0; y < h; y++)
+        for (uint_32 y = 0; y < h; y++)
         {
             this->pixels[w * y + x] = this->pixels[w * y + x] | desired_alpha;
         }

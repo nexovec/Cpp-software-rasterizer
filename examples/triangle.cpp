@@ -8,10 +8,10 @@ global KeyboardState keyboard_state;
 
 struct Vec2f
 {
-    real32 x;
-    real32 y;
+    real_32 x;
+    real_32 y;
 };
-struct Triangle2D
+struct triangle_2D
 {
     Vec2f v1;
     Vec2f v2;
@@ -24,26 +24,26 @@ inline T math_sgn(T n, T zero)
 {
     return (n > 0) - (n < 0);
 }
-inline real32 math_lerp(real32 a, real32 b, real32 ratio)
+inline real_32 math_lerp(real_32 a, real_32 b, real_32 ratio)
 {
     return a + ratio * (b - a);
 }
-inline real32 math_invLerp(real32 a, real32 b, real32 val)
+inline real_32 math_invLerp(real_32 a, real_32 b, real_32 val)
 {
     return (val - a) / (b - a);
 }
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
-void clearScreen(ARGBTexture back_buffer)
+void clearScreen(argb_texture back_buffer)
 {
-    for (uint32 i = 0; i < back_buffer.height; i++)
+    for (uint_32 i = 0; i < back_buffer.height; i++)
     {
-        for (uint32 ii = 0; ii < back_buffer.width; ii++)
+        for (uint_32 ii = 0; ii < back_buffer.width; ii++)
         {
             back_buffer(ii, i) = 0xffaaff;
         }
     }
 }
-uint32 interpolatedColor(Triangle2D triangle, real32 x, real32 y, uint32 color1, uint32 color2, uint32 color3)
+uint_32 interpolatedColor(triangle_2D triangle, real_32 x, real_32 y, uint_32 color1, uint_32 color2, uint_32 color3)
 {
     // use solid color
     // return 0xff00ff00;
@@ -51,40 +51,40 @@ uint32 interpolatedColor(Triangle2D triangle, real32 x, real32 y, uint32 color1,
     Vec2f v2 = triangle.v2;
     Vec2f v3 = triangle.v3;
     // get barycentric coordinates
-    real32 det_t = (v2.y - v3.y) * (v1.x - v3.x) + (v3.x - v2.x) * (v1.y - v3.y);
-    real32 lam_1 = ((v2.y - v3.y) * (x - v3.x) + (v3.x - v2.x) * (y - v3.y)) / det_t;
-    real32 lam_2 = ((v3.y - v1.y) * (x - v3.x) + (v1.x - v3.x) * (y - v3.y)) / det_t;
-    real32 lam_3 = 1 - lam_2 - lam_1;
+    real_32 det_t = (v2.y - v3.y) * (v1.x - v3.x) + (v3.x - v2.x) * (v1.y - v3.y);
+    real_32 lam_1 = ((v2.y - v3.y) * (x - v3.x) + (v3.x - v2.x) * (y - v3.y)) / det_t;
+    real_32 lam_2 = ((v3.y - v1.y) * (x - v3.x) + (v1.x - v3.x) * (y - v3.y)) / det_t;
+    real_32 lam_3 = 1 - lam_2 - lam_1;
 
-    uint8 a1 = (uint8)(color1 >> 24);
-    uint8 r1 = (uint8)(color1 >> 16);
-    uint8 g1 = (uint8)(color1 >> 8);
-    uint8 b1 = (uint8)(color1 >> 0);
+    uint_8 a1 = (uint_8)(color1 >> 24);
+    uint_8 r1 = (uint_8)(color1 >> 16);
+    uint_8 g1 = (uint_8)(color1 >> 8);
+    uint_8 b1 = (uint_8)(color1 >> 0);
 
-    uint8 a2 = (uint8)(color2 >> 24);
-    uint8 r2 = (uint8)(color2 >> 16);
-    uint8 g2 = (uint8)(color2 >> 8);
-    uint8 b2 = (uint8)(color2 >> 0);
+    uint_8 a2 = (uint_8)(color2 >> 24);
+    uint_8 r2 = (uint_8)(color2 >> 16);
+    uint_8 g2 = (uint_8)(color2 >> 8);
+    uint_8 b2 = (uint_8)(color2 >> 0);
 
-    uint8 a3 = (uint8)(color3 >> 24);
-    uint8 r3 = (uint8)(color3 >> 16);
-    uint8 g3 = (uint8)(color3 >> 8);
-    uint8 b3 = (uint8)(color3 >> 0);
+    uint_8 a3 = (uint_8)(color3 >> 24);
+    uint_8 r3 = (uint_8)(color3 >> 16);
+    uint_8 g3 = (uint_8)(color3 >> 8);
+    uint_8 b3 = (uint_8)(color3 >> 0);
 
-    uint8 final_a = (uint8)(a1 * lam_1 + a2 * lam_2 + a3 * lam_3);
-    uint8 final_r = (uint8)(r1 * lam_1 + r2 * lam_2 + r3 * lam_3);
-    uint8 final_g = (uint8)(g1 * lam_1 + g2 * lam_2 + g3 * lam_3);
-    uint8 final_b = (uint8)(b1 * lam_1 + b2 * lam_2 + b3 * lam_3);
+    uint_8 final_a = (uint_8)(a1 * lam_1 + a2 * lam_2 + a3 * lam_3);
+    uint_8 final_r = (uint_8)(r1 * lam_1 + r2 * lam_2 + r3 * lam_3);
+    uint_8 final_g = (uint_8)(g1 * lam_1 + g2 * lam_2 + g3 * lam_3);
+    uint_8 final_b = (uint_8)(b1 * lam_1 + b2 * lam_2 + b3 * lam_3);
 
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
-void gameUpdateAndRender(ARGBTexture back_buffer)
+void gameUpdateAndRender(argb_texture back_buffer)
 {
     clearScreen(back_buffer);
-    Triangle2D triangle = {{200.0f, 200.0f}, {500.0f, 200.0f}, {200.0f, 500.0f}};
+    triangle_2D triangle = {{200.0f, 200.0f}, {500.0f, 200.0f}, {200.0f, 500.0f}};
     // SECTION: rasterize triangle
-    int32 scanline_x_start[1280] = {};
+    int_32 scanline_x_start[1280] = {};
     Vec2f *vertices = (Vec2f *)&triangle;
     for (int i1 = 0; i1 < 3; i1++)
     {
@@ -98,36 +98,36 @@ void gameUpdateAndRender(ARGBTexture back_buffer)
             lower_vertex = v2;
             higher_vertex = v1;
         }
-        for (real32 y = lower_vertex.y; y < higher_vertex.y; y++)
+        for (real_32 y = lower_vertex.y; y < higher_vertex.y; y++)
         {
-            real32 relative_y_diff = y - lower_vertex.y;
-            real32 lerp_unit = 1.0f / (higher_vertex.y - lower_vertex.y);
-            real32 x_bound = math_lerp(lower_vertex.x, higher_vertex.x, lerp_unit * relative_y_diff);
-            if (scanline_x_start[(int32)y])
+            real_32 relative_y_diff = y - lower_vertex.y;
+            real_32 lerp_unit = 1.0f / (higher_vertex.y - lower_vertex.y);
+            real_32 x_bound = math_lerp(lower_vertex.x, higher_vertex.x, lerp_unit * relative_y_diff);
+            if (scanline_x_start[(int_32)y])
             {
                 // this row has scanline boundary cached for this triangle
-                real32 lower_x_bound;
-                real32 higher_x_bound;
-                if (scanline_x_start[(int32)y] > x_bound)
+                real_32 lower_x_bound;
+                real_32 higher_x_bound;
+                if (scanline_x_start[(int_32)y] > x_bound)
                 {
-                    lower_x_bound = (real32)x_bound;
-                    higher_x_bound = (real32)scanline_x_start[(int32)y];
+                    lower_x_bound = (real_32)x_bound;
+                    higher_x_bound = (real_32)scanline_x_start[(int_32)y];
                 }
                 else
                 {
-                    higher_x_bound = (real32)x_bound;
-                    lower_x_bound = (real32)scanline_x_start[(int32)y];
+                    higher_x_bound = (real_32)x_bound;
+                    lower_x_bound = (real_32)scanline_x_start[(int_32)y];
                 }
-                for (real32 x = lower_x_bound; x < higher_x_bound; x++)
+                for (real_32 x = lower_x_bound; x < higher_x_bound; x++)
                 {
-                    back_buffer((int32)x, (int32)y) = interpolatedColor(triangle, x, y, 0xffff00ff, 0xffffff00, 0xffffffff);
+                    back_buffer((int_32)x, (int_32)y) = interpolatedColor(triangle, x, y, 0xffff00ff, 0xffffff00, 0xffffffff);
                 }
-                scanline_x_start[(int32)y] = 0;
+                scanline_x_start[(int_32)y] = 0;
             }
             else
             {
                 // this row doesn't have scanline boundary cached for this triangle
-                scanline_x_start[(int32)y] = (int32)x_bound;
+                scanline_x_start[(int_32)y] = (int_32)x_bound;
             }
         }
     }
@@ -138,14 +138,14 @@ internal void Win32ResizeDibSection(HWND window)
     static RECT prev_size;
     RECT window_coords;
     GetWindowRect(window, &window_coords);
-    // uint32 height = prev_size.bottom - prev_size.top;
-    uint32 width = prev_size.right - prev_size.left;
-    constexpr real64 aspect_ratio = 16. / 9.;
+    // uint_32 height = prev_size.bottom - prev_size.top;
+    uint_32 width = prev_size.right - prev_size.left;
+    constexpr real_64 aspect_ratio = 16. / 9.;
     // FIXME: set the client rect to this size instead of the whole window
-    SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((real64)width / aspect_ratio), 0);
+    SetWindowPos(window, HWND_NOTOPMOST, window_coords.left, window_coords.top, width, (int)((real_64)width / aspect_ratio), 0);
     prev_size = window_coords;
 }
-internal int32 Win32UpdateWindow(HDC device_context, HWND window, ARGBTexture back_buffer)
+internal int_32 Win32UpdateWindow(HDC device_context, HWND window, argb_texture back_buffer)
 {
     // TODO: benchmark against https://gamedev.net/forums/topic/385918-fast-drawing-to-screen-win32gdi/3552067/
     RECT rect;
@@ -157,10 +157,10 @@ internal int32 Win32UpdateWindow(HDC device_context, HWND window, ARGBTexture ba
     bitmap_info.bmiHeader.biPlanes = 1;
     bitmap_info.bmiHeader.biBitCount = 32;
     bitmap_info.bmiHeader.biCompression = BI_RGB;
-    // int32 width = rect.right - rect.left;
-    // int32 height = rect.bottom - rect.top;
+    // int_32 width = rect.right - rect.left;
+    // int_32 height = rect.bottom - rect.top;
     // TODO: use StretchDIBits and fixed window size
-    int32 res = StretchDIBits(
+    int_32 res = StretchDIBits(
         device_context,
         0,
         0,
@@ -176,7 +176,7 @@ internal int32 Win32UpdateWindow(HDC device_context, HWND window, ARGBTexture ba
         SRCCOPY);
     return res;
 }
-internal int32 HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
+internal int_32 HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
 {
     if (is_down && lParam & (1 << 30))
         return 0;
@@ -226,7 +226,7 @@ internal int32 HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
 }
 internal LRESULT CALLBACK WindowProc(
     HWND window,
-    uint32 uMsg,
+    uint_32 uMsg,
     WPARAM wParam,
     LPARAM lParam)
 {
@@ -284,7 +284,7 @@ internal LRESULT CALLBACK WindowProc(
     return result;
 }
 LARGE_INTEGER lpFrequency;
-internal real64 GetTimeMillis()
+internal real_64 GetTimeMillis()
 {
     LARGE_INTEGER lpPerformanceCount;
     if (!QueryPerformanceCounter(&lpPerformanceCount))
@@ -297,7 +297,7 @@ internal real64 GetTimeMillis()
         // TODO: error handle
         ExitProcess(1);
     }
-    real64 time_in_seconds = (real64)lpPerformanceCount.QuadPart / (real64)lpFrequency.QuadPart;
+    real_64 time_in_seconds = (real_64)lpPerformanceCount.QuadPart / (real_64)lpFrequency.QuadPart;
     return time_in_seconds * 1000;
 }
 void dispatchSystemMessages()
@@ -315,7 +315,7 @@ void dispatchSystemMessages()
     TranslateMessage(&message);
     DispatchMessage(&message);
 }
-int32 WINAPI WinMain(_In_ HINSTANCE hInstance, HINSTANCE, PSTR, int32)
+int_32 WINAPI WinMain(_In_ HINSTANCE hInstance, HINSTANCE, PSTR, int_32)
 {
     WNDCLASSEXA window_class_ex = {};
     window_class_ex.cbSize = sizeof(WNDCLASSEX);
@@ -347,25 +347,25 @@ int32 WINAPI WinMain(_In_ HINSTANCE hInstance, HINSTANCE, PSTR, int32)
     }
     SetFocus(window);
     HDC device_context = GetDC(window);
-    ARGBTexture back_buffer = {};
+    argb_texture back_buffer = {};
     back_buffer.width = 1280;
     back_buffer.height = 720;
-    memory_index DIB_size = sizeof(uint32) * 1280 * 720;
-    back_buffer.bits = (uint32 *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
+    memory_index DIB_size = sizeof(uint_32) * 1280 * 720;
+    back_buffer.bits = (uint_32 *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
     SetWindowPos(window, HWND_TOP, 300, 180, back_buffer.width, back_buffer.height, 0); // FIXME: weird black stripes
 
     keyboard_state = {};
     Win32ResizeDibSection(window);
-    const real64 target_fps = 60;
-    const real64 ms_per_tick = 1000.0 / target_fps;
-    uint64 ticks = 0;
-    real64 last_tick = GetTimeMillis();
+    const real_64 target_fps = 60;
+    const real_64 ms_per_tick = 1000.0 / target_fps;
+    uint_64 ticks = 0;
+    real_64 last_tick = GetTimeMillis();
     while (running)
     {
-        real64 time = GetTimeMillis();
+        real_64 time = GetTimeMillis();
         if (time - last_tick < ms_per_tick)
         {
-            time - last_tick > 1 ? Sleep((int32)(time - last_tick - 1)) : Sleep(0);
+            time - last_tick > 1 ? Sleep((int_32)(time - last_tick - 1)) : Sleep(0);
             // Sleep(0);
             continue;
         }

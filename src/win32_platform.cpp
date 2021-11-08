@@ -11,7 +11,7 @@
 global BOOL running = true;
 global KeyboardState keyboard_state;
 
-#define XINPUT_GET_STATE_SIG(name) uint64 name(uint64, XINPUT_STATE *)
+#define XINPUT_GET_STATE_SIG(name) uint_64 name(uint_64, XINPUT_STATE *)
 typedef XINPUT_GET_STATE_SIG(x_input_get_state);
 XINPUT_GET_STATE_SIG(XInputGetStateStub)
 {
@@ -20,7 +20,7 @@ XINPUT_GET_STATE_SIG(XInputGetStateStub)
 global x_input_get_state *XInputGetState_ = XInputGetStateStub;
 #define XInputGetState XInputGetState_
 
-#define XINPUT_SET_STATE_SIG(name) uint64 name(uint64, XINPUT_VIBRATION *)
+#define XINPUT_SET_STATE_SIG(name) uint_64 name(uint_64, XINPUT_VIBRATION *)
 typedef XINPUT_SET_STATE_SIG(x_input_set_state);
 internal XINPUT_SET_STATE_SIG(XInputSetStateStub)
 {
@@ -46,7 +46,7 @@ internal void win32InitXInput()
 internal void pollXInputControllers(unsigned char registered_controllers)
 {
     XINPUT_STATE states[4];
-    for (int32 i = 0; i < registered_controllers; i++)
+    for (int_32 i = 0; i < registered_controllers; i++)
     {
         XINPUT_STATE &pState = states[registered_controllers];
         XINPUT_GAMEPAD *controller_state = &pState.Gamepad;
@@ -67,7 +67,7 @@ internal bool win32InitDirectsound()
     // LoadLibrary("./dlls/Dsound3d.dll");
     return false;
 }
-internal int32 Win32UpdateWindow(HDC device_context, HWND window, ARGBTexture back_buffer)
+internal int_32 Win32UpdateWindow(HDC device_context, HWND window, argb_texture back_buffer)
 {
     // TODO: benchmark against https://gamedev.net/forums/topic/385918-fast-drawing-to-screen-win32gdi/3552067/
     RECT rect;
@@ -79,10 +79,10 @@ internal int32 Win32UpdateWindow(HDC device_context, HWND window, ARGBTexture ba
     bitmap_info.bmiHeader.biPlanes = 1;
     bitmap_info.bmiHeader.biBitCount = 32;
     bitmap_info.bmiHeader.biCompression = BI_RGB;
-    // int32 width = rect.right - rect.left;
-    // int32 height = rect.bottom - rect.top;
+    // int_32 width = rect.right - rect.left;
+    // int_32 height = rect.bottom - rect.top;
     // TODO: use StretchDIBits and fixed window size
-    int32 res = StretchDIBits(
+    int_32 res = StretchDIBits(
         device_context,
         0,
         0,
@@ -98,7 +98,7 @@ internal int32 Win32UpdateWindow(HDC device_context, HWND window, ARGBTexture ba
         SRCCOPY);
     return res;
 }
-internal int32 HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
+internal int_32 HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
 {
     if (is_down && lParam & (1 << 30))
         return 0;
@@ -147,7 +147,7 @@ internal int32 HandleKeypress(WPARAM wParam, LPARAM lParam, bool is_down)
     return 0;
 }
 LARGE_INTEGER lpFrequency;
-internal real64 GetTimeMillis()
+internal real_64 GetTimeMillis()
 {
     LARGE_INTEGER lpPerformanceCount;
     if (!QueryPerformanceCounter(&lpPerformanceCount))
@@ -160,13 +160,13 @@ internal real64 GetTimeMillis()
         // TODO: error handle
         ExitProcess(1);
     }
-    real64 time_in_seconds = (real64)lpPerformanceCount.QuadPart / (real64)lpFrequency.QuadPart;
+    real_64 time_in_seconds = (real_64)lpPerformanceCount.QuadPart / (real_64)lpFrequency.QuadPart;
     return time_in_seconds * 1000;
 }
 
 internal LRESULT CALLBACK WindowProc(
     HWND window,
-    uint32 uMsg,
+    uint_32 uMsg,
     WPARAM wParam,
     LPARAM lParam)
 {
@@ -241,7 +241,7 @@ void file_contents::free()
 {
     VirtualFree(this->data, 0, MEM_RELEASE);
 }
-file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
+file_contents file_contents::readWholeFile(char *path, uint_64 min_allocd_size)
 {
 #ifdef DEBUG
     OutputDebugStringA(path);
@@ -264,7 +264,7 @@ file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
     file.size = max(file.size, min_allocd_size);
     file.data = VirtualAlloc(0, file.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-    uint32 bytes_read;
+    uint_32 bytes_read;
     if (!file.data)
     {
         OutputDebugStringA("Can't allocate buffer for file data\n");
@@ -273,14 +273,14 @@ file_contents file_contents::readWholeFile(char *path, uint64 min_allocd_size)
     {
         OutputDebugStringA("File is too big\n");
     }
-    else if (!ReadFile(file_handle, file.data, (uint32)file.size, (LPDWORD)&bytes_read, 0))
+    else if (!ReadFile(file_handle, file.data, (uint_32)file.size, (LPDWORD)&bytes_read, 0))
     {
         OutputDebugStringA("Can't read from file\n");
     }
     else if ((bytes_read != file.size))
     {
         char *log_message[512];
-        sprintf_s((char *)log_message, 512, "Wrong size read from file (%llu expected, got %llu)\n", file.size, (uint64)bytes_read);
+        sprintf_s((char *)log_message, 512, "Wrong size read from file (%llu expected, got %llu)\n", file.size, (uint_64)bytes_read);
         OutputDebugStringA((LPCSTR)log_message);
     }
     else
@@ -314,27 +314,28 @@ void TerminateProcess(int ret_code)
 struct RuntimeThreadParams
 {
     HWND window;
-    ARGBTexture back_buffer;
+    argb_texture back_buffer;
     HDC device_context;
 };
 internal DWORD WINAPI runtimeThreadProc(LPVOID lpParam)
 {
     RuntimeThreadParams params = *(RuntimeThreadParams *)lpParam;
     HWND window = params.window;
-    ARGBTexture back_buffer = params.back_buffer;
+    argb_texture back_buffer = params.back_buffer;
     HDC device_context = params.device_context;
-    constexpr real64 target_fps = 60.0;
-    constexpr real64 ms_per_tick = 1000.0 / target_fps;
-    uint64 ticks = 0;
-    real64 last_tick = GetTimeMillis();
-    uint32 last_fps = 0;
-    real64 last_fps_log_time = GetTimeMillis();
+    constexpr real_64 target_fps = 60.0;
+    constexpr real_64 ms_per_tick = 1000.0 / target_fps;
+    uint_64 ticks = 0;
+    real_64 last_tick = GetTimeMillis();
+    uint_32 last_fps = 0;
+    real_64 last_fps_log_time = GetTimeMillis();
     while (running)
     {
-        real64 time = GetTimeMillis();
+        real_64 time = GetTimeMillis();
         if (time - last_tick < ms_per_tick)
         {
-            time - last_tick > 1 ? Sleep((int32)(time - last_tick - 1)) : Sleep(0);
+            // time - last_tick > 1 ? Sleep((int_32)(time - last_tick - 1)) : Sleep(0);
+            Sleep(0);
             continue;
         }
         last_tick += ms_per_tick;
@@ -361,8 +362,8 @@ internal DWORD WINAPI runtimeThreadProc(LPVOID lpParam)
     return 0;
 }
 
-int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
-                     PSTR, int32)
+int_32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
+                     PSTR, int_32)
 {
 #ifdef DEBUG
     DEBUGprintSystemPageSize();
@@ -412,11 +413,11 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
     SetWindowPos(window, HWND_TOP, 300, 180, default_scene_width + 20, default_scene_height + 40, 0);
 
     HDC device_context = GetDC(window);
-    ARGBTexture back_buffer = {};
+    argb_texture back_buffer = {};
     back_buffer.width = default_scene_width;
     back_buffer.height = default_scene_height;
-    memory_index DIB_size = sizeof(uint32) * default_scene_width * default_scene_height;
-    back_buffer.bits = (uint32 *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
+    memory_index DIB_size = sizeof(uint_32) * default_scene_width * default_scene_height;
+    back_buffer.bits = (uint_32 *)VirtualAlloc(0, DIB_size, MEM_COMMIT, PAGE_READWRITE);
 
     // start runtime thread
     // NOTE: this is done in order to prevent window from freezing when being moved
@@ -425,16 +426,16 @@ int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
     HANDLE thread_handle = CreateThread(NULL, 0, runtimeThreadProc, (LPVOID)&params, 0, &thread_id);
 
     // do window management
-    constexpr real64 target_fps = 20;
-    constexpr real64 ms_per_tick = 1000.0 / target_fps;
-    uint64 ticks = 0;
-    real64 last_tick = GetTimeMillis();
+    constexpr real_64 target_fps = 20;
+    constexpr real_64 ms_per_tick = 1000.0 / target_fps;
+    uint_64 ticks = 0;
+    real_64 last_tick = GetTimeMillis();
     while (running)
     {
-        real64 time = GetTimeMillis();
+        real_64 time = GetTimeMillis();
         if (time - last_tick < ms_per_tick)
         {
-            time - last_tick > 1 ? Sleep((int32)(time - last_tick - 1)) : Sleep(0);
+            time - last_tick > 1 ? Sleep((int_32)(time - last_tick - 1)) : Sleep(0);
             continue;
         }
         else
