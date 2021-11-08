@@ -33,7 +33,7 @@ inline real_32 math_invLerp(real_32 a, real_32 b, real_32 val)
     return (val - a) / (b - a);
 }
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
-void clearScreen(argb_texture back_buffer)
+void clear_screen(argb_texture back_buffer)
 {
     for (uint_32 i = 0; i < back_buffer.height; i++)
     {
@@ -79,9 +79,9 @@ uint_32 interpolatedColor(triangle_2D triangle, real_32 x, real_32 y, uint_32 co
     // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
-void gameUpdateAndRender(argb_texture back_buffer)
+void game_update_and_render(argb_texture back_buffer)
 {
-    clearScreen(back_buffer);
+    clear_screen(back_buffer);
     triangle_2D triangle = {{200.0f, 200.0f}, {500.0f, 200.0f}, {200.0f, 500.0f}};
     // SECTION: rasterize triangle
     int_32 scanline_x_start[1280] = {};
@@ -375,7 +375,7 @@ int_32 WINAPI WinMain(_In_ HINSTANCE hInstance, HINSTANCE, PSTR, int_32)
             last_tick += ms_per_tick;
             ticks++;
         }
-        gameUpdateAndRender(back_buffer);
+        game_update_and_render(back_buffer);
         Win32UpdateWindow(device_context, window, back_buffer);
     }
     return 0;

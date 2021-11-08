@@ -21,6 +21,10 @@ struct vec4_ui
     uint_32 y;
     uint_32 z;
     uint_32 w;
+    vec4_ui operator+(const vec4_ui &other);
+    vec4_ui operator-(const vec4_ui &other);
+    vec4_ui operator*(int_32 other) const;
+    real_32 operator*(vec4_ui &other) const;
 };
 
 struct vec4_f
@@ -29,12 +33,16 @@ struct vec4_f
     real_32 y;
     real_32 z;
     real_32 w;
+    vec4_f operator+(const vec4_f &other);
+    vec4_f operator-(const vec4_f &other);
+    vec4_f operator*(real_32 other) const;
+    real_32 operator*(vec4_f &other) const;
 };
 struct mat4_f
 {
     real_32 row_aligned_elems[16];
-    vec4_f operator*(vec4_f other);
-    mat4_f *transposed();
+    vec4_f operator*(vec4_f &other);
+    mat4_f *transposed_matrix();
     mat4_f *in_place_transpose();
     constexpr static mat4_f zero_matrix();
     constexpr static mat4_f unit_matrix();

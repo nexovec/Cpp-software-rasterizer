@@ -346,7 +346,7 @@ internal DWORD WINAPI runtimeThreadProc(LPVOID lpParam)
         // TODO: don't poll disconnected controllers
         unsigned char registered_controllers = 1;
         pollXInputControllers(registered_controllers);
-        gameUpdateAndRender(back_buffer);
+        game_update_and_render(back_buffer);
         Win32UpdateWindow(device_context, window, back_buffer);
 
         last_fps++;

@@ -26,7 +26,7 @@ struct quad_2D
     triangle_2D top_uv;
 };
 
-internal void clearScreen(argb_texture back_buffer)
+internal void clear_screen(argb_texture back_buffer)
 {
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
     for (uint_32 i = 0; i < back_buffer.height; i++)
@@ -140,7 +140,7 @@ internal inline uint_32 DEBUGtextureColor(real_32 lam_1, real_32 lam_2, real_32 
 
     return texture.bits[(final_y * texture.width) + final_x];
 }
-internal void rasterizeTriangleTextured(argb_texture back_buffer, triangle_2D *triangle_ptr, triangle_2D *uv_coords)
+internal void rasterize_triangle_textured(argb_texture back_buffer, triangle_2D *triangle_ptr, triangle_2D *uv_coords)
 {
     // FIXME: code duplication
     triangle_2D triangle = *triangle_ptr;
@@ -209,15 +209,15 @@ internal quad_2D generate_AA_quad(vec2_f pos, vec2_f size)
     triangle_2D triangleB_uv = {{0.0f, 0.0f}, {0.0f, 512.0f}, {512.0f, 512.0f}};
     return {triangleA, triangleA_uv, triangleB, triangleB_uv};
 }
-internal void DEBUGrenderQuad2D(argb_texture back_buffer, quad_2D *quad)
+internal void DEBUGrender_quad_2D(argb_texture back_buffer, quad_2D *quad)
 {
     triangle_2D *as_array = (triangle_2D *)quad;
     for (int i = 0; i < 2; i++)
     {
-        rasterizeTriangleTextured(back_buffer, as_array + i * 2, as_array + i * 2 + 1);
+        rasterize_triangle_textured(back_buffer, as_array + i * 2, as_array + i * 2 + 1);
     }
 }
-void gameUpdateAndRender(argb_texture back_buffer)
+void game_update_and_render(argb_texture back_buffer)
 {
     // NOTE: backbuffer format is ARGB
     // NOTE: backbuffer.width is default_scene_width; backbuffer_height is default_scene_height
@@ -225,7 +225,7 @@ void gameUpdateAndRender(argb_texture back_buffer)
     {
         // Render one triangle
 
-        clearScreen(back_buffer);
+        clear_screen(back_buffer);
         DEBUGrasterize_triangle(back_buffer);
     }
 
@@ -310,7 +310,7 @@ void gameUpdateAndRender(argb_texture back_buffer)
     {
 
         quad_2D quad = generate_AA_quad(vec2_f(900.0, 30.0), vec2_f(400.0, 400.0));
-        DEBUGrenderQuad2D(back_buffer, &quad);
+        DEBUGrender_quad_2D(back_buffer, &quad);
     }
 
     // draw texture-mapped cube

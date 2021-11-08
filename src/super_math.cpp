@@ -41,7 +41,42 @@ constexpr vec2_f vec2_f::RIGHT()
     return {0., 1.};
 }
 
-vec4_f mat4_f::operator*(vec4_f other)
+// TODO: use templates and using for vectors?
+vec4_f vec4_f::operator+(const vec4_f &other)
+{
+    return {other.x + this->x, other.y * this->y, other.z * this->z, other.w * this->w};
+}
+vec4_f vec4_f::operator-(const vec4_f &other)
+{
+    return {other.x + this->x, other.y * this->y, other.z * this->z, other.w * this->w};
+}
+vec4_f vec4_f::operator*(real_32 m) const
+{
+    return {m * this->x, m * this->y, m * this->z, m * this->w};
+}
+real_32 vec4_f::operator*(vec4_f &m) const
+{
+    return m.x * this->x + m.y * this->y + m.z * this->z + m.w * this->w;
+}
+
+vec4_ui vec4_ui::operator+(const vec4_ui &other)
+{
+    return {other.x + this->x, other.y * this->y, other.z * this->z, other.w * this->w};
+}
+vec4_ui vec4_ui::operator-(const vec4_ui &other)
+{
+    return {other.x + this->x, other.y * this->y, other.z * this->z, other.w * this->w};
+}
+vec4_ui vec4_ui::operator*(int_32 m) const
+{
+    return {m * this->x, m * this->y, m * this->z, m * this->w};
+}
+real_32 vec4_ui::operator*(vec4_ui &m) const
+{
+    return m.x * this->x + m.y * this->y + m.z * this->z + m.w * this->w;
+}
+
+vec4_f mat4_f::operator*(vec4_f &other)
 {
     // TODO: test
     // TODO: use SIMD
@@ -56,9 +91,10 @@ vec4_f mat4_f::operator*(vec4_f other)
     }
     return result;
 }
-mat4_f *mat4_f::transposed()
+
+mat4_f *mat4_f::transposed_matrix()
 {
-    // NOTE: returns a transposed matrix
+    // NOTE: returns a transposed_matrix matrix
     // TODO: test
     mat4_f result;
     for (int_32 x = 0; x < 4; x++)
@@ -76,8 +112,8 @@ mat4_f *mat4_f::in_place_transpose()
 {
     // NOTE: transposes the matrix in-place and returns a pointer to it.
     // TODO: test
-    // TODO: transposed() (without side effects on the original matrix)
-    // PERFORMANCE: in_place_transpose() vs transposed() perf test
+    // TODO: transposed_matrix() (without side effects on the original matrix)
+    // PERFORMANCE: in_place_transpose() vs transposed_matrix() perf test
     for (int_32 y = 0; y < 4; y++)
     {
         for (int_32 x = y; x < 4; x++)

@@ -4,4 +4,4 @@
 
 const uint_16 default_scene_width = 1280;
 const uint_16 default_scene_height = 720;
-void gameUpdateAndRender(argb_texture back_buffer);
+void game_update_and_render(argb_texture back_buffer);
