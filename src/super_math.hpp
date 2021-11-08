@@ -40,8 +40,8 @@ struct mat4_f
     constexpr static mat4_f unit_matrix();
     static mat4_f rotation_matrix(vec4_f);
     static mat4_f translation_matrix(vec4_f);
-    static mat4_f orthoProjectionMatrix(const vec4_f vec);
-    static mat4_f perspectiveProjectionMatrix(const vec4_f vec);
+    static mat4_f ortho_projection_matrix(const vec4_f vec);
+    static mat4_f perspective_projection_matrix(const vec4_f vec);
 };
 
 struct mat2_f
@@ -50,7 +50,7 @@ struct mat2_f
     vec2_f operator*(const vec2_f vec);
     constexpr static mat2_f unit_matrix();
     constexpr static mat2_f zero_matrix();
-    static mat2_f rotationMatrix(real_32 angle);
+    static mat2_f rotation_matrix(real_32 angle);
 };
 
 // TODO: have all of the following in one compilation unit

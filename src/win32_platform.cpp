@@ -363,7 +363,7 @@ internal DWORD WINAPI runtimeThreadProc(LPVOID lpParam)
 }
 
 int_32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
-                     PSTR, int_32)
+                      PSTR, int_32)
 {
 #ifdef DEBUG
     DEBUGprintSystemPageSize();

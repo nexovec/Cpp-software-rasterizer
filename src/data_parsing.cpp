@@ -4,18 +4,18 @@ argb_texture bitmap_image::getUnderlyingTexture()
 {
     return {this->pixels, (uint_32)this->bh->bmp_info_header.Width, (uint_32)this->bh->bmp_info_header.Height};
 }
-int bitmap_image::loadBmpFromFile(bitmap_image *bmp, char *filepath)
+int bitmap_image::load_bmp_from_file(bitmap_image *bmp, char *filepath)
 {
     // NOTE: every bmp exported by gimp is fully transparent by default??
     // SECURITY: check validity of dimensions (are used as uint_32)
     // FIXME: nobody keeps track of the underlying file data
-    bmp->bh = (BitmapHeader *)(file_contents::readWholeFile(filepath, sizeof(BitmapHeader)).data);
+    bmp->bh = (bitmap_header *)(file_contents::readWholeFile(filepath, sizeof(bitmap_header)).data);
     if (bmp->bh == 0)
     {
         // DEBUG: did you copy assets contents into build folder?
         TerminateProcess(1);
     }
-    // bmp.bh = (BitmapHeader *)(file_contents::readWholeFile(filepath).data);
+    // bmp.bh = (bitmap_header *)(file_contents::readWholeFile(filepath).data);
     bmp->pixels = (uint_32 *)((uint_8 *)bmp->bh + bmp->bh->bmp_file_header.BitmapOffset);
 
     // if (bmp.bh->bmp_file_header.FileType!=0x4D42)
@@ -25,7 +25,7 @@ int bitmap_image::loadBmpFromFile(bitmap_image *bmp, char *filepath)
         // invalid file type
         TerminateProcess(1);
     }
-    if (bmp->bh->bmp_info_header.Size > sizeof(BmpFileHeaderSection) + sizeof(BmpInfoHeaderSection))
+    if (bmp->bh->bmp_info_header.Size > sizeof(bmp_file_header_section) + sizeof(bmp_info_header_section))
     {
         // compression header exists
         // TODO: convert to 32 bits per pixel
@@ -54,14 +54,14 @@ int bitmap_image::loadBmpFromFile(bitmap_image *bmp, char *filepath)
             break;
         }
     }
-    if (bmp->bh->bmp_info_header.Size > sizeof(BmpFileHeaderSection) + sizeof(BmpInfoHeaderSection) + sizeof(BmpCompressionHeaderSection))
+    if (bmp->bh->bmp_info_header.Size > sizeof(bmp_file_header_section) + sizeof(bmp_info_header_section) + sizeof(bmp_compression_header_section))
     {
         // color header exists
     }
 
     return 1;
 }
-bitmap_image bitmap_image::setOpaquenessTo(uint_32 desired_alpha)
+bitmap_image bitmap_image::set_opaqueness_to(uint_32 desired_alpha)
 {
     uint_32 w = (uint_32)this->bh->bmp_info_header.Width;
     uint_32 h = (uint_32)this->bh->bmp_info_header.Height;

@@ -12,14 +12,14 @@ struct tile_map
     uint_32 tiles_per_height;
     tile_map(bitmap_image imageData, uint_32 tile_width, uint_32 tile_height);
     void DEBUGdraw(argb_texture *back_buffer, int_32 x, int_32 y, int_32 x_offset, int_32 y_offset);
-    void DEBUGrenderBitmapText(argb_texture *back_buffer, char *text, int_32 x_offset, int_32 y_offset);
+    void DEBUGrender_bitmap_text(argb_texture *back_buffer, char *text, int_32 x_offset, int_32 y_offset);
 };
 struct assets
 {
     assets();
     bitmap_image soldier;
-    tile_map font1;
+    tile_map font_1;
     // ? FIXME: optional memory free
 };
-void BltBmp(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, int_32 y_offset);
-void BltBmp_fast(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, int_32 y_offset);
+void blt_bmp(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, int_32 y_offset);
+void blt_bmp_fast(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, int_32 y_offset);

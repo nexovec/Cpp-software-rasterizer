@@ -64,7 +64,7 @@ internal inline uint_32 interpolatedColor(real_32 lam_1, real_32 lam_2, real_32 
     return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
 }
 
-internal void DEBUGrasterizeTriangle(argb_texture back_buffer, triangle_2D *triangle_ptr = 0)
+internal void DEBUGrasterize_triangle(argb_texture back_buffer, triangle_2D *triangle_ptr = 0)
 {
     // SECTION: generate sample triangle
     triangle_2D triangle;
@@ -201,7 +201,7 @@ internal void rasterizeTriangleTextured(argb_texture back_buffer, triangle_2D *t
 }
 
 /* Generates axis aligned quad. */
-internal quad_2D generateAAQuad(vec2_f pos, vec2_f size)
+internal quad_2D generate_AA_quad(vec2_f pos, vec2_f size)
 {
     triangle_2D triangleA = {pos, pos + vec2_f(1.0f, 0.0f) * size.y, pos + size};
     triangle_2D triangleA_uv = {{0.0f, 0.0f}, {512.0f, 0.0f}, {512.0f, 512.0f}};
@@ -226,28 +226,28 @@ void gameUpdateAndRender(argb_texture back_buffer)
         // Render one triangle
 
         clearScreen(back_buffer);
-        DEBUGrasterizeTriangle(back_buffer);
+        DEBUGrasterize_triangle(back_buffer);
     }
 
     {
         // Render multiple triangles
 
         // triangle_2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
-        // DEBUGrasterizeTriangle(back_buffer, &triangle);
+        // DEBUGrasterize_triangle(back_buffer, &triangle);
 
         // TODO: create example
         constexpr vec2_f midpoint = {640.f, 360.f};
 
         // FIXME: don't use persistent
         persistent vec2_f rotating_point = {480.f, 280.f};
-        rotating_point = mat2_f::rotationMatrix(0.1f) * (rotating_point - midpoint) + midpoint;
+        rotating_point = mat2_f::rotation_matrix(0.1f) * (rotating_point - midpoint) + midpoint;
         vec2_f other{0, 0};
         vec2_f newly_generated;
         for (int i = 0; i < 8; i++)
         {
             newly_generated = {(i + 1.0f) * (real_32)default_scene_width / 8 - 1, 0}; //+((rand() % default_scene_width)-default_scene_width/2)
             triangle_2D triangle = {other, newly_generated, rotating_point};
-            DEBUGrasterizeTriangle(back_buffer, &triangle);
+            DEBUGrasterize_triangle(back_buffer, &triangle);
             other = newly_generated;
         }
 
@@ -256,7 +256,7 @@ void gameUpdateAndRender(argb_texture back_buffer)
         {
             newly_generated = {default_scene_width - 1, (i + 1.0f) * (real_32)default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
             triangle_2D triangle = {other, newly_generated, rotating_point};
-            DEBUGrasterizeTriangle(back_buffer, &triangle);
+            DEBUGrasterize_triangle(back_buffer, &triangle);
             other = newly_generated;
         }
 
@@ -265,7 +265,7 @@ void gameUpdateAndRender(argb_texture back_buffer)
         {
             newly_generated = {(i + 1.0f) * (real_32)default_scene_width / 8, default_scene_height - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
             triangle_2D triangle = {other, newly_generated, rotating_point};
-            DEBUGrasterizeTriangle(back_buffer, &triangle);
+            DEBUGrasterize_triangle(back_buffer, &triangle);
             other = newly_generated;
         }
         // FIXME: investigate why you can't use 0
@@ -274,7 +274,7 @@ void gameUpdateAndRender(argb_texture back_buffer)
         {
             newly_generated = {1, (i + 1.0f) * default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2);
             triangle_2D triangle = {other, newly_generated, rotating_point};
-            DEBUGrasterizeTriangle(back_buffer, &triangle);
+            DEBUGrasterize_triangle(back_buffer, &triangle);
             other = newly_generated;
         }
     }
@@ -291,8 +291,8 @@ void gameUpdateAndRender(argb_texture back_buffer)
     // render image
     {
 
-        BltBmp(&back_buffer, asset_cache.soldier, 50, 150);
-        BltBmp_fast(&back_buffer, asset_cache.soldier, 700, 150);
+        blt_bmp(&back_buffer, asset_cache.soldier, 50, 150);
+        blt_bmp_fast(&back_buffer, asset_cache.soldier, 700, 150);
         // font_tile_map.DEBUGdraw(&back_buffer, 6, 1, 200, 400);
     }
 
@@ -303,13 +303,13 @@ void gameUpdateAndRender(argb_texture back_buffer)
         // TODO: font shadows
         // TODO: font outlines
         // TODO: remove whitespace before newline/NULL characters
-        asset_cache.font1.DEBUGrenderBitmapText(&back_buffer, (char *)"Don't be\nangry", 50, 100);
+        asset_cache.font_1.DEBUGrender_bitmap_text(&back_buffer, (char *)"Don't be\nangry", 50, 100);
     }
 
     // draw texture-mapped quad
     {
 
-        quad_2D quad = generateAAQuad(vec2_f(900.0, 30.0), vec2_f(400.0, 400.0));
+        quad_2D quad = generate_AA_quad(vec2_f(900.0, 30.0), vec2_f(400.0, 400.0));
         DEBUGrenderQuad2D(back_buffer, &quad);
     }
 

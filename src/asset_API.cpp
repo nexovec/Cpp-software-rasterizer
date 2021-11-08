@@ -30,7 +30,7 @@ uint_32 alphaBlendColors(uint_32 color_to, uint_32 color_from)
     return ((rb1 + rb2) & 0xFF00FF) | ((g1 + g2) & 0x00FF00);
 }
 
-void BltBmp_fast(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, int_32 y_offset)
+void blt_bmp_fast(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, int_32 y_offset)
 {
     // TODO: blit texture instead of bitmap_image directly
     argb_texture tex = bmp.getUnderlyingTexture();
@@ -47,7 +47,7 @@ void BltBmp_fast(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, i
         }
     }
 }
-void BltBmp(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, int_32 y_offset)
+void blt_bmp(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, int_32 y_offset)
 {
     // TODO: blit texture instead of bitmap_image directly
     argb_texture tex = bmp.getUnderlyingTexture();
@@ -68,7 +68,7 @@ void tile_map::DEBUGdraw(argb_texture *back_buffer, int_32 x, int_32 y, int_32 x
 {
     // FIXME: access violation on negative offsets
     // FIXME: This is copying bmp headers
-    // FIXME: duplicate of BltBmp
+    // FIXME: duplicate of blt_bmp
     bitmap_image bmp = this->imageData;
     for (int_32 xx = 0; xx < (int_32)this->tile_width && y + y_offset < back_buffer->height; xx++)
     {
@@ -80,7 +80,7 @@ void tile_map::DEBUGdraw(argb_texture *back_buffer, int_32 x, int_32 y, int_32 x
         }
     }
 }
-void tile_map::DEBUGrenderBitmapText(argb_texture *back_buffer, char *text, int_32 x_offset, int_32 y_offset)
+void tile_map::DEBUGrender_bitmap_text(argb_texture *back_buffer, char *text, int_32 x_offset, int_32 y_offset)
 {
     // NOTE: new-lines resets the cursor to the original position and moves it 1 row downwards.
     // NOTE: this works with ASCII only tilemapped bitmap fonts. Their resolution is supplied on init.
@@ -93,14 +93,14 @@ void tile_map::DEBUGrenderBitmapText(argb_texture *back_buffer, char *text, int_
     {
         int_32 character = (int_32)text[index];
         index++;
-        if(character == '\n')
+        if (character == '\n')
         {
             cursor_pos_hor = 0;
             cursor_pos_vert--;
             continue;
         }
-        
-        if(character < 0x20 || character > 126) // if it is a printable character in ascii
+
+        if (character < 0x20 || character > 126) // if it is a printable character in ascii
         {
             character = '?';
         }
@@ -108,23 +108,24 @@ void tile_map::DEBUGrenderBitmapText(argb_texture *back_buffer, char *text, int_
         cursor_pos_hor++;
     }
 }
-static tile_map loadFont1(){
+static tile_map load_font1()
+{
     bitmap_image font_image;
     // TODO: error checking
-    bitmap_image::loadBmpFromFile(&font_image, (char *)"assets/font.bmp");
+    bitmap_image::load_bmp_from_file(&font_image, (char *)"assets/font.bmp");
     // int_8 *path = (int_8 *)"font.bmp";
-    // this->font_image = bitmap_image::loadBmpFromFile(path);
+    // this->font_image = bitmap_image::load_bmp_from_file(path);
     // FIXME: this needs to get called, otherwise it throws?!
-    font_image.setOpaquenessTo(0x22000000);
+    font_image.set_opaqueness_to(0x22000000);
     return tile_map(font_image, 512 / 32, 96 / 4);
 }
-assets::assets():font1(loadFont1())
+assets::assets() : font_1(load_font1())
 {
 
     // path = (int_8 *)"font.bmp";
     // FIXME: no safeguard against read errors
-    bitmap_image::loadBmpFromFile(&this->soldier, (char *)"assets/soldier.bmp");
-    this->soldier.setOpaquenessTo(0x22000000);
+    bitmap_image::load_bmp_from_file(&this->soldier, (char *)"assets/soldier.bmp");
+    this->soldier.set_opaqueness_to(0x22000000);
 
-    this->font1 = loadFont1();
+    this->font_1 = load_font1();
 }

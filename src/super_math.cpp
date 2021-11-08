@@ -104,7 +104,8 @@ constexpr mat4_f mat4_f::unit_matrix()
         0., 0., 1., 0.,
         0., 0., 0., 1.};
 }
-mat4_f mat4_f::rotation_matrix(vec4_f){
+mat4_f mat4_f::rotation_matrix(vec4_f)
+{
     // ! TODO: implement
     return mat4_f::zero_matrix();
 }
@@ -113,12 +114,12 @@ mat4_f mat4_f::translation_matrix(vec4_f translation)
     // ! TODO: implement
     return mat4_f::zero_matrix();
 }
-mat4_f orthoProjectionMatrix(const vec4_f vec)
+mat4_f ortho_projection_matrix(const vec4_f vec)
 {
     // ! TODO: implement
     return mat4_f::zero_matrix();
 }
-mat4_f perspectiveProjectionMatrix(const vec4_f vec)
+mat4_f perspective_projection_matrix(const vec4_f vec)
 {
     // ! TODO: implement
     return mat4_f::zero_matrix();
@@ -140,7 +141,7 @@ constexpr mat2_f mat2_f::unit_matrix()
 {
     return {1.0f, 0.0f, 0.0f, 1.0f};
 }
-mat2_f mat2_f::rotationMatrix(real_32 angle)
+mat2_f mat2_f::rotation_matrix(real_32 angle)
 {
     mat2_f matrix = {cos(angle), -sin(angle), sin(angle), cos(angle)};
     return matrix;
