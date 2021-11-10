@@ -187,7 +187,7 @@ internal void rasterize_triangle_textured(argb_texture back_buffer, triangle_2D 
                     // #if defined(DEBUG)
                     //                     back_buffer(x, y) = DEBUGtextureColor(lam_1, lam_2, lam_3, 0);
                     // #endif
-                    back_buffer(x, y) = DEBUGtextureColor(lam_1, lam_2, lam_3, uv_coords->v1, uv_coords->v2, uv_coords->v3, asset_cache.soldier.getUnderlyingTexture());
+                    back_buffer(x, y) = DEBUGtextureColor(lam_1, lam_2, lam_3, uv_coords->v1, uv_coords->v2, uv_coords->v3, asset_cache.soldier.get_underlying_texture());
                 }
                 scanline_x_start[y] = 0;
             }
@@ -281,19 +281,12 @@ void game_update_and_render(argb_texture back_buffer)
 
     // TODO: print file info on file load
     // TODO: custom string classes
-    // #ifdef DEBUG
-    //     int_32 h = (int_32)assets.font_image.bh->bmp_info_header.Height;
-    //     char buf[128];
-    //     sprintf_s(buf, 128, "%ld\n", h);
-    //     OutputDebugStringA(buf);
-    // #endif
 
     // render image
     {
 
         blt_bmp(&back_buffer, asset_cache.soldier, 50, 150);
         blt_bmp_fast(&back_buffer, asset_cache.soldier, 700, 150);
-        // font_tile_map.DEBUGdraw(&back_buffer, 6, 1, 200, 400);
     }
 
     // render text to screen

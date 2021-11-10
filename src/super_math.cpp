@@ -142,22 +142,28 @@ constexpr mat4_f mat4_f::unit_matrix()
 }
 mat4_f mat4_f::rotation_matrix(vec4_f)
 {
-    // ! TODO: implement
+    // TODO: implement
+
     return mat4_f::zero_matrix();
 }
 mat4_f mat4_f::translation_matrix(vec4_f translation)
 {
-    // ! TODO: implement
+    // TODO: implement
     return mat4_f::zero_matrix();
 }
-mat4_f ortho_projection_matrix(const vec4_f vec)
+mat4_f mat4_f::ortho_projection_matrix(real_32 l, real_32 r, real_32 t, real_32 b, real_32 n, real_32 f)
 {
-    // ! TODO: implement
-    return mat4_f::zero_matrix();
+    // TODO: implement
+    return {
+        2/(r-l)     , 0           , 0           , 0,
+        0           , 2/(t-b)     , 0           , 0,
+        0           , 0           , -2*(f-n)    , 0,
+        -(r+l)/(r-l), -(t+b)/(t-b), -(f+n)/(f-n), 1
+    };
 }
-mat4_f perspective_projection_matrix(const vec4_f vec)
+mat4_f mat4_f::perspective_projection_matrix(const vec4_f vec)
 {
-    // ! TODO: implement
+    // TODO: implement
     return mat4_f::zero_matrix();
 }
 

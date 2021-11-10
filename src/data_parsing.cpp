@@ -1,6 +1,6 @@
 #include "data_parsing.hpp"
 #include "platform_layer.hpp"
-argb_texture bitmap_image::getUnderlyingTexture()
+argb_texture bitmap_image::get_underlying_texture()
 {
     return {this->pixels, (uint_32)this->bh->bmp_info_header.Width, (uint_32)this->bh->bmp_info_header.Height};
 }

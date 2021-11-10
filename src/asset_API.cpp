@@ -11,7 +11,7 @@ tile_map::tile_map(bitmap_image imageData, uint_32 tile_width, uint_32 tile_heig
     this->tiles_per_height = imageData.bh->bmp_info_header.Height / this->tile_height;
     this->tiles_per_width = imageData.bh->bmp_info_header.Width / this->tile_width;
 }
-uint_32 alphaBlendColors_fast(uint_32 color_to, uint_32 color_from)
+uint_32 alpha_blend_colors_fast(uint_32 color_to, uint_32 color_from)
 {
     uint_32 alpha = color_to >> 28;
     // uint_32 alpha = 10;
@@ -19,7 +19,7 @@ uint_32 alphaBlendColors_fast(uint_32 color_to, uint_32 color_from)
     uint_32 rgb2 = (alpha * (color_from & 0xF0F0F0));
     return (rgb1 + rgb2) >> 4;
 }
-uint_32 alphaBlendColors(uint_32 color_to, uint_32 color_from)
+uint_32 alpha_blend_colors(uint_32 color_to, uint_32 color_from)
 {
     uint_32 alpha = color_to >> 24;
     // uint_32 alpha = 10;
@@ -33,7 +33,7 @@ uint_32 alphaBlendColors(uint_32 color_to, uint_32 color_from)
 void blt_bmp_fast(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, int_32 y_offset)
 {
     // TODO: blit texture instead of bitmap_image directly
-    argb_texture tex = bmp.getUnderlyingTexture();
+    argb_texture tex = bmp.get_underlying_texture();
     for (int_32 y = y_offset; y < y_offset + (int_32)tex.height; y++)
     {
         for (int_32 x = x_offset; x < clamp(x_offset + (int_32)tex.width, 0, (int_32)back_buffer->width - 1); x++)
@@ -43,24 +43,24 @@ void blt_bmp_fast(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, 
             //     continue;
             // if (x < 0 || x >= tex.width)
             //     continue;
-            back_buffer->bits[back_buffer->width * y + x] = alphaBlendColors_fast(bmp.pixels[(y - y_offset) * tex.width + x - x_offset], back_buffer->bits[back_buffer->width * y + x]);
+            back_buffer->bits[back_buffer->width * y + x] = alpha_blend_colors_fast(bmp.pixels[(y - y_offset) * tex.width + x - x_offset], back_buffer->bits[back_buffer->width * y + x]);
         }
     }
 }
 void blt_bmp(argb_texture *back_buffer, bitmap_image bmp, int_32 x_offset, int_32 y_offset)
 {
     // TODO: blit texture instead of bitmap_image directly
-    argb_texture tex = bmp.getUnderlyingTexture();
-    for (int_32 y = 0; y < (int_32)tex.height && y + y_offset < back_buffer->height; y++)
+    argb_texture tex = bmp.get_underlying_texture();
+    for (int_32 y = 0; y < (int_32)tex.height && y + y_offset < (int_32)back_buffer->height; y++)
     {
-        for (int_32 x = 0; x < (int_32)tex.width && x + x_offset < back_buffer->width; x++)
+        for (int_32 x = 0; x < (int_32)tex.width && x + x_offset < (int_32)back_buffer->width; x++)
         {
             // PERFORMANCE: oof.
             // if (y + y_offset < 0 || y_offset + y >= tex.height)
             //     continue;
             // if (x + x_offset < 0 || x + x_offset >= tex.width)
             //     continue;
-            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alphaBlendColors(bmp.pixels[y * tex.width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
+            back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset] = alpha_blend_colors(bmp.pixels[y * tex.width + x], back_buffer->bits[back_buffer->width * (y + y_offset) + x + x_offset]);
         }
     }
 }
@@ -70,13 +70,13 @@ void tile_map::DEBUGdraw(argb_texture *back_buffer, int_32 x, int_32 y, int_32 x
     // FIXME: This is copying bmp headers
     // FIXME: duplicate of blt_bmp
     bitmap_image bmp = this->imageData;
-    for (int_32 xx = 0; xx < (int_32)this->tile_width && y + y_offset < back_buffer->height; xx++)
+    for (int_32 xx = 0; xx < (int_32)this->tile_width && y + y_offset < (int_32)back_buffer->height; xx++)
     {
-        for (int_32 yy = 0; yy < (int_32)this->tile_height && x + x_offset < back_buffer->width; yy++)
+        for (int_32 yy = 0; yy < (int_32)this->tile_height && x + x_offset < (int_32)back_buffer->width; yy++)
         {
             // HACK: the indexing, LUL.
             uint_32 new_color = bmp.pixels[((this->tiles_per_height - 1 - y) * this->tile_height + yy) * bmp.bh->bmp_info_header.Width + x * this->tile_width + xx];
-            back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset] = alphaBlendColors_fast(new_color, back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset]);
+            back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset] = alpha_blend_colors_fast(new_color, back_buffer->bits[back_buffer->width * (yy + y_offset) + xx + x_offset]);
         }
     }
 }

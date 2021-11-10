@@ -60,7 +60,7 @@ struct bitmap_header
 struct bitmap_image
 {
     bitmap_image set_opaqueness_to(uint_32 desired_alpha);
-    argb_texture getUnderlyingTexture();
+    argb_texture get_underlying_texture();
     static int load_bmp_from_file(bitmap_image *bmp, char *filepath);
     bitmap_header *bh;
     uint_32 *pixels;
