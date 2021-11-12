@@ -63,13 +63,14 @@ int bitmap_image::load_bmp_from_file(bitmap_image *bmp, char *filepath)
 }
 bitmap_image bitmap_image::set_opaqueness_to(uint_32 desired_alpha)
 {
+    uint_32 alpha_shifted = desired_alpha << 24;
     uint_32 w = (uint_32)this->bh->bmp_info_header.Width;
     uint_32 h = (uint_32)this->bh->bmp_info_header.Height;
     for (uint_32 x = 0; x < w; x++)
     {
         for (uint_32 y = 0; y < h; y++)
         {
-            this->pixels[w * y + x] = this->pixels[w * y + x] | desired_alpha;
+            this->pixels[w * y + x] = this->pixels[w * y + x] | alpha_shifted;
         }
     }
     return *this;

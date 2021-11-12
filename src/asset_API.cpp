@@ -125,7 +125,7 @@ assets::assets() : font_1(load_font1())
     // path = (int_8 *)"font.bmp";
     // FIXME: no safeguard against read errors
     bitmap_image::load_bmp_from_file(&this->soldier, (char *)"assets/soldier.bmp");
-    this->soldier.set_opaqueness_to(0x22000000);
+    this->soldier.set_opaqueness_to(0x44);
 
     this->font_1 = load_font1();
 }

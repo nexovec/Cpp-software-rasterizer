@@ -69,7 +69,7 @@ internal void DEBUGrasterize_triangle(argb_texture back_buffer, triangle_2D *tri
     // SECTION: generate sample triangle
     triangle_2D triangle;
     vec2_f x_vert = {200.0f, 250.0f};
-    vec2_f y_vert = {500.0f, 200.0f};
+    vec2_f y_vert = {500.0f, 100.0f};
     vec2_f z_vert = {350.0f, 350.0f};
     triangle = {x_vert, y_vert, z_vert};
     if (triangle_ptr)
@@ -102,7 +102,7 @@ internal void DEBUGrasterize_triangle(argb_texture back_buffer, triangle_2D *tri
             {
                 // this row has scanline boundary cached for this triangle
                 uint_32 condition = scanline_x_start[y] > x_bound;
-                uint_32 lower_x_bound = (uint_32)(condition * x_bound + (!condition) * scanline_x_start[y]);
+                uint_32 lower_x_bound = (uint_32)(condition * x_bound + !condition * scanline_x_start[y]);
                 uint_32 higher_x_bound = (uint_32)(condition * scanline_x_start[y] + !condition * x_bound);
                 for (uint_32 x = lower_x_bound; x < higher_x_bound; x++)
                 {
@@ -217,18 +217,25 @@ internal void DEBUGrender_quad_2D(argb_texture back_buffer, quad_2D *quad)
         rasterize_triangle_textured(back_buffer, as_array + i * 2, as_array + i * 2 + 1);
     }
 }
+
+struct cube_3D {
+    vec4_f vertices[2 * 6];
+};
+internal cube_3D generate_AA_cube_3D(vec4_f& cube_position, real_32 cube_diameter) 
+{
+    cube_3D result = {};
+    // TODO: implement
+    return result;
+}
+void DEBUGrender_cube_3D(cube_3D& cube){
+    // TODO: implement
+    return;
+}
+
 void game_update_and_render(argb_texture back_buffer)
 {
     // NOTE: backbuffer format is ARGB
     // NOTE: backbuffer.width is default_scene_width; backbuffer_height is default_scene_height
-
-    {
-        // Render one triangle
-
-        clear_screen(back_buffer);
-        DEBUGrasterize_triangle(back_buffer);
-    }
-
     {
         // Render multiple triangles
 
@@ -279,6 +286,12 @@ void game_update_and_render(argb_texture back_buffer)
         }
     }
 
+    {
+        // Render one triangle
+
+        // clear_screen(back_buffer);
+        DEBUGrasterize_triangle(back_buffer);
+    }
     // TODO: print file info on file load
     // TODO: custom string classes
 
@@ -306,10 +319,13 @@ void game_update_and_render(argb_texture back_buffer)
         DEBUGrender_quad_2D(back_buffer, &quad);
     }
 
-    // draw texture-mapped cube
+    // draw texture-mapped cube_3D
     {
+        vec4_f cube_size = vec4_f(0,0,600,0);
+        cube_3D cube1 = generate_AA_cube_3D(cube_size, 200);
+        DEBUGrender_cube_3D(cube1);
+        // TODO:
 
-        // ! TODO:
     }
     // TODO: 2D AABB(+rects) physics
     // TODO: 2D GJK

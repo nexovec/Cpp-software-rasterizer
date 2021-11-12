@@ -133,7 +133,6 @@ constexpr mat4_f mat4_f::zero_matrix()
 }
 constexpr mat4_f mat4_f::unit_matrix()
 {
-    // TODO: test
     return {
         1., 0., 0., 0.,
         0., 1., 0., 0.,
@@ -148,18 +147,22 @@ mat4_f mat4_f::rotation_matrix(vec4_f)
 }
 mat4_f mat4_f::translation_matrix(vec4_f translation)
 {
-    // TODO: implement
-    return mat4_f::zero_matrix();
+    // TODO: test
+    mat4_f result = mat4_f::unit_matrix();
+    result.row_aligned_elems[0 * 4 + 3] = translation.x;
+    result.row_aligned_elems[1 * 4 + 3] = translation.y;
+    result.row_aligned_elems[2 * 4 + 3] = translation.z;
+    return result;
 }
 mat4_f mat4_f::ortho_projection_matrix(real_32 l, real_32 r, real_32 t, real_32 b, real_32 n, real_32 f)
 {
-    // TODO: implement
+    // TODO: test
     return {
-        2/(r-l)     , 0           , 0           , 0,
-        0           , 2/(t-b)     , 0           , 0,
-        0           , 0           , -2*(f-n)    , 0,
-        -(r+l)/(r-l), -(t+b)/(t-b), -(f+n)/(f-n), 1
-    };
+        2 / (r - l), 0,           0,           -(r + l) / (r - l),
+        0,           2 / (t - b), 0,           -(t + b) / (t - b),
+        0,           0,          -2 * (f - n), -(f + n) / (f - n),
+        0,           0,           0,            1
+        };
 }
 mat4_f mat4_f::perspective_projection_matrix(const vec4_f vec)
 {
