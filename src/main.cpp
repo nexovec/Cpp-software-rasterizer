@@ -26,6 +26,43 @@ struct quad_2D
     triangle_2D top_uv;
 };
 
+struct triangle_3D{
+    vec4_f v1;
+    vec4_f v2;
+    vec4_f v3;
+};
+
+struct quad_3D{
+    triangle_3D bottom;
+    triangle_3D top;
+};
+
+internal quad_3D quad_2D_to_quad_3D(quad_2D in){
+    quad_3D result;
+    result.bottom = triangle_3D(
+        vec4_f(in.bottom.v1.x,in.bottom.v1.y,0,1),
+        vec4_f(in.bottom.v2.x,in.bottom.v2.y,0,1),
+        vec4_f(in.bottom.v3.x,in.bottom.v3.y,0,1)
+        );
+    result.top = triangle_3D(
+        vec4_f(in.top.v1.x,in.top.v1.y,0,1),
+        vec4_f(in.top.v2.x,in.top.v2.y,0,1),
+        vec4_f(in.top.v3.x,in.top.v3.y,0,1)
+        );
+    return result;
+}
+
+struct mesh_3D{
+    uint_32 vertex_count;
+    vec4_f *vertex_data;
+    mesh_3D operator*=(mat4_f);
+};
+
+mesh_3D mesh_3D::operator*=(mat4_f transform_matrix){
+    // TODO:
+    return {this->vertex_count, this->vertex_data};
+}
+
 internal void clear_screen(argb_texture back_buffer)
 {
 #define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
@@ -224,6 +261,8 @@ struct cube_3D {
 internal cube_3D generate_AA_cube_3D(vec4_f& cube_position, real_32 cube_diameter) 
 {
     cube_3D result = {};
+    quad_2D quad = generate_AA_quad(vec2_f(0, 0), vec2_f(cube_diameter, cube_diameter));
+    quad_3D quad_3D = quad_2D_to_quad_3D(quad);
     // TODO: implement
     return result;
 }
