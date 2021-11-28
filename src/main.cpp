@@ -2,34 +2,10 @@
 #include "asset_API.hpp"
 #include "super_math.hpp"
 #include "demos_2D.hpp"
+#include "demos_3D.hpp"
 #include "main.hpp"
 
 assets asset_cache = assets();
-
-struct ColoredTrianglesVertexBuffer
-{
-    vec2_f positions;
-    vec4_ui colors;
-};
-
-
-// TODO: move elsewhere
-struct triangle_3D{
-    vec4_f v1;
-    vec4_f v2;
-    vec4_f v3;
-};
-
-struct mesh_3D{
-    uint_32 vertex_count;
-    vec4_f *vertex_data;
-    mesh_3D operator*=(mat4_f);
-};
-
-mesh_3D mesh_3D::operator*=(mat4_f transform_matrix){
-    // TODO:
-    return {this->vertex_count, this->vertex_data};
-}
 
 internal void clear_screen(argb_texture back_buffer)
 {
@@ -53,8 +29,10 @@ void game_update_and_render(argb_texture back_buffer)
 {
     // NOTE: backbuffer format is ARGB
     // NOTE: backbuffer.width is default_scene_width; backbuffer_height is default_scene_height
-    demo_draw_rotating_triangle_background(back_buffer);
 
+    // 2D demos:
+
+    demo_draw_rotating_triangle_background(back_buffer);
     demo_draw_simple_triangle(back_buffer);
 
     // TODO: print file info on file load
@@ -79,7 +57,10 @@ void game_update_and_render(argb_texture back_buffer)
 
     // draw texture-mapped quad
     demo_draw_texture_mapped_quad(back_buffer, asset_cache);
-    
+
+    // 3D demos:
+
+    demo_render_3D_quad(back_buffer);
 
     // draw texture-mapped cube_3D
     // {

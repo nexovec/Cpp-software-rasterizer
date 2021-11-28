@@ -1,3 +1,4 @@
+#pragma once
 #include "platform_layer.hpp"
 #include "asset_API.hpp"
 void demo_draw_rotating_triangle_background(argb_texture back_buffer);
