@@ -1,7 +1,7 @@
 #include "common_defines.hpp"
 #include "asset_API.hpp"
 #include "super_math.hpp"
-#include "primitives_2D.hpp"
+#include "demos_2D.hpp"
 #include "main.hpp"
 
 assets asset_cache = assets();

@@ -1,5 +1,5 @@
 #include "common_defines.hpp"
-#include "primitives_2D.hpp"
+#include "demos_2D.hpp"
 #include "super_math.hpp"
 #include "data_parsing.hpp"
 #include "asset_API.hpp"
@@ -9,7 +9,20 @@ struct triangle_2D
     vec2_f v1;
     vec2_f v2;
     vec2_f v3;
+    void rasterize(argb_texture& back_buffer);
+    void rasterize_textured(argb_texture& back_buffer, triangle_2D& uv_coords, bitmap_image& image);
 };
+void rasterize_triangle_textured(argb_texture back_buffer, triangle_2D* triangle_ptr, triangle_2D* uv_coords, bitmap_image& soldier);
+void triangle_2D::rasterize_textured(argb_texture& back_buffer, triangle_2D& uv_coords, bitmap_image& image)
+{
+    rasterize_triangle_textured(back_buffer, this, &uv_coords, image);
+}
+
+internal void DEBUGrasterize_triangle(argb_texture& back_buffer, triangle_2D* some_ptr);
+void triangle_2D::rasterize(argb_texture& back_buffer)
+{
+    DEBUGrasterize_triangle(back_buffer, this);
+}
 
 struct quad_2D
 {
@@ -19,7 +32,7 @@ struct quad_2D
     triangle_2D top_uv;
 };
 
-internal void DEBUGrasterize_triangle(argb_texture back_buffer, triangle_2D* triangle_ptr = 0)
+internal void DEBUGrasterize_triangle(argb_texture& back_buffer, triangle_2D* triangle_ptr = 0)
 {
     // SECTION: generate sample triangle
     triangle_2D triangle;
@@ -206,7 +219,7 @@ void demo_draw_rotating_triangle_background(argb_texture back_buffer)
     {
         newly_generated = {(i + 1.0f) * (real_32)default_scene_width / 8 - 1, 0}; //+((rand() % default_scene_width)-default_scene_width/2)
         triangle_2D triangle = {other, newly_generated, rotating_point};
-        DEBUGrasterize_triangle(back_buffer, &triangle);
+        triangle.rasterize(back_buffer);
         other = newly_generated;
     }
 
@@ -215,7 +228,7 @@ void demo_draw_rotating_triangle_background(argb_texture back_buffer)
     {
         newly_generated = {default_scene_width - 1, (i + 1.0f) * (real_32)default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
         triangle_2D triangle = {other, newly_generated, rotating_point};
-        DEBUGrasterize_triangle(back_buffer, &triangle);
+        triangle.rasterize(back_buffer);
         other = newly_generated;
     }
 
@@ -224,7 +237,7 @@ void demo_draw_rotating_triangle_background(argb_texture back_buffer)
     {
         newly_generated = {(i + 1.0f) * (real_32)default_scene_width / 8, default_scene_height - 1}; //+((rand() % default_scene_width)-default_scene_width/2)
         triangle_2D triangle = {other, newly_generated, rotating_point};
-        DEBUGrasterize_triangle(back_buffer, &triangle);
+        triangle.rasterize(back_buffer);
         other = newly_generated;
     }
     // FIXME: investigate why you can't use 0
@@ -233,7 +246,7 @@ void demo_draw_rotating_triangle_background(argb_texture back_buffer)
     {
         newly_generated = {1, (i + 1.0f) * default_scene_height / 8 - 1}; //+((rand() % default_scene_width)-default_scene_width/2);
         triangle_2D triangle = {other, newly_generated, rotating_point};
-        DEBUGrasterize_triangle(back_buffer, &triangle);
+        triangle.rasterize(back_buffer);
         other = newly_generated;
     }
 }
