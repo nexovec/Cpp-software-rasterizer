@@ -3,6 +3,7 @@
 #include "platform_layer.hpp"
 #include "data_parsing.hpp"
 #include "main.hpp"
+#include "settings.hpp"
 #undef UNICODE
 #include <windows.h>
 #include <xinput.h>

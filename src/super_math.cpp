@@ -191,3 +191,29 @@ mat2_f mat2_f::rotation_matrix(real_32 angle)
     mat2_f matrix = {cos(angle), -sin(angle), sin(angle), cos(angle)};
     return matrix;
 }
+uint_32 interpolatedColor(real_32 lam_1, real_32 lam_2, real_32 lam_3, uint_32 color1, uint_32 color2, uint_32 color3)
+{
+    // use solid color
+    // return 0xff00ff00;
+
+    //  ? TODO: for performance reasons, you should decompose colors per-triangle, not per-pixel, but bitwise is fast and this won't be used anywway
+    const uint_8 a1 = (uint_8)(color1 >> 24);
+    const uint_8 r1 = (uint_8)(color1 >> 16);
+    const uint_8 g1 = (uint_8)(color1 >> 8);
+    const uint_8 b1 = (uint_8)(color1 >> 0);
+    const uint_8 a2 = (uint_8)(color2 >> 24);
+    const uint_8 r2 = (uint_8)(color2 >> 16);
+    const uint_8 g2 = (uint_8)(color2 >> 8);
+    const uint_8 b2 = (uint_8)(color2 >> 0);
+    const uint_8 a3 = (uint_8)(color3 >> 24);
+    const uint_8 r3 = (uint_8)(color3 >> 16);
+    const uint_8 g3 = (uint_8)(color3 >> 8);
+    const uint_8 b3 = (uint_8)(color3 >> 0);
+    const uint_8 final_a = (uint_8)(a1 * lam_1 + a2 * lam_2 + a3 * lam_3);
+    const uint_8 final_r = (uint_8)(r1 * lam_1 + r2 * lam_2 + r3 * lam_3);
+    const uint_8 final_g = (uint_8)(g1 * lam_1 + g2 * lam_2 + g3 * lam_3);
+    const uint_8 final_b = (uint_8)(b1 * lam_1 + b2 * lam_2 + b3 * lam_3);
+
+    // return ((final_a&0xff) << 24) + ((final_r&0xff) << 16) + ((final_g&0xff) << 8) + final_b&0xff; // <- DEBUG
+    return (final_a << 24) + (final_r << 16) + (final_g << 8) + final_b;
+}

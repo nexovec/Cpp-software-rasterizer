@@ -52,6 +52,8 @@ struct mat4_f
     static mat4_f perspective_projection_matrix(const vec4_f vec);
 };
 
+uint_32 interpolatedColor(real_32 lam_1, real_32 lam_2, real_32 lam_3, uint_32 color1, uint_32 color2, uint_32 color3);
+
 struct mat2_f
 {
     real_32 row_aligned_elems[4]; // FIXME: There was a fixme here but I don't know why
