@@ -82,10 +82,6 @@ internal void DEBUGrasterize_triangle_3D(argb_texture& back_buffer, triangle_3D*
 
 void triangle_3D::rasterize(argb_texture& back_buffer)
 {
-    // FIXME: remove:
-    // DEBUGrasterize_triangle_3D(back_buffer);
-
-    // FIXME: broken??
     DEBUGrasterize_triangle_3D(back_buffer, this);
 }
 
@@ -160,6 +156,6 @@ void demo_render_3D_quad(argb_texture& back_buffer)
     // quad.transform(transform);
 
     triangleA.rasterize(back_buffer);
-    //DEBUGrender_quad_3D(back_buffer, &quad);
+    DEBUGrender_quad_3D(back_buffer, &quad);
     return;
 }
