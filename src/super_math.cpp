@@ -44,11 +44,11 @@ constexpr vec2_f vec2_f::RIGHT()
 // TODO: use templates and using for vectors?
 vec4_f vec4_f::operator+(const vec4_f &other)
 {
-    return {other.x + this->x, other.y * this->y, other.z * this->z, other.w * this->w};
+    return {other.x + this->x, other.y + this->y, other.z + this->z, other.w + this->w};
 }
 vec4_f vec4_f::operator-(const vec4_f &other)
 {
-    return {other.x + this->x, other.y * this->y, other.z * this->z, other.w * this->w};
+    return {other.x - this->x, other.y - this->y, other.z - this->z, other.w - this->w};
 }
 vec4_f vec4_f::operator*(real_32 m) const
 {

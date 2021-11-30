@@ -15,9 +15,9 @@ internal void DEBUGrasterize_triangle_3D(argb_texture& back_buffer, triangle_3D*
 {
     // SECTION: generate sample triangle
     triangle_3D triangle;
-    vec4_f x_vert = { 200.0f, 250.0f };
-    vec4_f y_vert = { 500.0f, 100.0f };
-    vec4_f z_vert = { 350.0f, 350.0f };
+    vec4_f x_vert = { 200.0f, 250.0f, 0.f, 1.f };
+    vec4_f y_vert = { 500.0f, 100.0f, 0.f, 1.f };
+    vec4_f z_vert = { 350.0f, 350.0f, 0.f, 1.f };
     triangle = { x_vert, y_vert, z_vert };
     if (triangle_ptr)
         triangle = *triangle_ptr;
@@ -83,7 +83,7 @@ internal void DEBUGrasterize_triangle_3D(argb_texture& back_buffer, triangle_3D*
 void triangle_3D::rasterize(argb_texture& back_buffer)
 {
     // FIXME: remove:
-    DEBUGrasterize_triangle_3D(back_buffer);
+    // DEBUGrasterize_triangle_3D(back_buffer);
 
     // FIXME: broken??
     DEBUGrasterize_triangle_3D(back_buffer, this);
@@ -150,10 +150,10 @@ void demo_render_3D_quad(argb_texture& back_buffer)
 {
     // TODO: implement
     // create the 3D quad
-    vec4_f pos = { 200., 300., 0., 1.0 };
-    vec4_f size = {100., 100., 0.,1.};
-    triangle_3D triangleA = { pos, pos + vec4_f(1.0f, 0.0f, 0.f, 1.f) * size.y, pos + size };
-    triangle_3D triangleB = { pos, pos + vec4_f(0.0f, 1.0f, 0.f, 1.f) * size.x, pos + size };
+    vec4_f pos = { 200.f, 300.f, 0.f, 1.f };
+    vec4_f size = {100.f, 100.f, 0.f, 0.f};
+    triangle_3D triangleA = { pos, pos + vec4_f(1.0f, 0.0f, 0.f, 0.f) * size.y, pos + size };
+    triangle_3D triangleB = { pos, pos + vec4_f(0.0f, 1.0f, 0.f, 0.f) * size.x, pos + size };
     quad_3D quad = {triangleA, triangleB};
 
     // auto transform = mat4_f::ortho_projection_matrix(0, 800, 600, 0, -100, 500);
