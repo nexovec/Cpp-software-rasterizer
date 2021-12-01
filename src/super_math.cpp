@@ -78,15 +78,14 @@ real_32 vec4_ui::operator*(vec4_ui &m) const
 
 vec4_f mat4_f::operator*(vec4_f &other)
 {
-    // TODO: test
-    // TODO: use SIMD
+    // PERFORMANCE: use SIMD
     vec4_f result = {};
-    float *res_unpacked = reinterpret_cast<float *>(&result);
+    float *res_unpacked = (float *) &result;
     for (int_32 y = 0; y < 4; y++)
     {
         for (int_32 x = 0; x < 4; x++)
         {
-            res_unpacked[y * 4 + x] += this->row_aligned_elems[y * 4 + x] * (reinterpret_cast<float *>(&other))[x];
+            res_unpacked[y] += this->row_aligned_elems[y * 4 + x] * ((float*)&other)[x];
         }
     }
     return result;

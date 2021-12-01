@@ -3,22 +3,23 @@
 #include "settings.hpp"
 // #include <memory>
 
-struct triangle_3D{
+struct triangle_3D
+{
     vec4_f v1;
     vec4_f v2;
     vec4_f v3;
-    triangle_3D transform(mat4_f&);
-    void rasterize(argb_texture& back_buffer);
+    void transform(mat4_f &);
+    void rasterize(argb_texture &back_buffer);
 };
 
-internal void DEBUGrasterize_triangle_3D(argb_texture& back_buffer, triangle_3D* triangle_ptr = 0)
+internal void DEBUGrasterize_triangle_3D(argb_texture &back_buffer, triangle_3D *triangle_ptr = 0)
 {
     // SECTION: generate sample triangle
     triangle_3D triangle;
-    vec4_f x_vert = { 200.0f, 250.0f, 0.f, 1.f };
-    vec4_f y_vert = { 500.0f, 100.0f, 0.f, 1.f };
-    vec4_f z_vert = { 350.0f, 350.0f, 0.f, 1.f };
-    triangle = { x_vert, y_vert, z_vert };
+    vec4_f x_vert = {200.0f, 250.0f, 0.f, 1.f};
+    vec4_f y_vert = {500.0f, 100.0f, 0.f, 1.f};
+    vec4_f z_vert = {350.0f, 350.0f, 0.f, 1.f};
+    triangle = {x_vert, y_vert, z_vert};
     if (triangle_ptr)
         triangle = *triangle_ptr;
 
@@ -26,7 +27,7 @@ internal void DEBUGrasterize_triangle_3D(argb_texture& back_buffer, triangle_3D*
     // SECTION: rasterize triangles
 
     uint_32 scanline_x_start[default_scene_width] = {}; // should probably be common for all triangles, should use unsigned short[]
-    vec4_f* vertices = (vec4_f*)&triangle;
+    vec4_f *vertices = (vec4_f *)&triangle;
     for (int i1 = 0; i1 < 3; i1++)
     {
         int i2 = (i1 + 1) % 3;
@@ -80,82 +81,74 @@ internal void DEBUGrasterize_triangle_3D(argb_texture& back_buffer, triangle_3D*
     }
 }
 
-void triangle_3D::rasterize(argb_texture& back_buffer)
+void triangle_3D::rasterize(argb_texture &back_buffer)
 {
     DEBUGrasterize_triangle_3D(back_buffer, this);
 }
 
-triangle_3D triangle_3D::transform(mat4_f& transform)
+void triangle_3D::transform(mat4_f &transform)
 {
     v1 = transform * v1;
     v2 = transform * v2;
     v3 = transform * v3;
-    return *this;
 }
 
-struct quad_3D {
+struct quad_3D
+{
     triangle_3D top;
     triangle_3D bottom;
-    quad_3D transform(mat4_f&);
+    void transform(mat4_f &);
 };
 
-quad_3D quad_3D::transform(mat4_f& transform)
+void quad_3D::transform(mat4_f &transform)
 {
     top.transform(transform);
     bottom.transform(transform);
-    return *this;
 }
 
-struct mesh_3D{
-    mesh_3D(mesh_3D& copy);
+struct mesh_3D
+{
     uint_32 vertex_count;
-    // std::shared_ptr<vec4_f> vertex_data;
     vec4_f *vertex_data;
-    mesh_3D& transform(mat4_f&);
-    ~mesh_3D();
+    mesh_3D &transform(mat4_f &);
 };
 
-mesh_3D::mesh_3D(mesh_3D& copy){
-    this->vertex_count = copy.vertex_count;
-    // TODO: copy data as well
-    this->vertex_data = copy.vertex_data;
-    // this->vertex_data = make_shared<vec4_f>(copy.vertex_data);
-}
-
-mesh_3D& mesh_3D::transform(mat4_f& transform_matrix){
+mesh_3D &mesh_3D::transform(mat4_f &transform_matrix)
+{
     // TODO: test this
-    for(int i = 0; i < vertex_count; i++)
+    for (int i = 0; i < vertex_count; i++)
     {
         this->vertex_data[i] = transform_matrix * this->vertex_data[i];
     }
     return *this;
 }
 
-internal void DEBUGrender_quad_3D(argb_texture back_buffer, quad_3D* quad)
+internal void DEBUGrender_quad_3D(argb_texture back_buffer, quad_3D *quad)
 {
-    triangle_3D* as_array = (triangle_3D*)quad;
+    triangle_3D *as_array = (triangle_3D *)quad;
     for (int i = 0; i < 2; i++)
     {
         // rasterize_triangle_textured(back_buffer, as_array + i * 2, as_array + i * 2 + 1, assets.soldier);
-        // TODO: test
         DEBUGrasterize_triangle_3D(back_buffer, &(as_array[i]));
     }
 }
 
-void demo_render_3D_quad(argb_texture& back_buffer)
+void demo_render_3D_quad(argb_texture &back_buffer)
 {
-    // TODO: implement
     // create the 3D quad
-    vec4_f pos = { 200.f, 300.f, 0.f, 1.f };
+    vec4_f pos = {200.f, 300.f, 0.f, 1.f};
     vec4_f size = {100.f, 100.f, 0.f, 0.f};
-    triangle_3D triangleA = { pos, pos + vec4_f(1.0f, 0.0f, 0.f, 0.f) * size.y, pos + size };
-    triangle_3D triangleB = { pos, pos + vec4_f(0.0f, 1.0f, 0.f, 0.f) * size.x, pos + size };
+    triangle_3D triangleA = {pos, pos + vec4_f(1.0f, 0.0f, 0.f, 0.f) * size.y, pos + size};
+    triangle_3D triangleB = {pos, pos + vec4_f(0.0f, 1.0f, 0.f, 0.f) * size.x, pos + size};
     quad_3D quad = {triangleA, triangleB};
 
-    // auto transform = mat4_f::ortho_projection_matrix(0, 800, 600, 0, -100, 500);
-    // quad.transform(transform);
+    // mat4_f transform = mat4_f::ortho_projection_matrix(0, 800, 600, 0, -100, 500);
+    mat4_f transform = mat4_f::unit_matrix();
+    quad.transform(transform);
+    // TODO: test translation
+    // TODO: test rotation
+    // TODO: test ortho projection
 
-    triangleA.rasterize(back_buffer);
     DEBUGrender_quad_3D(back_buffer, &quad);
     return;
 }
