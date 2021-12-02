@@ -225,7 +225,6 @@ mat4_f mat4_f::rotation_matrix(real_32 x_rot, real_32 y_rot, real_32 z_rot)
 
 mat4_f mat4_f::translation_matrix(vec4_f translation)
 {
-    // TODO: test
     mat4_f result = mat4_f::unit_matrix();
     result.row_aligned_elems[0 * 4 + 3] = translation.x;
     result.row_aligned_elems[1 * 4 + 3] = translation.y;

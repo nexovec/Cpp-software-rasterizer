@@ -112,9 +112,9 @@ void quad_3D::rotate(real_32 x_rot, real_32 y_rot, real_32 z_rot, vec4_f& rev_po
     // TODO: test
     mat4_f rot = mat4_f::rotation_matrix(x_rot, y_rot, z_rot);
     mat4_f pre_translation = mat4_f::translation_matrix(-rev_point);
+    mat4_f post_translation = mat4_f::translation_matrix(rev_point);
     this->transform(pre_translation);
     this->transform(rot);
-    mat4_f post_translation = -pre_translation;
     this->transform(post_translation);
 }
 
@@ -154,8 +154,7 @@ void demo_render_3D_quad(argb_texture &back_buffer)
     triangle_3D triangleB = {pos, pos + vec4_f(0.0f, 1.0f, 0.f, 0.f) * size.x, pos + size};
     quad_3D quad = {triangleA, triangleB};
 
-    // FIXME: weird incorrect transform:
-    quad.rotate(0,0,0,quad.top.v1);
+    quad.rotate(0, 0, 1, quad.top.v1);
     // quad.rotate(1,0,0,quad.top.v1);
 
     // PERFORMANCE: slow, make mat4_f::ortho_projection_scaled() that projects into screen space directly
@@ -168,9 +167,6 @@ void demo_render_3D_quad(argb_texture &back_buffer)
     // mat4_f transform = mat4_f::unit_matrix();
 
     quad.transform(transform);
-    // TODO: test translation
-    // TODO: test rotation
-    // TODO: test ortho projection
 
     DEBUGrender_quad_3D(back_buffer, &quad);
     return;
