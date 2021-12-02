@@ -7,34 +7,41 @@ vec2_f vec2_f::operator+(const vec2_f &other)
 {
     return vec2_f{x + other.x, y + other.y};
 }
+
 vec2_f vec2_f::operator-(const vec2_f &other)
 {
     return vec2_f{x - other.x, y - other.y};
 }
+
 vec2_f vec2_f::operator*(real_32 other) const
 {
     return {this->x * other, this->y * other};
 }
+
 real_32 vec2_f::operator*(vec2_f other) const
 {
     // NOTE: computes dot product
     return other.x * (this->x) + other.y * (this->y);
 }
+
 constexpr vec2_f vec2_f::DOWN()
 {
     // TODO: test this is 0 cost
     return {-1., 0.};
 }
+
 constexpr vec2_f vec2_f::UP()
 {
     // TODO: test this is 0 cost
     return {1., 0.};
 }
+
 constexpr vec2_f vec2_f::LEFT()
 {
     // TODO: test this is 0 cost
     return {0., -1.};
 }
+
 constexpr vec2_f vec2_f::RIGHT()
 {
     // TODO: test this is 0 cost
@@ -107,6 +114,7 @@ mat4_f *mat4_f::transposed_matrix()
     }
     return this;
 }
+
 mat4_f *mat4_f::in_place_transpose()
 {
     // NOTE: transposes the matrix in-place and returns a pointer to it.
@@ -125,11 +133,13 @@ mat4_f *mat4_f::in_place_transpose()
     }
     return this;
 }
+
 constexpr mat4_f mat4_f::zero_matrix()
 {
     // TODO: test
     return {};
 }
+
 constexpr mat4_f mat4_f::unit_matrix()
 {
     return {
@@ -138,12 +148,25 @@ constexpr mat4_f mat4_f::unit_matrix()
         0., 0., 1., 0.,
         0., 0., 0., 1.};
 }
+
+mat4_f mat4_f::ones()
+{
+    return 
+    {
+        1.f, 1.f, 1.f, 1.f,
+        1.f, 1.f, 1.f, 1.f,
+        1.f, 1.f, 1.f, 1.f,
+        1.f, 1.f, 1.f, 1.f
+    };
+}
+
 mat4_f mat4_f::rotation_matrix(vec4_f)
 {
     // TODO: implement
 
     return mat4_f::zero_matrix();
 }
+
 mat4_f mat4_f::translation_matrix(vec4_f translation)
 {
     // TODO: test
@@ -153,16 +176,70 @@ mat4_f mat4_f::translation_matrix(vec4_f translation)
     result.row_aligned_elems[2 * 4 + 3] = translation.z;
     return result;
 }
-mat4_f mat4_f::ortho_projection_matrix(real_32 l, real_32 r, real_32 t, real_32 b, real_32 n, real_32 f)
+
+mat4_f mat4_f::ortho_projection_matrix(real_32 left, real_32 right, real_32 top, real_32 bottom, real_32 near, real_32 far)
 {
     // TODO: test
-    return {
-        2 / (r - l), 0,           0,           -(r + l) / (r - l),
-        0,           2 / (t - b), 0,           -(t + b) / (t - b),
-        0,           0,          -2 * (f - n), -(f + n) / (f - n),
-        0,           0,           0,            1
-        };
+    // return {
+    //     2 / (r - l), 0,           0,           -(r + l) / (r - l),
+    //     0,           2 / (t - b), 0,           -(t + b) / (t - b),
+    //     0,           0,          -2 * (n - f), -(f + n) / (f - n),
+    //     0,           0,           0,            1
+    //     };
+    mat4_f mat = mat4_f::unit_matrix();
+    mat.row_aligned_elems[0] = 2.f / (right - left);
+    mat.row_aligned_elems[5] = 2.f / (top - bottom);
+    mat.row_aligned_elems[10] = 2.f / (near - far);
+    mat.row_aligned_elems[14] = -(far + near) / (far - near);
+    mat.row_aligned_elems[13] = -(top + bottom) / (top - bottom);
+    mat.row_aligned_elems[12] = -(right + left) / (right - left);
+    return mat;
 }
+
+mat4_f mat4_f::operator*(real_32 scale)
+{
+    vec4_f *elems = (vec4_f *)this->row_aligned_elems;
+    vec4_f back[4] = {elems[0] * scale, elems[1] * scale, elems[2] * scale, elems[3] * scale};
+    return *((mat4_f *)&back);
+}
+
+mat4_f mat4_f::operator-(mat4_f other)
+{
+    mat4_f mat;
+    for(int i = 0; i < 16; i++)
+    {
+        mat.row_aligned_elems[i] = this->row_aligned_elems[i] - other.row_aligned_elems[i];
+    }
+    return mat;
+}
+
+mat4_f mat4_f::operator+(mat4_f other)
+{
+    mat4_f mat;
+    for(int i = 0; i < 16; i++)
+    {
+        mat.row_aligned_elems[i] = this->row_aligned_elems[i] + other.row_aligned_elems[i];
+    }
+    return mat;
+}
+
+mat4_f mat4_f::operator*(mat4_f other)
+{
+    // TODO: test
+    mat4_f mat = mat4_f::zero_matrix();
+    for(int y = 0; y < 4; y++)
+    {
+        for(int x = 0; x < 4; x++)
+        {
+            for(int i = 0; i < 4; i++)
+            {
+                mat.row_aligned_elems[x + 4 * y] += this->row_aligned_elems[y * 4 + i] * other.row_aligned_elems[x + i * 4];
+            }
+        }
+    }
+    return mat;
+}
+
 mat4_f mat4_f::perspective_projection_matrix(const vec4_f vec)
 {
     // TODO: implement
@@ -177,19 +254,23 @@ vec2_f mat2_f::operator*(const vec2_f vec)
     back.y = row_aligned_elems[2] * vec.x + row_aligned_elems[3] * vec.y;
     return back;
 }
+
 constexpr mat2_f mat2_f::zero_matrix()
 {
     return {};
 }
+
 constexpr mat2_f mat2_f::unit_matrix()
 {
     return {1.0f, 0.0f, 0.0f, 1.0f};
 }
+
 mat2_f mat2_f::rotation_matrix(real_32 angle)
 {
     mat2_f matrix = {cos(angle), -sin(angle), sin(angle), cos(angle)};
     return matrix;
 }
+
 uint_32 interpolatedColor(real_32 lam_1, real_32 lam_2, real_32 lam_3, uint_32 color1, uint_32 color2, uint_32 color3)
 {
     // use solid color

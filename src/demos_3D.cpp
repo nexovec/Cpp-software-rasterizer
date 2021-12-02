@@ -142,8 +142,14 @@ void demo_render_3D_quad(argb_texture &back_buffer)
     triangle_3D triangleB = {pos, pos + vec4_f(0.0f, 1.0f, 0.f, 0.f) * size.x, pos + size};
     quad_3D quad = {triangleA, triangleB};
 
-    // mat4_f transform = mat4_f::ortho_projection_matrix(0, 800, 600, 0, -100, 500);
-    mat4_f transform = mat4_f::unit_matrix();
+    // PERFORMANCE: slow, make mat4_f::ortho_projection_scaled() that projects into screen space directly
+    mat4_f transform = mat4_f::ortho_projection_matrix(0.f, 1280.f, 0.f, 720.f, 1.f, -1.f);
+    transform = (transform * 0.5f) + mat4_f::translation_matrix({0.5f,0.5f,0.5f});
+
+    // this works:
+    // mat4_f transform = mat4_f::translation_matrix({200.f,0.f,0.f}) * 2 - mat4_f::unit_matrix() * 1;
+    // mat4_f transform = mat4_f::unit_matrix();
+
     quad.transform(transform);
     // TODO: test translation
     // TODO: test rotation

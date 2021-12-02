@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "xutility": "cpp",
-        "memory": "cpp"
+        "memory": "cpp",
+        "compare": "cpp"
     }
 }
