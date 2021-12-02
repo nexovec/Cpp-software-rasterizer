@@ -98,12 +98,24 @@ struct quad_3D
     triangle_3D top;
     triangle_3D bottom;
     void transform(mat4_f &);
+    void rotate(real_32 x_rot, real_32 y_rot, real_32 z_rot, vec4_f &revolution_point);
 };
 
 void quad_3D::transform(mat4_f &transform)
 {
     top.transform(transform);
     bottom.transform(transform);
+}
+
+void quad_3D::rotate(real_32 x_rot, real_32 y_rot, real_32 z_rot, vec4_f& rev_point)
+{
+    // TODO: test
+    mat4_f rot = mat4_f::rotation_matrix(x_rot, y_rot, z_rot);
+    mat4_f pre_translation = mat4_f::translation_matrix(-rev_point);
+    this->transform(pre_translation);
+    this->transform(rot);
+    mat4_f post_translation = -pre_translation;
+    this->transform(post_translation);
 }
 
 struct mesh_3D
@@ -142,11 +154,16 @@ void demo_render_3D_quad(argb_texture &back_buffer)
     triangle_3D triangleB = {pos, pos + vec4_f(0.0f, 1.0f, 0.f, 0.f) * size.x, pos + size};
     quad_3D quad = {triangleA, triangleB};
 
+    // FIXME: weird incorrect transform:
+    quad.rotate(0,0,0,quad.top.v1);
+    // quad.rotate(1,0,0,quad.top.v1);
+
     // PERFORMANCE: slow, make mat4_f::ortho_projection_scaled() that projects into screen space directly
+    // FIXME: stripes in-between triangles in a mesh
     mat4_f transform = mat4_f::ortho_projection_matrix(0.f, 1280.f, 0.f, 720.f, 1.f, -1.f);
     transform = (transform * 0.5f) + mat4_f::translation_matrix({0.5f,0.5f,0.5f});
 
-    // this works:
+    // this worked at some point:
     // mat4_f transform = mat4_f::translation_matrix({200.f,0.f,0.f}) * 2 - mat4_f::unit_matrix() * 1;
     // mat4_f transform = mat4_f::unit_matrix();
 

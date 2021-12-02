@@ -35,6 +35,7 @@ struct vec4_f
     real_32 w;
     vec4_f operator+(const vec4_f &other);
     vec4_f operator-(const vec4_f &other);
+    vec4_f operator-() const;
     vec4_f operator*(real_32 other) const;
     real_32 operator*(vec4_f &other) const;
 };
@@ -44,14 +45,16 @@ struct mat4_f
     vec4_f operator*(vec4_f &other);
     mat4_f operator*(real_32 scale);
     mat4_f operator*(mat4_f other);
-    mat4_f operator-(mat4_f other);
+    mat4_f operator-(mat4_f other) const;
+    mat4_f operator-() const;
     mat4_f operator+(mat4_f other);
     mat4_f *transposed_matrix();
     mat4_f *in_place_transpose();
     constexpr static mat4_f zero_matrix();
     constexpr static mat4_f unit_matrix();
     static mat4_f ones();
-    static mat4_f rotation_matrix(vec4_f);
+    static mat4_f rotation_matrix(vec4_f& rot);
+    static mat4_f rotation_matrix(real_32 x_rot, real_32 y_rot, real_32 z_rot);
     static mat4_f translation_matrix(vec4_f);
     static mat4_f ortho_projection_matrix(real_32 l, real_32 r, real_32 t, real_32 b, real_32 n, real_32 f);
     static mat4_f perspective_projection_matrix(const vec4_f vec);

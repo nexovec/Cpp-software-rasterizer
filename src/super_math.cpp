@@ -53,14 +53,22 @@ vec4_f vec4_f::operator+(const vec4_f &other)
 {
     return {other.x + this->x, other.y + this->y, other.z + this->z, other.w + this->w};
 }
+
 vec4_f vec4_f::operator-(const vec4_f &other)
 {
     return {other.x - this->x, other.y - this->y, other.z - this->z, other.w - this->w};
 }
+
+vec4_f vec4_f::operator-() const
+{
+    return {-this->x, -this->y, -this->z, -this->w};
+}
+
 vec4_f vec4_f::operator*(real_32 m) const
 {
     return {m * this->x, m * this->y, m * this->z, m * this->w};
 }
+
 real_32 vec4_f::operator*(vec4_f &m) const
 {
     return m.x * this->x + m.y * this->y + m.z * this->z + m.w * this->w;
@@ -70,14 +78,17 @@ vec4_ui vec4_ui::operator+(const vec4_ui &other)
 {
     return {other.x + this->x, other.y * this->y, other.z * this->z, other.w * this->w};
 }
+
 vec4_ui vec4_ui::operator-(const vec4_ui &other)
 {
     return {other.x + this->x, other.y * this->y, other.z * this->z, other.w * this->w};
 }
+
 vec4_ui vec4_ui::operator*(int_32 m) const
 {
     return {m * this->x, m * this->y, m * this->z, m * this->w};
 }
+
 real_32 vec4_ui::operator*(vec4_ui &m) const
 {
     return m.x * this->x + m.y * this->y + m.z * this->z + m.w * this->w;
@@ -160,11 +171,56 @@ mat4_f mat4_f::ones()
     };
 }
 
-mat4_f mat4_f::rotation_matrix(vec4_f)
-{
-    // TODO: implement
 
-    return mat4_f::zero_matrix();
+internal mat4_f mat4f_rotation_x(float rot)
+{
+    mat4_f s_e_mat = mat4_f::unit_matrix();
+    float c = (float)cos(rot);
+    float s = (float)sin(rot);
+    s_e_mat.row_aligned_elems[5] = c;
+    s_e_mat.row_aligned_elems[6] = s;
+    s_e_mat.row_aligned_elems[9] = -s;
+    s_e_mat.row_aligned_elems[10] = c;
+    return s_e_mat;
+}
+
+internal mat4_f mat4f_rotation_y(float rot)
+{
+    mat4_f s_e_mat = mat4_f::unit_matrix();
+    float c = (float)cos(rot);
+    float s = (float)sin(rot);
+    s_e_mat.row_aligned_elems[0] = c;
+    s_e_mat.row_aligned_elems[8] = s;
+    s_e_mat.row_aligned_elems[2] = -s;
+    s_e_mat.row_aligned_elems[10] = c;
+    return s_e_mat;
+}
+
+internal mat4_f mat4f_rotation_z(float rot)
+{
+    mat4_f s_e_mat = mat4_f::unit_matrix();
+    float c = (float)cos(rot);
+    float s = (float)sin(rot);
+    s_e_mat.row_aligned_elems[0] = c;
+    s_e_mat.row_aligned_elems[1] = s;
+    s_e_mat.row_aligned_elems[4] = -s;
+    s_e_mat.row_aligned_elems[5] = c;
+    return s_e_mat;
+}
+
+mat4_f mat4_f::rotation_matrix(vec4_f& rot)
+{
+    return mat4_f::rotation_matrix(rot.x, rot.y, rot.z);
+}
+
+mat4_f mat4_f::rotation_matrix(real_32 x_rot, real_32 y_rot, real_32 z_rot)
+{
+    // TODO: test
+    // PERFORMANCE: you can just use general prescription for a rotation matrix instead of doing two multiplications
+    mat4_f x = mat4f_rotation_x(x_rot);
+    mat4_f y = mat4f_rotation_y(y_rot);
+    mat4_f z = mat4f_rotation_z(z_rot);
+    return x * y * z;
 }
 
 mat4_f mat4_f::translation_matrix(vec4_f translation)
@@ -203,7 +259,7 @@ mat4_f mat4_f::operator*(real_32 scale)
     return *((mat4_f *)&back);
 }
 
-mat4_f mat4_f::operator-(mat4_f other)
+mat4_f mat4_f::operator-(mat4_f other) const
 {
     mat4_f mat;
     for(int i = 0; i < 16; i++)
@@ -212,6 +268,17 @@ mat4_f mat4_f::operator-(mat4_f other)
     }
     return mat;
 }
+
+mat4_f mat4_f::operator-() const
+{
+    mat4_f mat;
+    for(int i = 0; i < 16; i++)
+    {
+        mat.row_aligned_elems[i] = -this->row_aligned_elems[i];
+    }
+    return mat;
+}
+
 
 mat4_f mat4_f::operator+(mat4_f other)
 {
