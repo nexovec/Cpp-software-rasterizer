@@ -94,7 +94,7 @@ real_32 vec4_ui::operator*(vec4_ui &m) const
     return m.x * this->x + m.y * this->y + m.z * this->z + m.w * this->w;
 }
 
-vec4_f mat4_f::operator*(vec4_f &other)
+vec4_f mat4_f::operator*(vec4_f &other) const
 {
     // PERFORMANCE: use SIMD
     vec4_f result = {};
@@ -109,28 +109,26 @@ vec4_f mat4_f::operator*(vec4_f &other)
     return result;
 }
 
-mat4_f *mat4_f::transposed_matrix()
+mat4_f *mat4_f::transposed() const
 {
-    // NOTE: returns a transposed_matrix matrix
     // TODO: test
     mat4_f result;
     for (int_32 x = 0; x < 4; x++)
     {
         for (int_32 y = 0; y < 4; y++)
         {
-            // TODO: swap more intelligently?
+            // PERFORMANCE: swap more intelligently?
             result.row_aligned_elems[y * 4 + x] = this->row_aligned_elems[x * 4 + y];
             result.row_aligned_elems[x * 4 + y] = this->row_aligned_elems[y * 4 + x];
         }
     }
-    return this;
+    return (mat4_f *)this;
 }
 
 mat4_f *mat4_f::in_place_transpose()
 {
     // NOTE: transposes the matrix in-place and returns a pointer to it.
     // TODO: test
-    // TODO: transposed_matrix() (without side effects on the original matrix)
     // PERFORMANCE: in_place_transpose() vs transposed_matrix() perf test
     for (int_32 y = 0; y < 4; y++)
     {
@@ -251,7 +249,7 @@ mat4_f mat4_f::ortho_projection_matrix(real_32 left, real_32 right, real_32 top,
     return mat;
 }
 
-mat4_f mat4_f::operator*(real_32 scale)
+mat4_f mat4_f::operator*(real_32 scale) const
 {
     vec4_f *elems = (vec4_f *)this->row_aligned_elems;
     vec4_f back[4] = {elems[0] * scale, elems[1] * scale, elems[2] * scale, elems[3] * scale};
@@ -279,7 +277,7 @@ mat4_f mat4_f::operator-() const
 }
 
 
-mat4_f mat4_f::operator+(mat4_f other)
+mat4_f mat4_f::operator+(mat4_f other) const
 {
     mat4_f mat;
     for(int i = 0; i < 16; i++)
@@ -289,7 +287,7 @@ mat4_f mat4_f::operator+(mat4_f other)
     return mat;
 }
 
-mat4_f mat4_f::operator*(mat4_f other)
+mat4_f mat4_f::operator*(mat4_f other) const
 {
     // TODO: test
     mat4_f mat = mat4_f::zero_matrix();

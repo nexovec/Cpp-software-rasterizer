@@ -42,13 +42,13 @@ struct vec4_f
 struct mat4_f
 {
     real_32 row_aligned_elems[16];
-    vec4_f operator*(vec4_f &other);
-    mat4_f operator*(real_32 scale);
-    mat4_f operator*(mat4_f other);
+    vec4_f operator*(vec4_f &other) const;
+    mat4_f operator*(real_32 scale) const;
+    mat4_f operator*(mat4_f other) const;
     mat4_f operator-(mat4_f other) const;
     mat4_f operator-() const;
-    mat4_f operator+(mat4_f other);
-    mat4_f *transposed_matrix();
+    mat4_f operator+(mat4_f other) const;
+    mat4_f *transposed() const;
     mat4_f *in_place_transpose();
     constexpr static mat4_f zero_matrix();
     constexpr static mat4_f unit_matrix();
