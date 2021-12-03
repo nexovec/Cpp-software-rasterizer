@@ -4,8 +4,8 @@ build/
 temp/
 bin/
 obj/
-HelloWorld.vcxproj
-Test.sln
-HelloWorld.vcxproj.user
+**.sln
 font.bmp
+**.vcxproj
+**.vcxproj.user
 **.code-workspace

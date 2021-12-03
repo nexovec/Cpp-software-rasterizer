@@ -1,5 +1,6 @@
 #include "./../src/common_defines.hpp"
 #include "./../src/platform_layer.hpp"
+#undef UNICODE
 #include <windows.h>
 // TODO: slim down
 
@@ -324,7 +325,7 @@ int_32 WINAPI WinMain(_In_ HINSTANCE hInstance, HINSTANCE, PSTR, int_32)
     window_class_ex.hInstance = hInstance;
     window_class_ex.hbrBackground = 0;
     window_class_ex.lpszClassName = "SuperWindowClass";
-    ATOM window_class_atom = RegisterClassEx(&window_class_ex);
+    ATOM window_class_atom = RegisterClassEx( &window_class_ex);
     if (!window_class_atom)
         ExitProcess(1);
     HWND window = CreateWindowEx(

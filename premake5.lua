@@ -1,9 +1,9 @@
 -- premake5.lua
-workspace "Test"
+workspace "Cpp-software-rasterizer"
     configurations { "Debug", "Release" }
     platforms {"Win64"}
 
-project "HelloWorld"
+project "Sandbox"
    kind "WindowedApp"
    language "C++"
    cppdialect "C++20"
@@ -18,3 +18,5 @@ project "HelloWorld"
    filter "configurations:Release"
       defines { "NDEBUG" }
       optimize "On"
+
+include "examples"
