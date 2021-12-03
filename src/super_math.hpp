@@ -37,6 +37,7 @@ struct vec4_f
     vec4_f operator-(const vec4_f &other);
     vec4_f operator-() const;
     vec4_f operator*(real_32 other) const;
+    vec4_f operator/(real_32 other) const;
     real_32 operator*(vec4_f &other) const;
 };
 struct mat4_f

@@ -69,6 +69,11 @@ vec4_f vec4_f::operator*(real_32 m) const
     return {m * this->x, m * this->y, m * this->z, m * this->w};
 }
 
+vec4_f vec4_f::operator/(real_32 m) const
+{
+    return {this->x / m, this->y / m, this->z / m, this->w / m};
+}
+
 real_32 vec4_f::operator*(vec4_f &m) const
 {
     return m.x * this->x + m.y * this->y + m.z * this->z + m.w * this->w;

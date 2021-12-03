@@ -1,3 +1,4 @@
+#include "common_defines.hpp"
 #include "demos_3D.hpp"
 #include "super_math.hpp"
 #include "settings.hpp"
@@ -8,7 +9,7 @@ struct triangle_3D
     vec4_f v1;
     vec4_f v2;
     vec4_f v3;
-    void transform(mat4_f &);
+    void transform(const mat4_f &);
     void rasterize(argb_texture &back_buffer);
 };
 
@@ -86,7 +87,7 @@ void triangle_3D::rasterize(argb_texture &back_buffer)
     DEBUGrasterize_triangle_3D(back_buffer, this);
 }
 
-void triangle_3D::transform(mat4_f &transform)
+void triangle_3D::transform(const mat4_f &transform)
 {
     v1 = transform * v1;
     v2 = transform * v2;
@@ -97,11 +98,26 @@ struct quad_3D
 {
     triangle_3D top;
     triangle_3D bottom;
-    void transform(mat4_f &);
+    quad_3D(triangle_3D &top, triangle_3D &bottom);
+    quad_3D(real_32 side);
+    void transform(const mat4_f &);
     void rotate(real_32 x_rot, real_32 y_rot, real_32 z_rot, vec4_f &revolution_point);
 };
 
-void quad_3D::transform(mat4_f &transform)
+quad_3D::quad_3D(real_32 side)
+{
+    vec4_f size = {side, side, 0.f, 0.f};
+    // PERFORMANCE: initialize pos correctly instead of matrix multiply, the following is broken:
+    // vec4_f pos = vec4_f(0.f, 0.f, 0.f, 1.f) - size;
+    vec4_f pos = vec4_f(0.f, 0.f, 0.f, 1.f);
+    top = { pos, pos + vec4_f(1.0f, 0.0f, 0.f, 0.f) * size.y, pos + size };
+    bottom = { pos, pos + vec4_f(0.0f, 1.0f, 0.f, 0.f) * size.x, pos + size };
+    this->transform(mat4_f::translation_matrix(-size/2));
+}
+
+quad_3D::quad_3D(triangle_3D &top, triangle_3D &bottom) : top(top), bottom(bottom) {}
+
+void quad_3D::transform(const mat4_f &transform)
 {
     top.transform(transform);
     bottom.transform(transform);
@@ -109,7 +125,6 @@ void quad_3D::transform(mat4_f &transform)
 
 void quad_3D::rotate(real_32 x_rot, real_32 y_rot, real_32 z_rot, vec4_f& rev_point)
 {
-    // TODO: test
     mat4_f rot = mat4_f::rotation_matrix(x_rot, y_rot, z_rot);
     mat4_f pre_translation = mat4_f::translation_matrix(-rev_point);
     mat4_f post_translation = mat4_f::translation_matrix(rev_point);
@@ -118,22 +133,48 @@ void quad_3D::rotate(real_32 x_rot, real_32 y_rot, real_32 z_rot, vec4_f& rev_po
     this->transform(post_translation);
 }
 
+
 struct mesh_3D
 {
-    uint_32 vertex_count;
-    vec4_f *vertex_data;
+    std::vector<vec4_f> vertex_data;
+    mesh_3D(uint_32 reserved);
     mesh_3D &transform(mat4_f &);
 };
+
+mesh_3D::mesh_3D(uint_32 reserved_size = 128)
+{
+    // TODO: test
+    // TODO: add push_vertices method
+    vertex_data = std::vector<vec4_f>();
+    // TODO: use reserved size
+}
 
 mesh_3D &mesh_3D::transform(mat4_f &transform_matrix)
 {
     // TODO: test this
-    for (int i = 0; i < vertex_count; i++)
+    for (int i = 0; i < vertex_data.size(); i++)
     {
         this->vertex_data[i] = transform_matrix * this->vertex_data[i];
     }
     return *this;
 }
+
+// struct cube_3D
+// {
+//     quad_3D near;
+//     quad_3D far;
+//     quad_3D left;
+//     quad_3D right;
+//     quad_3D top;
+//     quad_3D bottom;
+//     cube_3D(vec4_f &position, real_32 side);
+// };
+
+// cube_3D::cube_3D(vec4_f &position, real_32 side)
+// {
+    
+//     // TODO: implement
+// }
 
 internal void DEBUGrender_quad_3D(argb_texture back_buffer, quad_3D *quad)
 {
@@ -149,10 +190,10 @@ void demo_render_3D_quad(argb_texture &back_buffer)
 {
     // create the 3D quad
     vec4_f pos = {200.f, 300.f, 0.f, 1.f};
-    vec4_f size = {100.f, 100.f, 0.f, 0.f};
-    triangle_3D triangleA = {pos, pos + vec4_f(1.0f, 0.0f, 0.f, 0.f) * size.y, pos + size};
-    triangle_3D triangleB = {pos, pos + vec4_f(0.0f, 1.0f, 0.f, 0.f) * size.x, pos + size};
-    quad_3D quad = {triangleA, triangleB};
+    quad_3D quad = quad_3D(100.f);
+
+    mat4_f translation = mat4_f::translation_matrix(pos);
+    quad.transform(translation);
 
     quad.rotate(0, 0, 1, quad.top.v1);
     // quad.rotate(1,0,0,quad.top.v1);

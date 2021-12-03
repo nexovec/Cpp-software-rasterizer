@@ -3,6 +3,8 @@
 #define internal static
 #define persistent static
 
+#include <vector>
+
 typedef char int_8;
 typedef short int_16;
 typedef int int_32;
