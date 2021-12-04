@@ -58,6 +58,7 @@ struct mat4_f
     static mat4_f rotation_matrix(real_32 x_rot, real_32 y_rot, real_32 z_rot);
     static mat4_f translation_matrix(vec4_f);
     static mat4_f ortho_projection_matrix(real_32 l, real_32 r, real_32 t, real_32 b, real_32 n, real_32 f);
+    static mat4_f screen_ortho_projection_matrix(real_32 l, real_32 r, real_32 t, real_32 b, real_32 n, real_32 f);
     static mat4_f perspective_projection_matrix(const vec4_f vec);
 };
 

@@ -189,7 +189,7 @@ internal void DEBUGrender_quad_3D(argb_texture back_buffer, quad_3D *quad)
 void demo_render_3D_quad(argb_texture &back_buffer)
 {
     // create the 3D quad
-    vec4_f pos = {200.f, 300.f, 0.f, 1.f};
+    vec4_f pos = {500.f, 400.f, 0.f, 1.f};
     quad_3D quad = quad_3D(100.f);
 
     mat4_f translation = mat4_f::translation_matrix(pos);
@@ -198,12 +198,7 @@ void demo_render_3D_quad(argb_texture &back_buffer)
     quad.rotate(0, 0, 1, quad.top.v1);
     // quad.rotate(1,0,0,quad.top.v1);
 
-    // PERFORMANCE: slow, make mat4_f::ortho_projection_scaled() that projects into screen space directly
-    // FIXME: stripes in-between triangles in a mesh
-    mat4_f transform = mat4_f::ortho_projection_matrix(0.f, 1280.f, 0.f, 720.f, 1.f, -1.f);
-    transform = (transform * 0.5f) + mat4_f::translation_matrix({0.5f,0.5f,0.5f});
-
-    // this worked at some point:
+    mat4_f transform = mat4_f::screen_ortho_projection_matrix(0.f, 1280.f, 0.f, 720.f, 1.f, -1.f);
     // mat4_f transform = mat4_f::translation_matrix({200.f,0.f,0.f}) * 2 - mat4_f::unit_matrix() * 1;
     // mat4_f transform = mat4_f::unit_matrix();
 

@@ -254,6 +254,15 @@ mat4_f mat4_f::ortho_projection_matrix(real_32 left, real_32 right, real_32 top,
     return mat;
 }
 
+/**
+ * Same as ortho projection, but it converts to screen coordinates with 0 in lower left corner
+ **/
+mat4_f mat4_f::screen_ortho_projection_matrix(real_32 left, real_32 right, real_32 top, real_32 bottom, real_32 near, real_32 far)
+{
+    // PERFORMANCE: slow, make mat4_f::ortho_projection_scaled() that projects into screen space directly
+    return (mat4_f::ortho_projection_matrix(left, right, top, bottom, near, far) * 0.5f) + mat4_f::translation_matrix({0.5f,0.5f,0.5f});
+}
+
 mat4_f mat4_f::operator*(real_32 scale) const
 {
     vec4_f *elems = (vec4_f *)this->row_aligned_elems;
