@@ -70,13 +70,13 @@ void game_update_and_render(argb_texture back_buffer)
     //     // TODO:
 
     // }
+    // TODO: generate 3D cube model
+    // TODO: perspective projected 3D cube
+    // TODO: 3D textured cube
+    // TODO: Z-buffer
+    // TODO: vertex depth-sort - painters algorithm
     // TODO: 2D AABB(+rects) physics
     // TODO: 2D GJK
-    // TODO: sample scene
-    // TODO: framebuffers as textures
-    // TODO: generate 3D models
-    // TODO: orthographic projection
-    // TODO: perspective projection
     // TODO: generate normals
     // TODO: ambient lights
     // TODO: load obj models

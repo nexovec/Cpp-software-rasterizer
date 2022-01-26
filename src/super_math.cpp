@@ -96,7 +96,7 @@ vec4_ui vec4_ui::operator*(int_32 m) const
 
 real_32 vec4_ui::operator*(vec4_ui &m) const
 {
-    return m.x * this->x + m.y * this->y + m.z * this->z + m.w * this->w;
+    return  (float)(m.x * this->x + m.y * this->y + m.z * this->z + m.w * this->w);
 }
 
 vec4_f mat4_f::operator*(vec4_f &other) const
@@ -148,13 +148,13 @@ mat4_f *mat4_f::in_place_transpose()
     return this;
 }
 
-constexpr mat4_f mat4_f::zero_matrix()
+mat4_f mat4_f::zero_matrix()
 {
     // TODO: test
     return {};
 }
 
-constexpr mat4_f mat4_f::unit_matrix()
+mat4_f mat4_f::unit_matrix()
 {
     return {
         1., 0., 0., 0.,
@@ -255,7 +255,7 @@ mat4_f mat4_f::ortho_projection_matrix(real_32 left, real_32 right, real_32 top,
 }
 
 /**
- * Same as ortho projection, but it converts to screen coordinates with 0 in lower left corner
+ * Same as ortho projection, but it converts to screen coordinates with 0 in lower left corner.
  **/
 mat4_f mat4_f::screen_ortho_projection_matrix(real_32 left, real_32 right, real_32 top, real_32 bottom, real_32 near, real_32 far)
 {
@@ -333,12 +333,12 @@ vec2_f mat2_f::operator*(const vec2_f vec)
     return back;
 }
 
-constexpr mat2_f mat2_f::zero_matrix()
+mat2_f mat2_f::zero_matrix()
 {
     return {};
 }
 
-constexpr mat2_f mat2_f::unit_matrix()
+mat2_f mat2_f::unit_matrix()
 {
     return {1.0f, 0.0f, 0.0f, 1.0f};
 }

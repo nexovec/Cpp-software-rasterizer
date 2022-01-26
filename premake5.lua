@@ -2,6 +2,7 @@
 workspace "Cpp-software-rasterizer"
     configurations { "Debug", "Release" }
     platforms {"Win64"}
+    warnings "Extra"
 
 project "Sandbox"
    kind "WindowedApp"

@@ -12,7 +12,7 @@ struct triangle_2D
     void rasterize(argb_texture& back_buffer);
     void rasterize_textured(argb_texture& back_buffer, triangle_2D& uv_coords, bitmap_image& image);
 };
-void rasterize_triangle_textured(argb_texture back_buffer, triangle_2D* triangle_ptr, triangle_2D* uv_coords, bitmap_image& soldier);
+internal void rasterize_triangle_textured(argb_texture back_buffer, triangle_2D* triangle_ptr, triangle_2D* uv_coords, bitmap_image& soldier);
 void triangle_2D::rasterize_textured(argb_texture& back_buffer, triangle_2D& uv_coords, bitmap_image& image)
 {
     rasterize_triangle_textured(back_buffer, this, &uv_coords, image);

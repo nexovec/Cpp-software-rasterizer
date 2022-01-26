@@ -51,8 +51,8 @@ struct mat4_f
     mat4_f operator+(mat4_f other) const;
     mat4_f *transposed() const;
     mat4_f *in_place_transpose();
-    constexpr static mat4_f zero_matrix();
-    constexpr static mat4_f unit_matrix();
+    static mat4_f zero_matrix();
+    static mat4_f unit_matrix();
     static mat4_f ones();
     static mat4_f rotation_matrix(vec4_f& rot);
     static mat4_f rotation_matrix(real_32 x_rot, real_32 y_rot, real_32 z_rot);
@@ -68,8 +68,8 @@ struct mat2_f
 {
     real_32 row_aligned_elems[4]; // FIXME: There was a fixme here but I don't know why
     vec2_f operator*(const vec2_f vec);
-    constexpr static mat2_f unit_matrix();
-    constexpr static mat2_f zero_matrix();
+    static mat2_f unit_matrix();
+    static mat2_f zero_matrix();
     static mat2_f rotation_matrix(real_32 angle);
 };
 

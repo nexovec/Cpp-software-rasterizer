@@ -195,9 +195,10 @@ void demo_render_3D_quad(argb_texture &back_buffer)
     mat4_f translation = mat4_f::translation_matrix(pos);
     quad.transform(translation);
 
-    quad.rotate(0, 0, 1, quad.top.v1);
+    // quad.rotate(0, 0, 1, quad.top.v1);
     // quad.rotate(1,0,0,quad.top.v1);
 
+    // FIXME: no matter what arguments, the quad stays the same
     mat4_f transform = mat4_f::screen_ortho_projection_matrix(0.f, 1280.f, 0.f, 720.f, 1.f, -1.f);
     // mat4_f transform = mat4_f::translation_matrix({200.f,0.f,0.f}) * 2 - mat4_f::unit_matrix() * 1;
     // mat4_f transform = mat4_f::unit_matrix();
