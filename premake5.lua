@@ -18,6 +18,7 @@ project "Sandbox"
 
    filter "configurations:Release"
       defines { "NDEBUG" }
+      symbols "On"
       optimize "On"
 
 include "examples"
