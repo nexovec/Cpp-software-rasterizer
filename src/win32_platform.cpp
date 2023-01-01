@@ -9,8 +9,8 @@
 #include <xinput.h>
 #include <stdio.h>
 #include <stdio.h>
-global BOOL running = true;
-global KeyboardState keyboard_state;
+internal BOOL running = true;
+KeyboardState keyboard_state;
 
 #define XINPUT_GET_STATE_SIG(name) uint_64 name(uint_64, XINPUT_STATE *)
 typedef XINPUT_GET_STATE_SIG(x_input_get_state);
@@ -18,7 +18,7 @@ XINPUT_GET_STATE_SIG(XInputGetStateStub)
 {
     return 0;
 }
-global x_input_get_state *XInputGetState_ = XInputGetStateStub;
+x_input_get_state *XInputGetState_ = XInputGetStateStub;
 #define XInputGetState XInputGetState_
 
 #define XINPUT_SET_STATE_SIG(name) uint_64 name(uint_64, XINPUT_VIBRATION *)
@@ -27,7 +27,7 @@ internal XINPUT_SET_STATE_SIG(XInputSetStateStub)
 {
     return 0;
 }
-global x_input_set_state *XInputSetState_ = XInputSetStateStub;
+x_input_set_state *XInputSetState_ = XInputSetStateStub;
 #define XInputSetState XInputSetState_
 
 internal void win32InitXInput()

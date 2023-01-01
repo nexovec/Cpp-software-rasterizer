@@ -5,7 +5,7 @@
 // TODO: slim down
 
 bool running = true;
-global KeyboardState keyboard_state;
+KeyboardState keyboard_state;
 
 struct Vec2f
 {

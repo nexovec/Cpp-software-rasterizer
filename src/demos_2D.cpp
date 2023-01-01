@@ -1,3 +1,4 @@
+#include "gui.hpp"
 #include "common_defines.hpp"
 #include "demos_2D.hpp"
 #include "super_math.hpp"
@@ -199,15 +200,9 @@ void demo_draw_texture_mapped_quad(argb_texture back_buffer, assets& assets)
     DEBUGrender_quad_2D(back_buffer, &quad, assets);
 }
 
-void demo_draw_rotating_triangle_background(argb_texture back_buffer)
+void demo_draw_rotating_triangle_background(argb_texture back_buffer,  vec2_f midpoint)
 {
     // Render multiple triangles
-
-    // triangle_2D triangle = {{0.0f, 0.0f}, {1280.f, 720.f}, {1280.f, 0.f}};
-    // DEBUGrasterize_triangle(back_buffer, &triangle);
-
-    // TODO: create example
-    constexpr vec2_f midpoint = {640.f, 360.f};
 
     // FIXME: don't use persistent
     persistent vec2_f rotating_point = {480.f, 280.f};
@@ -254,4 +249,10 @@ void demo_draw_rotating_triangle_background(argb_texture back_buffer)
 void demo_draw_simple_triangle(argb_texture back_buffer)
 {
     DEBUGrasterize_triangle(back_buffer);
+}
+
+void demo_draw_gui_demo(argb_texture back_buffer){
+    const GUI* gui = GUI::get();
+    // class Subcommands_Rendering_Strategy : Rendering_Strategy{
+    // };
 }

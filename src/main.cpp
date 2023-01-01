@@ -9,12 +9,12 @@ assets asset_cache = assets();
 
 internal void clear_screen(argb_texture back_buffer)
 {
-#define back_buffer(x, y) back_buffer.bits[back_buffer.width * y + x]
+#define back_buffer_at(x, y) back_buffer.bits[back_buffer.width * y + x]
     for (uint_32 i = 0; i < back_buffer.height; i++)
     {
         for (uint_32 ii = 0; ii < back_buffer.width; ii++)
         {
-            back_buffer(ii, i) = 0xffaaff;
+            back_buffer_at(ii, i) = 0xffaaff;
         }
     }
 }
@@ -32,7 +32,7 @@ void game_update_and_render(argb_texture back_buffer)
 
     // 2D demos:
 
-    demo_draw_rotating_triangle_background(back_buffer);
+    // demo_draw_rotating_triangle_background(back_buffer);
     demo_draw_simple_triangle(back_buffer);
 
     // TODO: print file info on file load
@@ -58,9 +58,11 @@ void game_update_and_render(argb_texture back_buffer)
     // draw texture-mapped quad
     demo_draw_texture_mapped_quad(back_buffer, asset_cache);
 
+    demo_draw_gui_demo(back_buffer);
+
     // 3D demos:
 
-    demo_render_3D_quad(back_buffer);
+    // demo_render_3D_quad(back_buffer);
 
     // draw texture-mapped cube_3D
     // {
