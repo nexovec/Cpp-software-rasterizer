@@ -24,6 +24,12 @@ struct KeyboardState
     bool KEY_W;
     bool KEY_SPACE;
 };
+struct Mouse_Info{
+    bool held_down;
+    int x;
+    int y;
+};
+
 enum GAMEPAD_RUMBLE_LEVEL
 {
     OFF,

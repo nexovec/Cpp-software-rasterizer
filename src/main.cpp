@@ -57,8 +57,7 @@ void game_update_and_render(argb_texture back_buffer)
 
     // draw texture-mapped quad
     demo_draw_texture_mapped_quad(back_buffer, asset_cache);
-
-    demo_draw_gui_demo(back_buffer);
+    demo_draw_gui_demo(back_buffer, asset_cache);
 
     // 3D demos:
 
